@@ -1,9 +1,47 @@
+<?php
+session_start();
+require_once ('CreateDb.php');
+
+require_once ('component.php');
+
+if (isset($_POST['add'])){
+    /// //print_r($_POST['product_id']);
+    if(isset($_SESSION['cart'])){
+
+        $item_array_id = array_column($_SESSION['cart'], "product_id");
+
+        if(in_array($_POST['product_id'], $item_array_id)){
+            echo "<script>alert('Product is already added in the cart..!')</script>";
+            echo "<script>window.location = 'index.php'</script>";
+        }else{
+
+            $count = count($_SESSION['cart']);
+            $item_array = array(
+                'product_id' => $_POST['product_id']
+            );
+
+            $_SESSION['cart'][$count] = $item_array;
+        }
+
+    }else{
+
+        $item_array = array(
+                'product_id' => $_POST['product_id']
+        );
+
+        // Create new session variable
+        $_SESSION['cart'][0] = $item_array;
+        //print_r($_SESSION['cart']);
+    }
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>EShopper - Bootstrap Shop Template</title>
+    <title>BolaKaz </title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free HTML Templates" name="keywords">
     <meta content="Free HTML Templates" name="description">
@@ -82,8 +120,18 @@
                     <span class="badge">0</span>
                 </a>
                 <a href="" class="btn border">
-                    <i class="fas fa-shopping-cart text-primary"></i>
-                    <span class="badge">0</span>
+                    <i class="fas fa-shopping-cart text-primary"></i> 
+                   
+                    <span class="badge"><?php
+
+                        if (isset($_SESSION['cart'])){
+                            $count = count($_SESSION['cart']);
+                            echo "<span id=\"cart_count\" class=\"text-dark bg-light\">$count</span>";
+                        }else{
+                            echo "<span id=\"cart_count\" class=\"text-dark bg-light\">0</span>";
+                        }
+
+                        ?></span>
                 </a>
             </div>
         </div>
@@ -144,9 +192,8 @@
                             <a href="contact " class="nav-item nav-link active">Contact</a>
                         </div>
                         <div class="navbar-nav ml-auto py-0">
-                            <a href="" class="nav-item nav-link">Login</a>
-                            <a href="" class="nav-item nav-link">Register</a>
-                        </div>
+                            <a href="signin" class="nav-item nav-link">Login</a>
+<a href="signup" class="nav-item nav-link">Register</a>                        </div>
                     </div>
                 </nav>
             </div>
