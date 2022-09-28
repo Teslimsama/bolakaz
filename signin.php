@@ -11,7 +11,11 @@ include 'alert.message.php' ;
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Bolakaz</title>
+    <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
+	<!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+
 </head>
 <body>
     <style>
@@ -23,9 +27,13 @@ include 'alert.message.php' ;
 
 body {
 	font-family: "DM Sans", sans-serif;
-	line-height: 1.5;
-	background-color: #f1f3fb;
-	padding: 0 2rem;
+	/* line-height: 1.5; */
+	background: -webkit-gradient(linear, left bottom, right top, from(#fc2c77), to(#000));
+  background: -webkit-linear-gradient(bottom left, #fc2c77 0%, #000 100%);
+  background: -moz-linear-gradient(bottom left, #fc2c77 0%, #000 100%);
+  background: -o-linear-gradient(bottom left, #fc2c77 0%, #000 100%);
+  background: linear-gradient(to top right, #fc2c77 0%, #000 100%);
+	/* padding: 0 2rem; */
 }
 
 img {
@@ -95,7 +103,7 @@ input {
 		margin-top: 1.5rem;
 	}
 .input-label {
-	color: #8597a3;
+	color: #555;
 	position: absolute;
 	top: 1.5rem;
 	transition: .25s ease;
@@ -116,7 +124,7 @@ input {
 		border-bottom-color: #6658d3;
 	}
     .input-field +.input-label {
-        color: #6658d3;
+        color: #555;
         transform: translateY(-1.5rem);
     }
 .action {
@@ -129,7 +137,7 @@ input {
 	padding: 1em;
 	width: 100%;
 	font-weight: 500;
-	background-color: #6658d3;
+	background-color: #a18cd1;
 	border-radius: 6px;
 	color: #FFF;
 	border: 0;
@@ -137,12 +145,14 @@ input {
 .action-button:focus {
     outline: 0;
 }
-
+.action-button:hover {
+  background: #7c58cf;
+}
 .card-info {
 	padding: 1rem 1rem;
 	text-align: center;
 	font-size: .875rem;
-	color: #8597a3;
+	color: #555;
 	
 }
 
@@ -175,7 +185,7 @@ input {
 				<label class="input-label">Email</label>
 			</div>
 			<div class="input">
-				<input type="text" class="input-field" name="password" placeholder="Password" required/>
+				<input type="password" class="input-field" name="password" placeholder="Password" required/>
 				<label class="input-label">Password</label>
 			</div>
 		
@@ -188,6 +198,7 @@ input {
 		
 	</div>
 </div>
-
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
 </body>
 </html>
