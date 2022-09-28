@@ -1,328 +1,165 @@
 <?php
 require_once ('CreateDb.php');
-
+include 'alert.message.php' ;
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <!-- Required meta tags-->
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Colorlib Templates">
+    <meta name="author" content="Colorlib">
+    <meta name="keywords" content="Colorlib Templates">
+
+    <!-- Title Page-->
+    <title>Au Register Forms by Colorlib</title>
+
+    <!-- Icons font CSS-->
+    <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
+    <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
+    <!-- Font special for pages-->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Vendor CSS-->
+    <link href="css/vendor/select2/select2.min.css" rel="stylesheet" media="all">
+    <link href="css/vendor/datepicker/daterangepicker.css" rel="stylesheet" media="all">
+
+    <!-- Main CSS-->
+    <link href="css/main.css" rel="stylesheet" media="all">
 </head>
+
 <body>
-    <style>
-        /* 64ac15 */
-*,
-*:before,
-*:after {
-  box-sizing: border-box;
-}
-body {
-  padding: 1em;
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 15px;
-  color: #b9b9b9;
-  background-color: #e3e3e3;
-}
-h4 {
-  color: #f0a500;
-}
-input,
-input[type="radio"] + label,
-input[type="checkbox"] + label:before,
-select option,
-select {
-  width: 100%;
-  padding: 1em;
-  line-height: 1.4;
-  background-color: #f9f9f9;
-  border: 1px solid #e5e5e5;
-  border-radius: 3px;
-  -webkit-transition: 0.35s ease-in-out;
-  -moz-transition: 0.35s ease-in-out;
-  -o-transition: 0.35s ease-in-out;
-  transition: 0.35s ease-in-out;
-  transition: all 0.35s ease-in-out;
-}
-input:focus {
-  outline: 0;
-  border-color: #bd8200;
-}
-input:focus + .input-icon i {
-  color: #f0a500;
-}
-input:focus + .input-icon:after {
-  border-right-color: #f0a500;
-}
-input[type="radio"] {
-  display: none;
-}
-input[type="radio"] + label,
-select {
-  display: inline-block;
-  width: 50%;
-  text-align: center;
-  float: left;
-  border-radius: 0;
-}
-input[type="radio"] + label:first-of-type {
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-}
-input[type="radio"] + label:last-of-type {
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-}
-input[type="radio"] + label i {
-  padding-right: 0.4em;
-}
-input[type="radio"]:checked + label,
-input:checked + label:before,
-select:focus,
-select:active {
-  background-color: #f0a500;
-  color: #fff;
-  border-color: #bd8200;
-}
-input[type="checkbox"] {
-  display: none;
-}
-input[type="checkbox"] + label {
-  position: relative;
-  display: block;
-  padding-left: 1.6em;
-}
-input[type="checkbox"] + label:before {
-  position: absolute;
-  top: 0.2em;
-  left: 0;
-  display: block;
-  width: 1em;
-  height: 1em;
-  padding: 0;
-  content: "";
-}
-input[type="checkbox"] + label:after {
-  position: absolute;
-  top: 0.45em;
-  left: 0.2em;
-  font-size: 0.8em;
-  color: #fff;
-  opacity: 0;
-  font-family: FontAwesome;
-  content: "\f00c";
-}
-input:checked + label:after {
-  opacity: 1;
-}
-select {
-  height: 3.4em;
-  line-height: 2;
-}
-select:first-of-type {
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-}
-select:last-of-type {
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-}
-select:focus,
-select:active {
-  outline: 0;
-}
-select option {
-  background-color: #f0a500;
-  color: #fff;
-}
-.input-group {
-  margin-bottom: 1em;
-  zoom: 1;
-}
-.input-group:before,
-.input-group:after {
-  content: "";
-  display: table;
-}
-.input-group:after {
-  clear: both;
-}
-.input-group-icon {
-  position: relative;
-}
-.input-group-icon input {
-  padding-left: 4.4em;
-}
-.input-group-icon .input-icon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 3.4em;
-  height: 3.4em;
-  line-height: 3.4em;
-  text-align: center;
-  pointer-events: none;
-}
-.input-group-icon .input-icon:after {
-  position: absolute;
-  top: 0.6em;
-  bottom: 0.6em;
-  left: 3.4em;
-  display: block;
-  border-right: 1px solid #e5e5e5;
-  content: "";
-  -webkit-transition: 0.35s ease-in-out;
-  -moz-transition: 0.35s ease-in-out;
-  -o-transition: 0.35s ease-in-out;
-  transition: 0.35s ease-in-out;
-  transition: all 0.35s ease-in-out;
-}
-.input-group-icon .input-icon i {
-  -webkit-transition: 0.35s ease-in-out;
-  -moz-transition: 0.35s ease-in-out;
-  -o-transition: 0.35s ease-in-out;
-  transition: 0.35s ease-in-out;
-  transition: all 0.35s ease-in-out;
-}
-.container {
-  max-width: 38em;
-  padding: 1em 3em 2em 3em;
-  margin: 0em auto;
-  background-color: #fff;
-  border-radius: 4.2px;
-  box-shadow: 0px 3px 10px -2px rgba(0, 0, 0, 0.2);
-}
-.row {
-  zoom: 1;
-}
-.row:before,
-.row:after {
-  content: "";
-  display: table;
-}
-.row:after {
-  clear: both;
-}
-.col-half {
-  padding-right: 10px;
-  float: left;
-  width: 50%;
-}
-.col-half:last-of-type {
-  padding-right: 0;
-}
-.col-third {
-  padding-right: 10px;
-  float: left;
-  width: 33.33333333%;
-}
-.col-third:last-of-type {
-  padding-right: 0;
-}
-@media only screen and (max-width: 540px) {
-  .col-half {
-    width: 100%;
-    padding-right: 0;
-  }
-}
-
-    </style>
-<div class="container">
-    <form action="" method="post">
-        <div class="row">
-            <h4>Account</h4>
-            <div class="input-group input-group-icon"><input type="text"  placeholder="Full Name"><div class="input-icon"><i class="fa.fa-user"></i> </div></div>
-            <div class="input-group input-group-icon"><input type="email" placeholder="email" name="email" id="email"> <div class="input-icon"><i class="fa fa-envelope"></i></div></div>
-            <div class="input-group input-group-icon"><input type="password" placeholder="**********"name="password" id="password"><div class="input-icon"><div class="i fa fa-key"></div></div></div>
-        </div>
-        <div class="row">
-            <div class="col-half">
-                <h4>Date of Birth</h4>
-                <div class="input-group">
-                    <div class="col-third"><input placeholder="DD" type="text"></div>
-                    <div class="col-third"><input placeholder="MM" type="text"></div>
-                    <div class="col-third"><input placeholder="YYYY" type="text"></div>
-                    <div class="col-half">
-                        <h4>Gender</h4>
-                        <div class="input-group">
-                            <input type="text" type="radio" value="male" id="gender-male">
-                            <label for="gender-male">Male</label>
-                            <input type="text" type="radio" value="male" id="gender-male">
-                            <label for="gender-male">Female</label>
+    <div class="page-wrapper bg-gra-02 p-t-130 p-b-100 font-poppins">
+        <div class="wrapper wrapper--w680">
+            <div class="card card-4">
+                <div class="card-body">
+                    <h2 class="title">Registration Form</h2>
+                    <form action="lib/app/signup.app.php" method="POST">
+         <?php echo ErrorMessage(); echo SuccessMessage();?>
+                        <div class="msg"></div>
+                        <div class="row row-space">
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">first name</label>
+                                    <input class="input--style-4" type="text" name="firstname">
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">last name</label>
+                                    <input class="input--style-4" type="text" name="lastname">
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">username</label>
+                                    <input class="input--style-4" type="text" name="username">
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="row">
-
-                    </div>
+                        <div class="row row-space">
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">password</label>
+                                    <input class="input--style-4" type="password" name="password">
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Confirm password</label>
+                                    <input class="input--style-4" type="password" name="conpassword">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row row-space">
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Birthday</label>
+                                    <div class="input-group-icon">
+                                        <input class="input--style-4 js-datepicker" type="text" name="dob">
+                                        <i class="zmdi zmdi-calendar-note input-icon js-btn-calendar"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Gender</label>
+                                    <div class="p-t-10">
+                                        <label class="radio-container m-r-45">Male
+                                            <input type="radio" checked="checked" value="male" name="gender">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <label class="radio-container">Female
+                                            <input type="radio" value="female" name="gender">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row row-space">
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Email</label>
+                                    <input class="input--style-4" type="email" name="email">
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Phone Number</label>
+                                    <input class="input--style-4" type="text" name="phone">
+                                </div>
+                            </div>
+                        </div>
+                                <div class="input-group">
+                                    <label class="label">state</label>
+                                    <div class="rs-select2 js-select-simple select--no-search">
+                                        <select name="state">
+                                            <option disabled="disabled" selected="selected">Choose option</option>
+                                            <option value="fct">Fct</option>
+                                            <option value="yobe">Yobe</option>
+                                            <option value="kogi">Kogi</option>
+                                        </select>
+                                        <div class="select-dropdown"></div>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label class="label">referral</label>
+                                    <div class="rs-select2 js-select-simple select--no-search">
+                                        <select name="referral">
+                                            <option disabled="disabled" selected="selected">Choose option</option>
+                                            <option value="A friend">A friend</option>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="twitter">Twitter</option>
+                                            <option value="instagram">Instagram</option>
+                                            <option value="ad">From an Ad</option>
+                                        </select>
+                                        <div class="select-dropdown"></div>
+                                    </div>
+                                </div>
+                        
+                        <div class="p-t-15">
+                            <button class="btn btn--radius-2 btn--blue" name="submit" type="submit">Submit</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-    </form>
-</div>
- 
-    .row
-      .col-half
-        h4 Date of Birth
-        .input-group
-          .col-third
-            input(type="text", placeholder="DD")
-          .col-third
-            input(type="text", placeholder="MM")
-          .col-third
-            input(type="text", placeholder="YYYY")
-      .col-half
-        h4 Gender
-        .input-group
-          input#gender-male(type="radio", name="gender", value="male")
-          label(for="gender-male") Male
-          input#gender-female(type="radio", name="gender", value="female")
-          label(for="gender-female") Female
-    .row
-      h4 Payment Details
-      .input-group
-        input#payment-method-card(
-          type="radio",
-          name="payment-method",
-          value="card",
-          checked="true"
-        )
-        label(for="payment-method-card")
-          span
-            i.fa.fa-cc-visa
-            | Credit Card
-        input#payment-method-paypal(
-          type="radio",
-          name="payment-method",
-          value="paypal"
-        )
-        label(for="payment-method-paypal") 
-          span
-            i.fa.fa-cc-paypal
-            | Paypal
-      .input-group.input-group-icon
-        input(type="text", placeholder="Card Number")
-        .input-icon
-          i.fa.fa-credit-card
-      .col-half
-        .input-group.input-group-icon
-          input(type="text", placeholder="Card CVC")
-          .input-icon
-            i.fa.fa-user
-      .col-half
-        .input-group
-          select
-            option 01 Jan
-            option 02 Jan
-          select
-            option 2015
-            option 2016
-    .row
-      h4 Terms and Conditions
-      .input-group
-        input#terms(type="checkbox")
-        label(for="terms") I accept the terms and conditions for signing up to this service, and hereby confirm I have read the privacy policy.
+    </div>
+
+    <!-- Jquery JS-->
+    <script src="css/vendor/jquery/jquery.min.js"></script>
+    <!-- Vendor JS-->
+    <script src="css/vendor/select2/select2.min.js"></script>
+    <script src="css/vendor/datepicker/moment.min.js"></script>
+    <script src="css/vendor/datepicker/daterangepicker.js"></script>
+
+    <!-- Main JS-->
+    <script src="js/global.js"></script>
 
 </body>
+
 </html>
+<!-- end document-->

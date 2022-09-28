@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 require_once ('CreateDb.php');
 include 'alert.message.php' ;
 
@@ -161,15 +161,15 @@ input {
 	<div class="card">
 		<div class="card-image">	
 			<h2 class="card-heading">
-				Input Products
+				Sign In
 				<small>Make life easier</small>
 			</h2>
-            <div class="msg">
+          
+		</div>  <div class="msg">
          <?php echo ErrorMessage(); echo SuccessMessage();?>
 
             </div>
-		</div>
-		<form class="card-form" method="POST">
+		<form class="card-form" action="lib/app/signin.app.php" method="POST">
 			<div class="input">
 				<input type="text" class="input-field" name="email" placeholder="Email" required/>
 				<label class="input-label">Email</label>

@@ -99,10 +99,8 @@ if (isset($_POST['remove'])){
                 </form>
             </div>
             <div class="col-lg-3 col-6 text-right">
-                <a href="" class="btn border">
-                    <i class="fas fa-heart text-primary"></i>
-                    <span class="badge">0</span>
-                </a>
+                                   <span class="badge">Logout</span>
+
                 <a href="" class="btn border">
                     <i class="fas fa-shopping-cart text-primary"></i> 
                    

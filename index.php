@@ -55,7 +55,7 @@ if (isset($_POST['add'])){
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-
+    <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
     <!-- Libraries Stylesheet -->
     <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
@@ -115,11 +115,11 @@ if (isset($_POST['add'])){
                         </form>
                     </div>
                     <div class="col-lg-3 col-6 text-right">
-                <a href="" class="btn border">
-                    <i class="fas fa-heart text-primary"></i>
-                    <span class="badge">0</span>
+                <a href="logout" class="btn border">
+                    <i class="fa-solid fa-right-from-bracket text-primary"></i>
+                    <span class="badge">Logout</span>
                 </a>
-                <a href="" class="btn border">
+                <a href="cart" class="btn border">
                     <i class="fas fa-shopping-cart text-primary"></i> 
                    
                     <span class="badge"><?php

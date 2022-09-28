@@ -1,6 +1,6 @@
 <?php
-include('../alert.message.php');
-require_once('../CreateDb.php');
+include('../../alert.message.php');
+require_once('../../CreateDb.php');
 // Initialize the session
 
 session_start();
@@ -10,7 +10,7 @@ $password = $_POST['password'];
  
 // Check if the user is already logged in, if yes then redirect him to welcome page
 if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
-    header("location: ../index");
+    header("location: ../../index");
     exit;
 }
  
@@ -38,7 +38,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Validate credentials
     if(empty($username_err) && empty($password_err)){
         // Prepare a select statement
-        $sql = "SELECT id, email, password FROM workers WHERE email = ?";
+        $sql = "SELECT id, email, password FROM shoppers WHERE email = ?";
         
         if($stmt = mysqli_prepare($db_connect, $sql)){
             // Bind variables to the prepared statement as parameters
@@ -67,7 +67,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             $_SESSION["email"] = $email;                            
                             
                             // Redirect user to welcome page
-                            header("location: ../dashboard_admin");
+                            header("location: ../../index");
                         } else{
                             // Password is not valid, display a generic error message
                             $login_err =  $_SESSION['error'] =  "Invalid username or password.";
