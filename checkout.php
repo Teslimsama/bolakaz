@@ -1,19 +1,19 @@
 <?php
 session_start();
-require_once ('CreateDb.php');
+require_once('CreateDb.php');
 
-require_once ('component.php');
+require_once('component.php');
 
-if (isset($_POST['add'])){
+if (isset($_POST['add'])) {
     /// //print_r($_POST['product_id']);
-    if(isset($_SESSION['cart'])){
+    if (isset($_SESSION['cart'])) {
 
         $item_array_id = array_column($_SESSION['cart'], "product_id");
 
-        if(in_array($_POST['product_id'], $item_array_id)){
+        if (in_array($_POST['product_id'], $item_array_id)) {
             echo "<script>alert('Product is already added in the cart..!')</script>";
             echo "<script>window.location = 'index.php'</script>";
-        }else{
+        } else {
 
             $count = count($_SESSION['cart']);
             $item_array = array(
@@ -22,11 +22,10 @@ if (isset($_POST['add'])){
 
             $_SESSION['cart'][$count] = $item_array;
         }
-
-    }else{
+    } else {
 
         $item_array = array(
-                'product_id' => $_POST['product_id']
+            'product_id' => $_POST['product_id']
         );
 
         // Create new session variable
@@ -50,13 +49,13 @@ if (isset($_POST['add'])){
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
     <!-- CSS only -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
 
     <!-- Libraries Stylesheet -->
     <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
@@ -101,7 +100,7 @@ if (isset($_POST['add'])){
         <div class="row align-items-center py-3 px-xl-5">
             <div class="col-lg-5 d-none d-lg-block">
                 <a href="index" class="text-decoration-none">
-                     <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">B</span>Bolkaz.Enterprise</h1>
+                    <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">B</span>Bolkaz.Enterprise</h1>
                 </a>
             </div>
             <div class="col-lg-3 col-4 text-left">
@@ -117,24 +116,24 @@ if (isset($_POST['add'])){
                 </form>
             </div>
             <div class="col-lg-3 col-6 text-right">
-            <a href="logout" class="btn border">
+                <a href="logout" class="btn border">
                     <i class="fa-solid fa-right-from-bracket text-primary"></i>
                     <span class="badge">Logout</span>
                 </a>
 
                 <a href="cart" class="btn border">
-                    <i class="fas fa-shopping-cart text-primary"></i> 
-                   
+                    <i class="fas fa-shopping-cart text-primary"></i>
+
                     <span class="badge"><?php
 
-                        if (isset($_SESSION['cart'])){
-                            $count = count($_SESSION['cart']);
-                            echo "<span id=\"cart_count\" class=\"text-dark bg-light\">$count</span>";
-                        }else{
-                            echo "<span id=\"cart_count\" class=\"text-dark bg-light\">0</span>";
-                        }
+                                        if (isset($_SESSION['cart'])) {
+                                            $count = count($_SESSION['cart']);
+                                            echo "<span id=\"cart_count\" class=\"text-dark bg-light\">$count</span>";
+                                        } else {
+                                            echo "<span id=\"cart_count\" class=\"text-dark bg-light\">0</span>";
+                                        }
 
-                        ?></span>
+                                        ?></span>
                 </a>
             </div>
         </div>
@@ -175,7 +174,7 @@ if (isset($_POST['add'])){
             <div class="col-lg-9">
                 <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-0">
                     <a href="" class="text-decoration-none d-block d-lg-none">
-                         <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">B</span>Bolkaz.Enterprise</h1>
+                        <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">B</span>Bolkaz.Enterprise</h1>
                     </a>
                     <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
                         <span class="navbar-toggler-icon"></span>
@@ -196,7 +195,8 @@ if (isset($_POST['add'])){
                         </div>
                         <div class="navbar-nav ml-auto py-0">
                             <a href="signin" class="nav-item nav-link">Login</a>
-<a href="signup" class="nav-item nav-link">Register</a>                        </div>
+                            <a href="signup" class="nav-item nav-link">Register</a>
+                        </div>
                     </div>
                 </nav>
             </div>
@@ -280,7 +280,7 @@ if (isset($_POST['add'])){
                         <div class="col-md-12 form-group">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" id="shipto">
-                                <label class="custom-control-label" for="shipto"  data-toggle="collapse" data-target="#shipping-address">Ship to different address</label>
+                                <label class="custom-control-label" for="shipto" data-toggle="collapse" data-target="#shipping-address">Ship to different address</label>
                             </div>
                         </div>
                     </div>
@@ -411,7 +411,7 @@ if (isset($_POST['add'])){
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <a href="index" class="text-decoration-none">
-                <h1 class="mb-4 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border border-white px-3 mr-1">B</span>Bolkaz.Enterprise</h1>
+                    <h1 class="mb-4 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border border-white px-3 mr-1">B</span>Bolkaz.Enterprise</h1>
                 </a>
                 <p>Dolore erat dolor sit lorem vero amet. Sed sit lorem magna, ipsum no sit erat lorem et magna ipsum dolore amet erat.</p>
                 <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
@@ -449,8 +449,7 @@ if (isset($_POST['add'])){
                                 <input type="text" class="form-control border-0 py-4" placeholder="Your Name" required="required" />
                             </div>
                             <div class="form-group">
-                                <input type="email" class="form-control border-0 py-4" placeholder="Your Email"
-                                    required="required" />
+                                <input type="email" class="form-control border-0 py-4" placeholder="Your Email" required="required" />
                             </div>
                             <div>
                                 <button class="btn btn-primary btn-block border-0 py-3" type="submit">Subscribe Now</button>
@@ -489,8 +488,8 @@ if (isset($_POST['add'])){
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>
     <script src="mail/contact.js"></script>
-<!-- JavaScript Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
 </body>

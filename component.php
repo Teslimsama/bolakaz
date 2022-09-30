@@ -1,7 +1,8 @@
 <?php
-require_once ('CreateDb.php');
+require_once('CreateDb.php');
 
-function component($productname, $productprice, $productimg, $productid){
+function component($productname, $productprice, $productimg, $productid)
+{
     $element = "
     
     <div class=\"col-lg-4 col-md-6 col-sm-12 pb-1\">
@@ -28,11 +29,12 @@ function component($productname, $productprice, $productimg, $productid){
                              
                              
                              ";
-     
+
     echo $element;
 }
 
-function cartElement($productimg, $productname, $productprice, $productid){
+function cartElement($productimg, $productname, $productprice, $productid)
+{
     $element = "
     <tr>
         <form action=\"cart.php?action=remove&id=$productid\" method=\"post\" class=\"cart-items\">
@@ -59,11 +61,11 @@ function cartElement($productimg, $productname, $productprice, $productid){
                         </tr>
         </form>
                         ";
-                        echo  $element;
-                       
+    echo  $element;
 }
 
-function trendElement( $productname,$productprice,$productimg,  $productid){
+function trendElement($productname, $productprice, $productimg,  $productid)
+{
     $element = "
     <div class=\"col-lg-3 col-md-6 col-sm-12 pb-1\">
         <div class=\"card product-item border-0 mb-4\">
@@ -86,23 +88,5 @@ function trendElement( $productname,$productprice,$productimg,  $productid){
     </div>
         </form>
                         ";
-                        echo  $element;
-                       
+    echo  $element;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

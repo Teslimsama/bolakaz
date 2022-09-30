@@ -1,6 +1,6 @@
 <?php
-require_once ('CreateDb.php');
-include 'alert.message.php' ;
+require_once('CreateDb.php');
+include 'alert.message.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -24,7 +24,7 @@ include 'alert.message.php' ;
     <link href="css/vendor/datepicker/daterangepicker.css" rel="stylesheet" media="all">
     <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
     <!-- CSS only -->
-<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous"> -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous"> -->
     <!-- Main CSS-->
     <link href="css/main.css" rel="stylesheet" media="all">
     <link href="css/navbar.css" rel="stylesheet" media="all">
@@ -32,158 +32,159 @@ include 'alert.message.php' ;
 
 <body>
     <div class="page-wrapper bg-gra-02 p-t-130 p-b-100 mt-1 font-poppins">
-    <div class="container">
-			<nav class="navbar navbar-expand-lg ftco_navbar ftco-navbar-light" id="ftco-navbar">
-		    <div class="container">
-		    	<a class="navbar-brand" href="index.html">Digital</a>
-		    	<div class="social-media order-lg-last">
-		    		<p class="mb-0 d-flex">
-		    			<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-facebook"><i class="sr-only">Facebook</i></span></a>
-		    			<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-twitter"><i class="sr-only">Twitter</i></span></a>
-		    			<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-instagram"><i class="sr-only">Instagram</i></span></a>
-		    			<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-dribbble"><i class="sr-only">Dribbble</i></span></a>
-		    		</p>
-	        </div>
-		      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-		        <span class="fa fa-bars"></span> 
-		      </button>
-		      <div class="collapse navbar-collapse" id="ftco-nav">
-		        <ul class="navbar-nav ml-auto mr-md-3">
-		        	<li class="nav-item active"><a href="#" class="nav-link">Home</a></li>
-		        	<li class="nav-item"><a href="#" class="nav-link">About</a></li>
-		        	<li class="nav-item"><a href="signin" class="nav-link">Login</a></li>
-		          <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
-		        </ul>
-		      </div>
-		    </div>
-		  </nav>
-        <div class="wrapper wrapper--w680 mt-5">
-            <div class="card card-4">
-                <div class="card-body">
-                    <h2 class="title">Registration Form</h2>
-                    <form action="lib/app/signup.app.php" method="POST">
-         
-                        <div class="msg"><?php echo ErrorMessage(); echo SuccessMessage();?></div>
-                        <div class="row row-space">
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">first name</label>
-                                    <input class="input--style-4" type="text" name="firstname"required>
+        <div class="container">
+            <nav class="navbar navbar-expand-lg ftco_navbar ftco-navbar-light" id="ftco-navbar">
+                <div class="container">
+                    <a class="navbar-brand" href="index.html">Digital</a>
+                    <div class="social-media order-lg-last">
+                        <p class="mb-0 d-flex">
+                            <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-facebook"><i class="sr-only">Facebook</i></span></a>
+                            <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-twitter"><i class="sr-only">Twitter</i></span></a>
+                            <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-instagram"><i class="sr-only">Instagram</i></span></a>
+                            <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-dribbble"><i class="sr-only">Dribbble</i></span></a>
+                        </p>
+                    </div>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="fa fa-bars"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="ftco-nav">
+                        <ul class="navbar-nav ml-auto mr-md-3">
+                            <li class="nav-item active"><a href="#" class="nav-link">Home</a></li>
+                            <li class="nav-item"><a href="#" class="nav-link">About</a></li>
+                            <li class="nav-item"><a href="signin" class="nav-link">Login</a></li>
+                            <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div class="wrapper wrapper--w680 mt-5">
+                <div class="card card-4">
+                    <div class="card-body">
+                        <h2 class="title">Registration Form</h2>
+                        <form action="lib/app/signup.app.php" method="POST">
+
+                            <div class="msg"><?php echo ErrorMessage();
+                                                echo SuccessMessage(); ?></div>
+                            <div class="row row-space">
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">first name</label>
+                                        <input class="input--style-4" type="text" name="firstname" required>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">last name</label>
-                                    <input class="input--style-4" type="text" name="lastname"required>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">last name</label>
+                                        <input class="input--style-4" type="text" name="lastname" required>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">username</label>
-                                    <input class="input--style-4" type="text" name="username"required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row row-space">
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">password</label>
-                                    <input class="input--style-4" type="password" name="password"required>
-                                </div>
-                            </div>
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">Confirm password</label>
-                                    <input class="input--style-4" type="password" name="conpassword"required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row row-space">
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">Birthday</label>
-                                    <div class="input-group-icon">
-                                        <input class="input--style-4 js-datepicker" type="text" name="dob"required>
-                                        <i class="zmdi zmdi-calendar-note input-icon js-btn-calendar"></i>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">username</label>
+                                        <input class="input--style-4" type="text" name="username" required>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">Gender</label>
-                                    <div class="p-t-10">
-                                        <label class="radio-container m-r-45">Male
-                                            <input type="radio" checked="checked" value="male" name="gender"required>
-                                            <span class="checkmark"></span>
-                                        </label>
-                                        <label class="radio-container">Female
-                                            <input type="radio" value="female" name="gender"required>
-                                            <span class="checkmark"></span>
-                                        </label>
+                            <div class="row row-space">
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">password</label>
+                                        <input class="input--style-4" type="password" name="password" required>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">Confirm password</label>
+                                        <input class="input--style-4" type="password" name="conpassword" required>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row row-space">
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">Email</label>
-                                    <input class="input--style-4" type="email" name="email"required>
-                                </div>
-                            </div>
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">Phone Number</label>
-                                    <input class="input--style-4" type="text" name="phone"required>
-                                </div>
-                            </div>
-                        </div>
-                                <div class="input-group">
-                                    <label class="label">state</label>
-                                    <div class="rs-select2 js-select-simple select--no-search">
-                                        <select name="state" required>
-                                            <option disabled="disabled" selected="selected">Choose option</option>
-                                            <option value="fct">Fct</option>
-                                            <option value="yobe">Yobe</option>
-                                            <option value="kogi">Kogi</option>
-                                        </select>
-                                        <div class="select-dropdown"></div>
+                            <div class="row row-space">
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">Birthday</label>
+                                        <div class="input-group-icon">
+                                            <input class="input--style-4 js-datepicker" type="text" name="dob" required>
+                                            <i class="zmdi zmdi-calendar-note input-icon js-btn-calendar"></i>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="input-group">
-                                    <label class="label">referral</label>
-                                    <div class="rs-select2 js-select-simple select--no-search">
-                                        <select name="referral" required>
-                                            <option disabled="disabled" selected="selected">Choose option</option>
-                                            <option value="A friend">A friend</option>
-                                            <option value="facebook">Facebook</option>
-                                            <option value="twitter">Twitter</option>
-                                            <option value="instagram">Instagram</option>
-                                            <option value="ad">From an Ad</option>
-                                        </select>
-                                        <div class="select-dropdown"></div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">Gender</label>
+                                        <div class="p-t-10">
+                                            <label class="radio-container m-r-45">Male
+                                                <input type="radio" checked="checked" value="male" name="gender" required>
+                                                <span class="checkmark"></span>
+                                            </label>
+                                            <label class="radio-container">Female
+                                                <input type="radio" value="female" name="gender" required>
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
-                        
-                        <div class="p-t-15">
-                            <input class="btn btn--radius-2 btn--blue" name="submit" value="Submit" type="submit">
-                        </div>
-                    </form>
+                            </div>
+                            <div class="row row-space">
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">Email</label>
+                                        <input class="input--style-4" type="email" name="email" required>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <label class="label">Phone Number</label>
+                                        <input class="input--style-4" type="text" name="phone" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="label">state</label>
+                                <div class="rs-select2 js-select-simple select--no-search">
+                                    <select name="state" required>
+                                        <option disabled="disabled" selected="selected">Choose option</option>
+                                        <option value="fct">Fct</option>
+                                        <option value="yobe">Yobe</option>
+                                        <option value="kogi">Kogi</option>
+                                    </select>
+                                    <div class="select-dropdown"></div>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="label">referral</label>
+                                <div class="rs-select2 js-select-simple select--no-search">
+                                    <select name="referral" required>
+                                        <option disabled="disabled" selected="selected">Choose option</option>
+                                        <option value="A friend">A friend</option>
+                                        <option value="facebook">Facebook</option>
+                                        <option value="twitter">Twitter</option>
+                                        <option value="instagram">Instagram</option>
+                                        <option value="ad">From an Ad</option>
+                                    </select>
+                                    <div class="select-dropdown"></div>
+                                </div>
+                            </div>
+
+                            <div class="p-t-15">
+                                <input class="btn btn--radius-2 btn--blue" name="submit" value="Submit" type="submit">
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Jquery JS-->
-    <script src="css/vendor/jquery/jquery.min.js"></script>
-    <!-- Vendor JS-->
-    <script src="css/vendor/select2/select2.min.js"></script>
-    <script src="css/vendor/datepicker/moment.min.js"></script>
-    <script src="css/vendor/datepicker/daterangepicker.js"></script>
-<!-- JavaScript Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
-    <!-- Main JS-->
-    <script src="js/global.js"></script>
+        <!-- Jquery JS-->
+        <script src="css/vendor/jquery/jquery.min.js"></script>
+        <!-- Vendor JS-->
+        <script src="css/vendor/select2/select2.min.js"></script>
+        <script src="css/vendor/datepicker/moment.min.js"></script>
+        <script src="css/vendor/datepicker/daterangepicker.js"></script>
+        <!-- JavaScript Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+        <!-- Main JS-->
+        <script src="js/global.js"></script>
 
 </body>
 
