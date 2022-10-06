@@ -90,6 +90,24 @@
                                 <a href="" class="dropdown-item">Baby's Dresses</a>
                             </div>
                         </div>
+                        <?php
+
+                        $conn = $pdo->open();
+                        try {
+                            $stmt = $conn->prepare("SELECT * FROM category");
+                            $stmt->execute();
+                            foreach ($stmt as $row) {
+                                echo "
+                            <a class='nav-item nav-link' href='shop.php?category=" . $row['cat_slug'] . "'>" . $row['name'] . "</a>
+                            ";
+                            }
+                        } catch (PDOException $e) {
+                            echo "There is some problem in connection: " . $e->getMessage();
+                        }
+
+                        $pdo->close();
+
+                        ?>
                         <a href="" class="nav-item nav-link">Shirts</a>
                         <a href="" class="nav-item nav-link">Jeans</a>
                         <a href="" class="nav-item nav-link">Swimwear</a>
@@ -125,7 +143,7 @@
                             <a href="contact" class="nav-item nav-link">Contact</a>
                         </div>
                         <div class="navbar-nav ml-auto py-0">
-                           
+
                             <?php
                             if (isset($_SESSION['user'])) {
                                 $image = (!empty($user['photo'])) ? 'images/' . $user['photo'] : 'images/profile.jpg';
@@ -170,21 +188,3 @@
             </div>
         </div>
     </div>
-    <?php
-
-    // $conn = $pdo->open();
-    // try {
-    //     $stmt = $conn->prepare("SELECT * FROM category");
-    //     $stmt->execute();
-    //     foreach ($stmt as $row) {
-    //         echo "
-    //                   <li><a href='category.php?category=" . $row['cat_slug'] . "'>" . $row['name'] . "</a></li>
-    //                 ";
-    //     }
-    // } catch (PDOException $e) {
-    //     echo "There is some problem in connection: " . $e->getMessage();
-    // }
-
-    // $pdo->close();
-
-    ?>

@@ -16,59 +16,19 @@ try {
 $pdo->close();
 
 
-    // function component()
-    // {
+    function component()
+    {
 
 
-    //     $conn = $pdo->open();
-
-    //     try {
-    //         $inc = 3;
-    //         $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = :catid");
-    //         $stmt->execute(['catid' => $catid]);
-    //         foreach ($stmt as $row) {
-    //             $image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
-    //             $inc = ($inc == 3) ? 1 : $inc + 1;
-    //             if ($inc == 1) echo "<div class='row'>";
-    //             echo "
-    
-    //                 <div class='col-lg-4 col-md-6 col-sm-12 pb-1'>
-    //                 <form action='shop.php' method='post'>
-    //                     <div class='card product-item border-0 mb-4'>
-    //                         <div class='card-header product-img position-relative overflow-hidden bg-transparent border p-0'>
-    //                             <img class='img-fluid w-100' src='$image' alt=''>
-    //                         </div>
-    //                         <div class='card-body border-left border-right text-center p-0 pt-4 pb-3'>
-    //                             <h6 class='text-truncate mb-3'>&#36; " . number_format($row['price'], 2) . "</h6>
-    //                             <div class='d-flex justify-content-center'>
-    //                                 <h6>$1.00</h6><h6 class='text-muted ml-2'><del>$&#36; " . number_format($row['price'], 2) . "</del></h6>
-    //                             </div>
-    //                         </div>
-    //                         <div class='card-footer d-flex justify-content-between bg-light border'>
-    //                             <a href='product.php?product=" . $row['slug'] . "'>" . $row['name'] . "</a> class='btn btn-sm text-dark p-0'><i class='fas fa-eye text-primary mr-1'></i>View Detail</a>
-    //                             <button type='submit' class='btn btn-sm text-dark p-0' name='add'>Add to Cart <i class='fas fa-shopping-cart text-primary mr-1'></i></button>
-                            
-
-    //                          </div>
-    //                          </div>
-    //                          </form>
-                             
-                             
-                             
-    //                          ";
-    //             if ($inc == 3) echo "</div>";
-    //         }
-    //     } catch (PDOException $e) {
-    //         echo "There is some problem in connection: " . $e->getMessage();
-    //     }
-
-    //     $pdo->close();
 
 
-    //     // $element = ;
-
-
-    // }
+        
+        
+        // $element = ;
+        
+        
+    }
+    $pdo->close();
 
 ?>
 <!DOCTYPE html>
@@ -274,28 +234,54 @@ $pdo->close();
                         </div>
                     </div>
                     <?php
+    $conn = $pdo->open();
 
-                    // component();
-
-                    ?>
-                    <div class="col-lg-4 col-md-6 col-sm-12 pb-1">
-                        <div class="card product-item border-0 mb-4">
-                            <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-                                <img class="img-fluid w-100" src="img/product-1.jpg" alt="">
+    try {
+        $inc = 3;
+        $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = :catid");
+        $stmt->execute(['catid' => $catid]);
+        foreach ($stmt as $row) {
+            $image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
+            $inc = ($inc == 3) ? 1 : $inc + 1;
+            if ($inc == 1) echo " <div class='col-lg-4 col-md-6 col-sm-12 pb-1'>";
+            echo "
+    
+                   
+                    <form action='shop.php' method='post'>
+                        <div class='card product-item border-0 mb-4'>
+                            <div class='card-header product-img position-relative overflow-hidden bg-transparent border p-0'>
+                                <img class='img-fluid w-100' src='$image' alt='image'>
                             </div>
-                            <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
-                                <h6 class="text-truncate mb-3">Colorful Stylish Shirt</h6>
-                                <div class="d-flex justify-content-center">
-                                    <h6>$123.00</h6>
-                                    <h6 class="text-muted ml-2"><del>$123.00</del></h6>
+                            <div class='card-body border-left border-right text-center p-0 pt-4 pb-3'>
+                                <h6 class='text-truncate mb-3'><a href='detail.php?product=" . $row['slug'] . "'>" . $row['name'] . "</a></h6>
+                                <div class='d-flex justify-content-center'> 
+                                <h6 class='text-truncate mb-3'>&#36; " . number_format($row['price'], 2) . "</h6>
+                                    <h6 class='text-muted ml-2'><del>&#36; " . number_format($row['price'], 2) . "</del></h6>
                                 </div>
                             </div>
-                            <div class="card-footer d-flex justify-content-between bg-light border">
-                                <a href="" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
-                                <a href="" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
+                            <div class='card-footer d-flex justify-content-between bg-light border'>
+                           
+                                 <i class='fas fa-eye text-primary mr-1'></i>View Detail</a>
+                                <button type='submit' class='btn btn-sm text-dark p-0' name='add'>Add to Cart <i class='fas fa-shopping-cart text-primary mr-1'></i></button>
+                            
+
+                             </div>
+                             </div>
+                             </form>
+                             
+                             
+                             
+                             ";
+            if ($inc == 3) echo "</div>";
+        }
+                        if ($inc == 1) echo "<div class='col-sm-4'></div><div class='col-sm-4'></div></div>";
+                        if ($inc == 2) echo "<div class='col-sm-4'></div></div>";
+    } catch (PDOException $e) {
+        echo "There is some problem in connection: " . $e->getMessage();
+    }
+
+                    ?>
+                   
                     <div class="col-12 pb-1">
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center mb-3">
