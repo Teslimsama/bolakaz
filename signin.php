@@ -1,10 +1,9 @@
+<?php include 'includes/session.php'; ?>
 <?php
-
-require_once('CreateDb.php');
-include 'alert.message.php';
-
+if (isset($_SESSION['user'])) {
+	header('location: cart.php');
+}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -26,7 +25,7 @@ include 'alert.message.php';
 	<div class="container mt-3">
 		<nav class="navbar navbar-expand-lg ftco_navbar ftco-navbar-light" id="ftco-navbar">
 			<div class="container">
-				<a class="navbar-brand" href="index.html">Digital</a>
+				<a class="navbar-brand" href="index.html">Bolakaz.Enterprise</a>
 				<div class="social-media order-lg-last">
 					<p class="mb-0 d-flex">
 						<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-facebook"><i class="sr-only">Facebook</i></span></a>
@@ -36,15 +35,15 @@ include 'alert.message.php';
 					</p>
 				</div>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="fa fa-bars"></span> Menu
+					<span class="fa fa-bars"></span>
 				</button>
 				<div class="collapse navbar-collapse" id="ftco-nav">
 					<ul class="navbar-nav ml-auto mr-md-3">
-						<li class="nav-item active"><a href="#" class="nav-link">Home</a></li>
+						<li class="nav-item active"><a href="index" class="nav-link">Home</a></li>
 						<li class="nav-item"><a href="#" class="nav-link">About</a></li>
 						<li class="nav-item"><a href="signup" class="nav-link">Signup</a></li>
 
-						<li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
+						<li class="nav-item"><a href="contact" class="nav-link">Contact</a></li>
 					</ul>
 				</div>
 			</div>
@@ -61,11 +60,27 @@ include 'alert.message.php';
 
 				</div>
 				<div class="msg">
-					<?php echo ErrorMessage();
-					echo SuccessMessage(); ?>
+					<?php
+					if (isset($_SESSION['error'])) {
+						echo "
+						<div class='callout callout-danger text-center'>
+							<p>" . $_SESSION['error'] . "</p> 
+						</div>
+						";
+						unset($_SESSION['error']);
+					}
+					if (isset($_SESSION['success'])) {
+						echo "
+						<div class='callout callout-success text-center'>
+							<p>" . $_SESSION['success'] . "</p> 
+						</div>
+						";
+						unset($_SESSION['success']);
+					}
+					?>
 
 				</div>
-				<form class="card-form" action="lib/app/signin.app.php" method="POST">
+				<form class="card-form" action="app/signin.app.php" method="POST">
 					<div class="input">
 						<input type="text" class="input-field" name="email" placeholder="Email" required />
 						<label class="input-label">Email</label>
@@ -78,7 +93,7 @@ include 'alert.message.php';
 
 
 					<div class="action">
-						<button type="submit" name="submit" class="action-button">Submit</button>
+						<button type="submit" name="login" class="action-button">Submit</button>
 					</div>
 				</form>
 

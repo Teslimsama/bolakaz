@@ -1,6 +1,16 @@
+<?php include 'includes/session.php'; ?>
 <?php
-require_once('CreateDb.php');
-include 'alert.message.php';
+if (isset($_SESSION['user'])) {
+    header('location: cart_view.php');
+}
+
+if (isset($_SESSION['captcha'])) {
+    $now = time();
+    if ($now >= $_SESSION['captcha']) {
+        unset($_SESSION['captcha']);
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,16 +36,16 @@ include 'alert.message.php';
     <!-- CSS only -->
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous"> -->
     <!-- Main CSS-->
-    <link href="css/main.css" rel="stylesheet" media="all">
     <link href="css/navbar.css" rel="stylesheet" media="all">
+    <link href="css/main.css" rel="stylesheet" media="all">
 </head>
 
 <body>
-    <div class="page-wrapper bg-gra-02 p-t-130 p-b-100 mt-1 font-poppins">
+    <div class="page-wrapper bg-gra-02 p-t-130 p-b-100 font-poppins">
         <div class="container">
             <nav class="navbar navbar-expand-lg ftco_navbar ftco-navbar-light" id="ftco-navbar">
                 <div class="container">
-                    <a class="navbar-brand" href="index.html">Digital</a>
+                    <a class="navbar-brand" href="index.html">bolakaz.enterprise</a>
                     <div class="social-media order-lg-last">
                         <p class="mb-0 d-flex">
                             <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-facebook"><i class="sr-only">Facebook</i></span></a>
@@ -52,7 +62,7 @@ include 'alert.message.php';
                             <li class="nav-item active"><a href="#" class="nav-link">Home</a></li>
                             <li class="nav-item"><a href="#" class="nav-link">About</a></li>
                             <li class="nav-item"><a href="signin" class="nav-link">Login</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
+                            <li class="nav-item"><a href="contact" class="nav-link">Contact</a></li>
                         </ul>
                     </div>
                 </div>
@@ -61,10 +71,29 @@ include 'alert.message.php';
                 <div class="card card-4">
                     <div class="card-body">
                         <h2 class="title">Registration Form</h2>
-                        <form action="lib/app/signup.app.php" method="POST">
+                        <form action="app/signup.app.php" method="POST">
 
-                            <div class="msg"><?php echo ErrorMessage();
-                                                echo SuccessMessage(); ?></div>
+                            <div class="msg">
+                                <?php
+                                    if(isset($_SESSION['error'])){
+                                        echo "
+                                        <div class='callout callout-danger text-center'>
+                                            <p>".$_SESSION['error']."</p> 
+                                        </div>
+                                        ";
+                                        unset($_SESSION['error']);
+                                    }
+
+                                    if(isset($_SESSION['success'])){
+                                        echo "
+                                        <div class='callout callout-success text-center'>
+                                            <p>".$_SESSION['success']."</p> 
+                                        </div>
+                                        ";
+                                        unset($_SESSION['success']);
+                                    }
+                                ?>
+                            </div>
                             <div class="row row-space">
                                 <div class="col-2">
                                     <div class="input-group">
@@ -95,7 +124,7 @@ include 'alert.message.php';
                                 <div class="col-2">
                                     <div class="input-group">
                                         <label class="label">Confirm password</label>
-                                        <input class="input--style-4" type="password" name="conpassword" required>
+                                        <input class="input--style-4" type="password" name="repassword" required>
                                     </div>
                                 </div>
                             </div>
@@ -174,6 +203,15 @@ include 'alert.message.php';
                 </div>
             </div>
         </div>
+        <?php
+        if (!isset($_SESSION['captcha'])) {
+            echo '
+                <di class="form-group" style="width:100%;">
+                  <div class="g-recaptcha" data-sitekey="6LevO1IUAAAAAFX5PpmtEoCxwae-I8cCQrbhTfM6"></div>
+                </di>
+              ';
+        }
+        ?>
 
         <!-- Jquery JS-->
         <script src="css/vendor/jquery/jquery.min.js"></script>
