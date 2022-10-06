@@ -123,7 +123,7 @@
 				}
 				catch(PDOException $e){
 					$_SESSION['error'] = $e->getMessage();
-					header('location: register.php');
+					header('location: signup.app.php');
 				}
 
 				$pdo->close();
