@@ -1,6 +1,6 @@
 <?php
-session_start();
-require_once('CreateDb.php');
+// session_start();
+// require_once('CreateDb.php');
 
 require_once('component.php');
 

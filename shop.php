@@ -1,38 +1,74 @@
+<?php include 'includes/session.php'; ?>
 <?php
-session_start();
-require_once('CreateDb.php');
+$slug = $_GET['category'];
 
-require_once('component.php');
+$conn = $pdo->open();
 
-if (isset($_POST['add'])) {
-    /// //print_r($_POST['product_id']);
-    if (isset($_SESSION['cart'])) {
-
-        $item_array_id = array_column($_SESSION['cart'], "product_id");
-
-        if (in_array($_POST['product_id'], $item_array_id)) {
-            echo "<script>alert('Product is already added in the cart..!')</script>";
-            echo "<script>window.location = 'shop.php'</script>";
-        } else {
-
-            $count = count($_SESSION['cart']);
-            $item_array = array(
-                'product_id' => $_POST['product_id']
-            );
-
-            $_SESSION['cart'][$count] = $item_array;
-        }
-    } else {
-
-        $item_array = array(
-            'product_id' => $_POST['product_id']
-        );
-
-        // Create new session variable
-        $_SESSION['cart'][0] = $item_array;
-        print_r($_SESSION['cart']);
-    }
+try {
+    $stmt = $conn->prepare("SELECT * FROM category WHERE cat_slug = :slug");
+    $stmt->execute(['slug' => $slug]);
+    $cat = $stmt->fetch();
+    $catid = $cat['id'];
+} catch (PDOException $e) {
+    echo "There is some problem in connection: " . $e->getMessage();
 }
+
+$pdo->close();
+
+
+    // function component()
+    // {
+
+
+    //     $conn = $pdo->open();
+
+    //     try {
+    //         $inc = 3;
+    //         $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = :catid");
+    //         $stmt->execute(['catid' => $catid]);
+    //         foreach ($stmt as $row) {
+    //             $image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
+    //             $inc = ($inc == 3) ? 1 : $inc + 1;
+    //             if ($inc == 1) echo "<div class='row'>";
+    //             echo "
+    
+    //                 <div class='col-lg-4 col-md-6 col-sm-12 pb-1'>
+    //                 <form action='shop.php' method='post'>
+    //                     <div class='card product-item border-0 mb-4'>
+    //                         <div class='card-header product-img position-relative overflow-hidden bg-transparent border p-0'>
+    //                             <img class='img-fluid w-100' src='$image' alt=''>
+    //                         </div>
+    //                         <div class='card-body border-left border-right text-center p-0 pt-4 pb-3'>
+    //                             <h6 class='text-truncate mb-3'>&#36; " . number_format($row['price'], 2) . "</h6>
+    //                             <div class='d-flex justify-content-center'>
+    //                                 <h6>$1.00</h6><h6 class='text-muted ml-2'><del>$&#36; " . number_format($row['price'], 2) . "</del></h6>
+    //                             </div>
+    //                         </div>
+    //                         <div class='card-footer d-flex justify-content-between bg-light border'>
+    //                             <a href='product.php?product=" . $row['slug'] . "'>" . $row['name'] . "</a> class='btn btn-sm text-dark p-0'><i class='fas fa-eye text-primary mr-1'></i>View Detail</a>
+    //                             <button type='submit' class='btn btn-sm text-dark p-0' name='add'>Add to Cart <i class='fas fa-shopping-cart text-primary mr-1'></i></button>
+                            
+
+    //                          </div>
+    //                          </div>
+    //                          </form>
+                             
+                             
+                             
+    //                          ";
+    //             if ($inc == 3) echo "</div>";
+    //         }
+    //     } catch (PDOException $e) {
+    //         echo "There is some problem in connection: " . $e->getMessage();
+    //     }
+
+    //     $pdo->close();
+
+
+    //     // $element = ;
+
+
+    // }
 
 ?>
 <!DOCTYPE html>
@@ -67,11 +103,11 @@ if (isset($_POST['add'])) {
 </head>
 
 <body>
-    
+
     <?php
     include "includes/header.php"
     ?>
-    
+
 
 
     <!-- Page Header Start -->
@@ -239,9 +275,8 @@ if (isset($_POST['add'])) {
                     </div>
                     <?php
 
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        component($row['product_name'], $row['product_price'], $row['product_image'], $row['id']);
-                    }
+                    // component();
+
                     ?>
                     <div class="col-lg-4 col-md-6 col-sm-12 pb-1">
                         <div class="card product-item border-0 mb-4">
