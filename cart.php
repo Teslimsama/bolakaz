@@ -234,7 +234,7 @@
 
         function getDetails() {
             $.ajax({
-                type: 'GET',
+                type: 'T',
                 url: 'cart_details .php',
                 dataType: 'json',
                 success: function(response) {
