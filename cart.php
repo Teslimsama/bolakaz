@@ -23,6 +23,18 @@
     <!-- CSS only -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
 
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+       folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css">
+    <!-- Magnify -->
+    <link rel="stylesheet" href="magnify/magnify.min.css">
     <!-- Libraries Stylesheet -->
     <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
@@ -61,17 +73,17 @@
                 <table class="table table-bordered text-center mb-0">
                     <thead class="bg-secondary text-dark">
                         <tr>
-                            <th>Products</th>
-                            <th>Price</th>
+                            <th width='100%'>Products</th>
+                            <th width='15%'>Price</th>
                             <th>Quantity</th>
-                            <th>Total</th>
+                            <th>Subtotal</th>
+                            <th>Remove</th>
                             <th>Remove</th>
                         </tr>
                     </thead>
 
 
-                    <tbody id="tbody">
-
+                    <tbody id="cart">
                     </tbody>
                 </table>
             </div>
@@ -94,7 +106,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-3 pt-1">
                                 <h6 class="font-weight-medium">Subtotal</h6>
-                                <h6 class="font-weight-medium"><?php "&#36;" . ".number_format($total, 2)." ?></h6>
+                                <h6 class="font-weight-medium"></h6>
 
                             </div>
                             <div class="d-flex justify-content-between">
@@ -105,12 +117,23 @@
                         <div class="card-footer border-secondary bg-transparent">
                             <div class="d-flex justify-content-between mt-2">
                                 <h5 class="font-weight-bold">Total</h5>
-                                <h5 class="font-weight-bold"><?php "&#36;" . ".number_format($total, 2)." ?></h5>
+                                <h5 class="font-weight-bold"></h5>
                             </div>
                             <button type="submit" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button>
                         </div>
                     </div>
             </div>
+            <?php
+            if (isset($_SESSION['user'])) {
+                echo "
+	        					<div id='paypal-button'></div>
+	        				";
+            } else {
+                echo "
+	        					<h4>You need to <a href='login.php'>Login</a> to checkout.</h4>
+	        				";
+            }
+            ?>
             </form>
         </div>
     </div>
@@ -212,10 +235,10 @@
         function getDetails() {
             $.ajax({
                 type: 'POST',
-                url: 'cart_details.php',
+                url: 'cart_detail.php',
                 dataType: 'json',
                 success: function(response) {
-                    $('#tbody').html(response);
+                    $('#cart').html(response);
                     getCart();
                 }
             });
@@ -233,6 +256,7 @@
             });
         }
     </script>
+    
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>

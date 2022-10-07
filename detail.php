@@ -1,30 +1,30 @@
 <?php
 include 'includes/session.php';
 ?><?php
-$conn = $pdo->open();
+    $conn = $pdo->open();
 
-$slug = $_GET['product'];
+    $slug = $_GET['product'];
 
-try {
+    try {
 
-    $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id WHERE slug = :slug");
-    $stmt->execute(['slug' => $slug]);
-    $product = $stmt->fetch();
-} catch (PDOException $e) {
-    echo "There is some problem in connection: " . $e->getMessage();
-}
+        $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id WHERE slug = :slug");
+        $stmt->execute(['slug' => $slug]);
+        $product = $stmt->fetch();
+    } catch (PDOException $e) {
+        echo "There is some problem in connection: " . $e->getMessage();
+    }
 
-//page view
-$now = date('Y-m-d');
-if ($product['date_view'] == $now) {
-    $stmt = $conn->prepare("UPDATE products SET counter=counter+1 WHERE id=:id");
-    $stmt->execute(['id' => $product['prodid']]);
-} else {
-    $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
-    $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
-}
+    //page view
+    $now = date('Y-m-d');
+    if ($product['date_view'] == $now) {
+        $stmt = $conn->prepare("UPDATE products SET counter=counter+1 WHERE id=:id");
+        $stmt->execute(['id' => $product['prodid']]);
+    } else {
+        $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
+        $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
+    }
 
-?>
+    ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -103,7 +103,10 @@ if ($product['date_view'] == $now) {
                     </a>
                 </div>
             </div>
-
+            <!-- <div class="callout" id="callout" style="display:none">
+                <button type="button" class="close"><span aria-hidden="true">&times;</span></button>
+                <span class="message"></span>
+            </div> -->
             <div class="col-lg-7 pb-5">
                 <h3 class="font-weight-semi-bold"><?php echo $product['prodname']; ?></h3>
                 <div class="d-flex mb-3">
@@ -179,7 +182,7 @@ if ($product['date_view'] == $now) {
                                 </button>
                             </div>
                             <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
-                           
+
                             <div class="input-group-btn">
                                 <button id="add" type="button" class="btn btn-primary btn-plus">
                                     <i class="fa fa-plus"></i>
