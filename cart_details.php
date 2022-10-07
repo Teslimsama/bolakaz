@@ -49,7 +49,6 @@
                                     </div>
                                 </div>
                             </td>
-                            <input type='hidden' name='product_id' value='$productid'>
                             <td class='align-middle'>&#36; " . number_format($subtotal, 2) . "</td>
                             <td class='align-middle'><button type='submit' name='remove' data-id='" . $row['cartid'] . "' class='btn btn-sm btn-primary cart_delete'><i class='fa fa-times'></i></button></td>
                         </tr>
@@ -99,7 +98,6 @@
                                     </div>
                                 </div>
                             </td>
-                            <input type='hidden' name='product_id' value='$productid'>
                             <td class='align-middle'>&#36; " . number_format($subtotal, 2) . "</td>
                             <td class='align-middle'><button type='submit' name='remove' data-id='" . $row['cartid'] . "' class='btn btn-sm btn-primary cart_delete'><i class='fa fa-times'></i></button></td>
                         </tr>
@@ -125,7 +123,7 @@
 	}
 
 	$pdo->close();
-	echo json_encode($output);
+	// echo json_encode($output);
 echo $output;
 
 ?>

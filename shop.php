@@ -16,21 +16,34 @@ try {
 $pdo->close();
 
 
-    function component()
-    {
 
-
-
-
-        
-        
-        // $element = ;
-        
-        
-    }
-    $pdo->close();
 
 ?>
+<?php
+                                // $conn = $pdo->open();
+
+                                // $slug = $_GET['product'];
+
+                                // try {
+
+                                //     $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id WHERE slug = :slug");
+                                //     $stmt->execute(['slug' => $slug]);
+                                //     $product = $stmt->fetch();
+                                // } catch (PDOException $e) {
+                                //     echo "There is some problem in connection: " . $e->getMessage();
+                                // }
+
+                                // //page view
+                                // $now = date('Y-m-d');
+                                // if ($product['date_view'] == $now) {
+                                //     $stmt = $conn->prepare("UPDATE products SET counter=counter+1 WHERE id=:id");
+                                //     $stmt->execute(['id' => $product['prodid']]);
+                                // } else {
+                                //     $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
+                                //     $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
+                                // }
+
+                                ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -69,7 +82,7 @@ $pdo->close();
     ?>
 
 
-
+    <input type="hidden" value="">
     <!-- Page Header Start -->
     <div class="container-fluid bg-secondary mb-5">
         <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
@@ -234,20 +247,20 @@ $pdo->close();
                         </div>
                     </div>
                     <?php
-    $conn = $pdo->open();
+                    $conn = $pdo->open();
 
-    try {
-        $inc = 3;
-        $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = :catid");
-        $stmt->execute(['catid' => $catid]);
-        foreach ($stmt as $row) {
-            $image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
-            $inc = ($inc == 3) ? 1 : $inc + 1;
-            if ($inc == 1) echo " <div class='col-lg-4 col-md-6 col-sm-12 pb-1'>";
-            echo "
+                    try {
+                        $inc = 3;
+                        $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = :catid");
+                        $stmt->execute(['catid' => $catid]);
+                        foreach ($stmt as $row) {
+                            $image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
+                            $inc = ($inc == 3) ? 1 : $inc + 1;
+                            if ($inc == 1) echo " <div class='col-lg-4 col-md-6 col-sm-12 pb-1'>";
+                            echo "
     
                    
-                    <form action='shop.php' method='post'>
+                    <form method='get' id='productForm'>
                         <div class='card product-item border-0 mb-4'>
                             <div class='card-header product-img position-relative overflow-hidden bg-transparent border p-0'>
                                 <img class='img-fluid w-100' src='$image' alt='image'>
@@ -259,10 +272,10 @@ $pdo->close();
                                     <h6 class='text-muted ml-2'><del>&#36; " . number_format($row['price'], 2) . "</del></h6>
                                 </div>
                             </div>
-                            <div class='card-footer d-flex justify-content-between bg-light border'>
-                           
+                            <div class='card-footer d-flex justify-content-center bg-light border'>
+                           <a href='detail.php?product=" . $row['slug'] . "'>
                                  <i class='fas fa-eye text-primary mr-1'></i>View Detail</a>
-                                <button type='submit' class='btn btn-sm text-dark p-0' name='add'>Add to Cart <i class='fas fa-shopping-cart text-primary mr-1'></i></button>
+                               
                             
 
                              </div>
@@ -272,16 +285,16 @@ $pdo->close();
                              
                              
                              ";
-            if ($inc == 3) echo "</div>";
-        }
+                            if ($inc == 3) echo "</div>";
+                        }
                         if ($inc == 1) echo "<div class='col-sm-4'></div><div class='col-sm-4'></div></div>";
                         if ($inc == 2) echo "<div class='col-sm-4'></div></div>";
-    } catch (PDOException $e) {
-        echo "There is some problem in connection: " . $e->getMessage();
-    }
+                    } catch (PDOException $e) {
+                        echo "There is some problem in connection: " . $e->getMessage();
+                    }
 
                     ?>
-                   
+
                     <div class="col-12 pb-1">
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center mb-3">

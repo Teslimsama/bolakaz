@@ -131,8 +131,6 @@
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         <div class="navbar-nav mr-auto py-0">
                             <a href="index" class="nav-item nav-link active">Home</a>
-                            <a href="shop" class="nav-item nav-link">Shop</a>
-                            <a href="detail" class="nav-item nav-link">Shop Detail</a>
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
                                 <div class="dropdown-menu rounded-0 m-0">
@@ -188,3 +186,65 @@
             </div>
         </div>
     </div>
+    <style>
+        .navbar-nav>.user-menu .user-image {
+            float: left;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            margin-right: 10px;
+            margin-top: -2px;
+        }
+
+        .navbar-nav>.user-menu>.dropdown-menu>li.user-header>img {
+            z-index: 5;
+            height: 90px;
+            width: 90px;
+            border: 3px solid;
+            border-color: transparent;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        img.thumbnail {
+            margin: auto 10px auto auto;
+            width: 40px;
+            height: 40px;
+        }
+
+        .thumbnail {
+
+            display: block;
+            padding: 4px;
+            margin-bottom: 20px;
+            line-height: 1.42857143;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            -webkit-transition: border .2s ease-in-out;
+            -o-transition: border .2s ease-in-out;
+            transition: border .2s ease-in-out;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            display: none;
+            float: left;
+            min-width: 160px;
+            padding: 5px 0;
+            margin: 2px 0 0;
+            font-size: 14px;
+            text-align: left;
+            list-style: none;
+            background-color: #fff;
+            -webkit-background-clip: padding-box;
+            background-clip: padding-box;
+            border: 1px solid #ccc;
+            border: 1pxsolidrgba(0, 0, 0, .15);
+            border-radius: 4px;
+            -webkit-box-shadow: 0 6px 12px rgb(0 0 0 / 18%);
+            box-shadow: 0 6px 12pxrgba(0, 0, 0, .175);
+        }
+    </style>

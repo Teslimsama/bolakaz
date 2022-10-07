@@ -14,7 +14,7 @@
 				$productname = (strlen($row['prodname']) > 30) ? substr_replace($row['prodname'], '...', 27) : $row['prodname'];
 				$output['list'] .= "
 					<li>
-						<a href='product.php?product=".$row['slug']."'>
+						<a href='detail.php?product=".$row['slug']."'>
 							<div class='pull-left'>
 								<img src='".$image."' class='thumbnail' alt='User Image'>
 							</div>
@@ -49,7 +49,7 @@
 				$image = (!empty($product['photo'])) ? 'images/'.$product['photo'] : 'images/noimage.jpg';
 				$output['list'] .= "
 					<li>
-						<a href='product.php?product=".$product['slug']."'>
+						<a href='detail.php?product=".$product['slug']."'>
 							<div class='pull-left'>
 								<img src='".$image."' class='img-circle' alt='User Image'>
 							</div>

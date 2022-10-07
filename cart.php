@@ -1,11 +1,5 @@
-<?php
-// session_start();
-// require_once('CreateDb.php');
+<?php include 'includes/session.php'; ?>
 
-require_once('component.php');
-
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -75,109 +69,9 @@ require_once('component.php');
                         </tr>
                     </thead>
 
-                    <?php include 'includes/scripts.php'; ?>
-                    <tbody class="align-middle">
-                        <script>
-                            var total = 0;
-                            $(function() {
-                                $(document).on('click', '.cart_delete', function(e) {
-                                    e.preventDefault();
-                                    var id = $(this).data('id');
-                                    $.ajax({
-                                        type: 'POST',
-                                        url: 'cart_delete.php',
-                                        data: {
-                                            id: id
-                                        },
-                                        dataType: 'json',
-                                        success: function(response) {
-                                            if (!response.error) {
-                                                getDetails();
-                                                getCart();
-                                                getTotal();
-                                            }
-                                        }
-                                    });
-                                });
 
-                                $(document).on('click', '.minus', function(e) {
-                                    e.preventDefault();
-                                    var id = $(this).data('id');
-                                    var qty = $('#qty_' + id).val();
-                                    if (qty > 1) {
-                                        qty--;
-                                    }
-                                    $('#qty_' + id).val(qty);
-                                    $.ajax({
-                                        type: 'POST',
-                                        url: 'cart_update.php',
-                                        data: {
-                                            id: id,
-                                            qty: qty,
-                                        },
-                                        dataType: 'json',
-                                        success: function(response) {
-                                            if (!response.error) {
-                                                getDetails();
-                                                getCart();
-                                                getTotal();
-                                            }
-                                        }
-                                    });
-                                });
+                    <tbody id="tbody">
 
-                                $(document).on('click', '.add', function(e) {
-                                    e.preventDefault();
-                                    var id = $(this).data('id');
-                                    var qty = $('#qty_' + id).val();
-                                    qty++;
-                                    $('#qty_' + id).val(qty);
-                                    $.ajax({
-                                        type: 'POST',
-                                        url: 'cart_update.php',
-                                        data: {
-                                            id: id,
-                                            qty: qty,
-                                        },
-                                        dataType: 'json',
-                                        success: function(response) {
-                                            if (!response.error) {
-                                                getDetails();
-                                                getCart();
-                                                getTotal();
-                                            }
-                                        }
-                                    });
-                                });
-
-                                getDetails();
-                                getTotal();
-
-                            });
-
-                            function getDetails() {
-                                $.ajax({
-                                    type: 'POST',
-                                    url: 'cart_details.php',
-                                    dataType: 'json',
-                                    success: function(response) {
-                                        $('#tbody').html(response);
-                                        getCart();
-                                    }
-                                });
-                            }
-
-                            function getTotal() {
-                                $.ajax({
-                                    type: 'POST',
-                                    url: 'cart_total.php',
-                                    dataType: 'json',
-                                    success: function(response) {
-                                        total = response;
-                                    }
-                                });
-                            }
-                        </script>
                     </tbody>
                 </table>
             </div>
@@ -235,7 +129,110 @@ require_once('component.php');
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
 
+    <?php include 'includes/scripts.php'; ?>
+    <script>
+        var total = 0;
+        $(function() {
+            $(document).on('click', '.cart_delete', function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $.ajax({
+                    type: 'POST',
+                    url: 'cart_delete.php',
+                    data: {
+                        id: id
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (!response.error) {
+                            getDetails();
+                            getCart();
+                            getTotal();
+                        }
+                    }
+                });
+            });
 
+            $(document).on('click', '.minus', function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var qty = $('#qty_' + id).val();
+                if (qty > 1) {
+                    qty--;
+                }
+                $('#qty_' + id).val(qty);
+                $.ajax({
+                    type: 'POST',
+                    url: 'cart_update.php',
+                    data: {
+                        id: id,
+                        qty: qty,
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (!response.error) {
+                            getDetails();
+                            getCart();
+                            getTotal();
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.add', function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var qty = $('#qty_' + id).val();
+                qty++;
+                $('#qty_' + id).val(qty);
+                $.ajax({
+                    type: 'POST',
+                    url: 'cart_update.php',
+                    data: {
+                        id: id,
+                        qty: qty,
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (!response.error) {
+                            getDetails();
+                            getCart();
+                            getTotal();
+                        }
+                    }
+                });
+            });
+
+            getDetails();
+            getTotal();
+
+        });
+
+
+        function getDetails() {
+            $.ajax({
+                type: 'POST',
+                url: 'cart_details.php',
+                dataType: 'json',
+                success: function(response) {
+                    $('#tbody').html(response);
+                    getCart();
+                }
+            });
+        }
+
+
+        function getTotal() {
+            $.ajax({
+                type: 'POST',
+                url: 'cart_total.php',
+                dataType: 'json',
+                success: function(response) {
+                    total = response;
+                }
+            });
+        }
+    </script>
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>

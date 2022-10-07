@@ -1,7 +1,7 @@
 <?php include 'includes/session.php'; ?>
 <?php
 if (isset($_SESSION['user'])) {
-    header('location: cart_view.php');
+    header('location: cart');
 }
 
 if (isset($_SESSION['captcha'])) {

@@ -1,10 +1,6 @@
 <?php
 include 'includes/session.php';
-// include('CreateDb.php');
-
-
-// require_once('component.php');
-
+?><?php
 $conn = $pdo->open();
 
 $slug = $_GET['product'];
@@ -172,24 +168,27 @@ if ($product['date_view'] == $now) {
                         </div>
                     </form>
                 </div>
-                <div class="d-flex align-items-center mb-4 pt-2">
-                    <div class="input-group quantity mr-3" style="width: 130px;">
-                        <div class="input-group-btn">
-                            <button id="minus" type="button" class="btn btn-primary btn-minus">
-                                <i class="fa fa-minus"></i>
-                            </button>
-                        </div>
+                <form id="productForm">
 
-                        <input type="text" class="form-control bg-secondary text-center" value="1">
-                        <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
-                        <div class="input-group-btn">
-                            <button id="add" type="button" class="btn btn-primary btn-plus">
-                                <i class="fa fa-plus"></i>
-                            </button>
-                        </div>
+
+                    <div class="d-flex align-items-center mb-4 pt-2">
+                        <div class="input-group quantity mr-3" style="width: 130px;">
+                            <div class="input-group-btn">
+                                <button id="minus" type="button" class="btn btn-primary btn-minus">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+                            <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
+                           
+                            <div class="input-group-btn">
+                                <button id="add" type="button" class="btn btn-primary btn-plus">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </div>
+                        </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
+                        <button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
                     </div>
-                    <button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
-                </div>
+                </form>
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
                     <div class="d-inline-flex">

@@ -129,6 +129,7 @@ blockquote {
 b,
 strong {
   font-weight: bolder;
+  text-decoration: none;
 }
 
 small {
