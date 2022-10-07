@@ -55,12 +55,12 @@
         
                         ";
 			}
-			$output .= "
-				<tr>
-					<td colspan='5' align='right'><b>Total</b></td>
-					<td><b>&#36; ".number_format($total, 2)."</b></td>
-				<tr>
-			";
+			// $output .= "
+			// 	<tr>
+			// 		<td colspan='5' align='right'><b>Total</b></td>
+			// 		<td><b>&#36; ".number_format($total, 2)."</b></td>
+			// 	<tr>
+			// ";
 
 		}
 		catch(PDOException $e){
@@ -104,12 +104,12 @@
         
                         ";
 			}
-			$output .= "
-				<tr>
-					<td colspan='5' align='right'><b>Total</b></td>
-					<td><b>&#36; ".number_format($total, 1)."</b></td>
-				<tr>
-			";
+			// $output .= "
+			// 	<tr>
+			// 		<td colspan='5' align='right'><b>Total</b></td>
+			// 		<td><b>&#36; ".number_format($total, 1)."</b></td>
+			// 	<tr>
+			// ";
 		}
 
 		else{
@@ -125,6 +125,6 @@
 	$pdo->close();
 	echo json_encode($output);
 // echo $output;
-
+// 	
 ?>
 
