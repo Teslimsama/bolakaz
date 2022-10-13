@@ -4,6 +4,7 @@
 
 	if(isset($_POST['add'])){
 		$name = $_POST['name'];
+		$slug = $_POST['slug'];
 
 		$conn = $pdo->open();
 
@@ -16,8 +17,8 @@
 		}
 		else{
 			try{
-				$stmt = $conn->prepare("INSERT INTO category (name) VALUES (:name)");
-				$stmt->execute(['name'=>$name]);
+				$stmt = $conn->prepare("INSERT INTO category (name,cat_slug) VALUES (:name,:cat_slug)");
+				$stmt->execute(['name'=>$name,'cat_slug'=>$slug]);
 				$_SESSION['success'] = 'Category added successfully';
 			}
 			catch(PDOException $e){

@@ -635,7 +635,7 @@ pre code {
   flex-wrap: wrap;
   margin-right: -15px;
   margin-left: -15px;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 
 .no-gutters {
@@ -655,10 +655,10 @@ pre code {
 .col-md-auto, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg,
 .col-lg-auto, .col-xl-1, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl,
 .col-xl-auto {
-  position: relative;
-  width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
+  /* position: relative; */
+  /* width: 100%; */
+  /* padding-right: 15px; */
+  /* padding-left: 15px; */
 }
 
 .col {
@@ -2368,7 +2368,7 @@ fieldset:disabled a.btn {
 .btn-primary {
   color: #212529;
   background-color:  #a18cd1;
-  border-color:  #a18cd1;
+  border-color: #050406;
 }
 
 .btn-primary:hover {
@@ -4006,8 +4006,8 @@ input[type="button"].btn-block {
   position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   padding: 0.5rem 1rem;
+  align-content: stretch;
 }
 
 .navbar .container,
