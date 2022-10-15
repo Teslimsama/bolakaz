@@ -111,13 +111,13 @@ include 'includes/session.php';
                 <h3 class="font-weight-semi-bold"><?php echo $product['prodname']; ?></h3>
                 <div class="d-flex mb-3">
                     <div class="text-primary mr-2">
-                        <small class="fas fa-star"></small>
-                        <small class="fas fa-star"></small>
-                        <small class="fas fa-star"></small>
-                        <small class="fas fa-star-half-alt"></small>
-                        <small class="far fa-star"></small>
+                        <small class="fas fa-star main_star"></small>
+                        <small class="fas fa-star main_star"></small>
+                        <small class="fas fa-star main_star"></small>
+                        <small class="fas fa-star main_star"></small>
+                        <small class="far fa-star main_star"></small>
                     </div>
-                    <small class="pt-1">(50 Reviews)</small>
+                    <small class="pt-1">(<span id="total_review">50</span> Reviews)</small>
                 </div>
                 <h3 class="font-weight-semi-bold mb-4">$<?php echo number_format($product['price'], 2); ?></h3>
                 <p class="mb-4"><?php echo $product['description']; ?></p>
@@ -216,13 +216,12 @@ include 'includes/session.php';
                 <div class="nav nav-tabs justify-content-center border-secondary mb-4">
                     <a class="nav-item nav-link active" data-toggle="tab" href="#tab-pane-1">Description</a>
                     <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-2">Information</a>
-                    <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-3">Reviews (0)</a>
+                    <a class="nav-item nav-link" id="total_review" data-toggle="tab" href="#tab-pane-3">Reviews</a>
                 </div>
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="tab-pane-1">
                         <h4 class="mb-3">Product Description</h4>
-                        <p>Eos no lorem eirmod diam diam, eos elitr et gubergren diam sea. Consetetur vero aliquyam invidunt duo dolores et duo sit. Vero diam ea vero et dolore rebum, dolor rebum eirmod consetetur invidunt sed sed et, lorem duo et eos elitr, sadipscing kasd ipsum rebum diam. Dolore diam stet rebum sed tempor kasd eirmod. Takimata kasd ipsum accusam sadipscing, eos dolores sit no ut diam consetetur duo justo est, sit sanctus diam tempor aliquyam eirmod nonumy rebum dolor accusam, ipsum kasd eos consetetur at sit rebum, diam kasd invidunt tempor lorem, ipsum lorem elitr sanctus eirmod takimata dolor ea invidunt.</p>
-                        <p>Dolore magna est eirmod sanctus dolor, amet diam et eirmod et ipsum. Amet dolore tempor consetetur sed lorem dolor sit lorem tempor. Gubergren amet amet labore sadipscing clita clita diam clita. Sea amet et sed ipsum lorem elitr et, amet et labore voluptua sit rebum. Ea erat sed et diam takimata sed justo. Magna takimata justo et amet magna et.</p>
+                        <p><?php echo $product['description']; ?></p>
                     </div>
                     <div class="tab-pane fade" id="tab-pane-2">
                         <h4 class="mb-3">Additional Information</h4>
@@ -264,51 +263,37 @@ include 'includes/session.php';
                     </div>
                     <div class="tab-pane fade" id="tab-pane-3">
                         <div class="row">
-                            <div class="col-md-6">
-                                <h4 class="mb-4">1 review for "Colorful Stylish Shirt"</h4>
-                                <div class="media mb-4">
-                                    <img src="img/user.jpg" alt="Image" class="img-fluid mr-3 mt-1" style="width: 45px;">
-                                    <div class="media-body">
-                                        <h6>John Doe<small> - <i>01 Jan 2045</i></small></h6>
-                                        <div class="text-primary mb-2">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star-half-alt"></i>
-                                            <i class="far fa-star"></i>
-                                        </div>
-                                        <p>Diam amet duo labore stet elitr ea clita ipsum, tempor labore accusam ipsum et no at. Kasd diam tempor rebum magna dolores sed sed eirmod ipsum.</p>
-                                    </div>
-                                </div>
-                            </div>
+
+                            <div class="col-md-6" id="review_content"></div>
                             <div class="col-md-6">
                                 <h4 class="mb-4">Leave a review</h4>
                                 <small>Your email address will not be published. Required fields are marked *</small>
                                 <div class="d-flex my-3">
                                     <p class="mb-0 mr-2">Your Rating * :</p>
                                     <div class="text-primary">
-                                        <i class="far fa-star"></i>
-                                        <i class="far fa-star"></i>
-                                        <i class="far fa-star"></i>
-                                        <i class="far fa-star"></i>
-                                        <i class="far fa-star"></i>
+                                        <i class="far fa-star star-light submit_star" id="submit_star_1" data-rating="1"></i>
+                                        <i class="far fa-star star-light submit_star" id="submit_star_2" data-rating="2"></i>
+                                        <i class="far fa-star star-light submit_star" id="submit_star_3" data-rating="3"></i>
+                                        <i class="far fa-star star-light submit_star" id="submit_star_4" data-rating="4"></i>
+                                        <i class="far fa-star star-light submit_star" id="submit_star_5" data-rating="5"></i>
                                     </div>
                                 </div>
                                 <form>
                                     <div class="form-group">
                                         <label for="message">Your Review *</label>
-                                        <textarea id="message" cols="30" rows="5" class="form-control"></textarea>
+                                        <textarea id="user_review" name="user_review" cols="30" rows="5" class="form-control"></textarea>
                                     </div>
                                     <div class="form-group">
                                         <label for="name">Your Name *</label>
-                                        <input type="text" class="form-control" id="name">
+                                        <input type="text" class="form-control" name="user_name" id="user_name">
                                     </div>
-                                    <div class="form-group">
+                                    <!-- use for later -->
+                                    <!-- <div class="form-group">
                                         <label for="email">Your Email *</label>
                                         <input type="email" class="form-control" id="email">
-                                    </div>
+                                    </div> -->
                                     <div class="form-group mb-0">
-                                        <input type="submit" value="Leave Your Review" class="btn btn-primary px-3">
+                                        <input type="button" value="Leave Your Review" id="save_review" class="btn btn-primary px-3">
                                     </div>
                                 </form>
                             </div>
@@ -453,6 +438,178 @@ include 'includes/session.php';
                 }
                 $('#quantity').val(quantity);
             });
+
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+
+            var rating_data = 0;
+
+            $('#add_review').click(function() {
+
+                $('#review_modal').modal('show');
+
+            });
+
+            $(document).on('mouseenter', '.submit_star', function() {
+
+                var rating = $(this).data('rating');
+
+                reset_background();
+
+                for (var count = 1; count <= rating; count++) {
+
+                    $('#submit_star_' + count).addClass('text-warning');
+
+                }
+
+            });
+
+            function reset_background() {
+                for (var count = 1; count <= 5; count++) {
+
+                    $('#submit_star_' + count).addClass('star-light');
+
+                    $('#submit_star_' + count).removeClass('text-warning');
+
+                }
+            }
+
+            $(document).on('mouseleave', '.submit_star', function() {
+
+                reset_background();
+
+                for (var count = 1; count <= rating_data; count++) {
+
+                    $('#submit_star_' + count).removeClass('star-light');
+
+                    $('#submit_star_' + count).addClass('text-warning');
+                }
+
+            });
+
+            $(document).on('click', '.submit_star', function() {
+
+                rating_data = $(this).data('rating');
+
+            });
+
+            $('#save_review').click(function() {
+
+                var user_name = $('#user_name').val();
+
+                var user_review = $('#user_review').val();
+
+                if (user_name == '' || user_review == '') {
+                    alert("Please Fill Both Field");
+                    return false;
+                } else {
+                    $.ajax({
+                        url: "submit_rating.php",
+                        method: "POST",
+                        data: {
+                            rating_data: rating_data,
+                            user_name: user_name,
+                            user_review: user_review
+                        },
+                        success: function(data) {
+                            $('#review_modal').modal('hide');
+
+                            load_rating_data();
+
+                            alert(data);
+                        }
+                    })
+                }
+
+            });
+
+            load_rating_data();
+
+            function load_rating_data() {
+                $.ajax({
+                    url: "submit_rating.php",
+                    method: "POST",
+                    data: {
+                        action: 'load_data'
+                    },
+                    dataType: "JSON",
+                    success: function(data) {
+                        $('#average_rating').text(data.average_rating);
+                        $('#total_review').text(data.total_review);
+
+                        var count_star = 0;
+
+                        $('.main_star').each(function() {
+                            count_star++;
+                            if (Math.ceil(data.average_rating) >= count_star) {
+                                $(this).addClass('text-primary');
+                                $(this).addClass('star-light');
+                            }
+                        });
+
+                        $('#total_five_star_review').text(data.five_star_review);
+
+                        $('#total_four_star_review').text(data.four_star_review);
+
+                        $('#total_three_star_review').text(data.three_star_review);
+
+                        $('#total_two_star_review').text(data.two_star_review);
+
+                        $('#total_one_star_review').text(data.one_star_review);
+
+                        $('#five_star_progress').css('width', (data.five_star_review / data.total_review) * 100 + '%');
+
+                        $('#four_star_progress').css('width', (data.four_star_review / data.total_review) * 100 + '%');
+
+                        $('#three_star_progress').css('width', (data.three_star_review / data.total_review) * 100 + '%');
+
+                        $('#two_star_progress').css('width', (data.two_star_review / data.total_review) * 100 + '%');
+
+                        $('#one_star_progress').css('width', (data.one_star_review / data.total_review) * 100 + '%');
+
+                        if (data.review_data.length > 0) {
+                            var html = '';
+
+                            for (var count = 0; count < data.review_data.length; count++) {
+                                // html += ' <div class="col-md-6">';
+                                html += '<div class="media mb-4">';
+
+                                html += '<img src="img/user.jpg" alt="Image" class="img-fluid mr-3 mt-1" style="width: 45px;"><div class="media-body"><h6>' + data.review_data[count].user_name + '<small> - <i>' + data.review_data[count].datetime + '</i></small></h6><div class="mb-2">'
+                                for (var star = 1; star <= 5; star++) {
+                                    var class_name = '';
+
+                                    if (data.review_data[count].rating >= star) {
+                                        class_name = 'text-primary';
+                                    } else {
+                                        class_name = 'star-light';
+                                    }
+
+                                    html += '<i class="fas fa-star ' + class_name + ' "></i>';
+                                }
+                                '</div>';
+
+
+
+                                html += '<p>' + data.review_data[count].user_review + '</p>';
+
+
+
+                                html += '</div>';
+
+                                html += '</div>';
+                                html += '</div>';
+
+
+
+                            }
+
+                            $('#review_content').html(html);
+                        }
+                    }
+                })
+            }
 
         });
     </script>
