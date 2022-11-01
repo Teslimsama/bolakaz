@@ -34,9 +34,11 @@
 
 <body>
 
-    <?php
+   <?php
     include "includes/header.php"
     ?>
+    <?php include 'includes/navbar.php'; ?>
+
 
 
     <!-- Navbar End -->
@@ -63,10 +65,10 @@
                 <table class="table table-bordered text-center mb-0">
                     <thead class="bg-secondary text-dark">
                         <tr>
-                            <th width='70%'>Products</th>
+                            <th width='65%'>Products</th>
                             <th width='20%'>Price</th>
                             <th>Quantity</th>
-                            <th>Subtotal</th>
+                            <th width='30%'>Subtotal</th>
                             <th>Remove</th>
                             <!-- <th>Total</th> -->
                         </tr>
@@ -96,24 +98,25 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-3 pt-1">
                                 <h6 class="font-weight-medium">Subtotal</h6>
-                                <h6 class="font-weight-medium"><?php
-                                if(isset($_SESSION['user'])){
-		$conn = $pdo->open();
+                                <h6 class="font-weight-medium">&#36;
+                                    <?php
+                                    if (isset($_SESSION['user'])) {
+                                        $conn = $pdo->open();
 
-		$stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
-		$stmt->execute(['user_id'=>$user['id']]);
+                                        $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
+                                        $stmt->execute(['user_id' => $user['id']]);
 
-		$total = 0;
-		foreach($stmt as $row){
-			$subtotal = $row['price'] * $row['quantity'];
-			$total += $subtotal;
-		}
+                                        $total = 0;
+                                        foreach ($stmt as $row) {
+                                            $subtotal = $row['price'] * $row['quantity'];
+                                            $total += $subtotal;
+                                        }
 
-		$pdo->close();
+                                        $pdo->close();
 
-		echo $total;
-	}
-                                ?></h6>
+                                        echo $total;
+                                    }
+                                    ?></h6>
 
                             </div>
                             <div class="d-flex justify-content-between">
@@ -124,39 +127,38 @@
                         <div class="card-footer border-secondary bg-transparent">
                             <div class="d-flex justify-content-between mt-2">
                                 <h5 class="font-weight-bold">Total</h5>
-                                <h5 class="font-weight-bold">&#36;<?php
-                                if(isset($_SESSION['user'])){
-		$conn = $pdo->open();
+                                <h5 class="font-weight-bold">&#36;
+                                    <?php
+                                    if (isset($_SESSION['user'])) {
+                                        $conn = $pdo->open();
 
-		$stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
-		$stmt->execute(['user_id'=>$user['id']]);
+                                        $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
+                                        $stmt->execute(['user_id' => $user['id']]);
 
-        if ($stmt->execute(['user_id'=>$user['id']]) > 1) {
-            $total = 0;
-            # code...
-            foreach($stmt as $row){
-                $subtotal = $row['price'] * $row['quantity'] + 10;
-                $total += $subtotal;
-            }
-            echo $total;
+                                        if ($stmt->execute(['user_id' => $user['id']]) > 1) {
+                                            $total = 0;
+                                            # code...
+                                            foreach ($stmt as $row) {
+                                                $subtotal = $row['price'] * $row['quantity'] + 10;
+                                                $total += $subtotal;
+                                            }
+                                            echo $total;
+                                        } else {
 
-        }else {
-            
-            $total += 10;
-            echo $total;
-        }
-        //to 
-		$pdo->close();
-
-	}
-                                ?></h5>
+                                            $total += 10;
+                                            echo $total;
+                                        }
+                                        //to 
+                                        $pdo->close();
+                                    }
+                                    ?></h5>
                             </div>
-                            <button type="submit" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button>
+                            <a href="checkout" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>
                         </div>
                     </div>
             </div>
 
-            
+
             </form>
         </div>
     </div>
@@ -266,17 +268,6 @@
                 }
             });
         }
-        // function getDetails() {
-        //     $.ajax({
-        //         type: 'POST',
-        //         url: 'cart_summary.php',
-        //         dataType: 'json',
-        //         success: function(response) {
-        //             $('#checkout').html(response);
-        //             getCart();
-        //         }
-        //     });
-        // }
 
 
         function getTotal() {

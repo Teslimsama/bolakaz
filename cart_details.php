@@ -49,7 +49,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class='align-middle'>&#36; " . number_format($subtotal, 2) . "</td>
+                            <td class='align-middle w-80'>&#36; " . number_format($subtotal, 2) . "</td>
                             <td class='align-middle'><button type='submit' name='remove' data-id='" . $row['cartid'] . "' class='btn btn-sm btn-primary cart_delete'><i class='fa fa-times'></i></button></td>
                         </tr>
         
@@ -98,7 +98,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class='align-middle'>&#36; " . number_format($subtotal, 2) . "</td>
+                            <td class='align-middle w-80'>&#36; " . number_format($subtotal, 2) . "</td>
                             <td class='align-middle'><button type='submit' name='remove' data-id='" . $row['cartid'] . "' class='btn btn-sm btn-primary cart_delete'><i class='fa fa-times'></i></button></td>
                         </tr>
         

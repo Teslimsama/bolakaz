@@ -30,9 +30,10 @@
 </head>
 
 <body>
-    <?php
+   <?php
     include "includes/header.php"
     ?>
+    <?php include 'includes/navbar.php'; ?>
     <!-- Footer End -->
 
     <!-- Navbar End -->
@@ -61,29 +62,29 @@
                     <div class="row">
                         <div class="col-md-6 form-group">
                             <label>First Name</label>
-                            <input class="form-control" type="text" placeholder="John">
+                            <input class="form-control" type="text" value="<?php echo $user['firstname'] ?>">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Last Name</label>
-                            <input class="form-control" type="text" placeholder="Doe">
+                            <input class="form-control" type="text" value="<?php echo $user['lastname'] ?>">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>E-mail</label>
-                            <input class="form-control" type="text" placeholder="example@email.com">
+                            <input class="form-control" type="text" value="<?php echo $user['email'] ?>">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Mobile No</label>
-                            <input class="form-control" type="text" placeholder="+123 456 789">
+                            <input class="form-control" type="text" value="<?php echo $user['number'] ?>">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Address Line 1</label>
-                            <input class="form-control" type="text" placeholder="123 Street">
+                            <input class="form-control" type="text" value="123 Street">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Address Line 2</label>
-                            <input class="form-control" type="text" placeholder="123 Street">
+                            <input class="form-control" type="text" value="123 Street">
                         </div>
-                        <div class="col-md-6 form-group">
+                        <!-- <div class="col-md-6 form-group">
                             <label>Country</label>
                             <select class="custom-select">
                                 <option selected>United States</option>
@@ -91,18 +92,18 @@
                                 <option>Albania</option>
                                 <option>Algeria</option>
                             </select>
-                        </div>
+                        </div> -->
                         <div class="col-md-6 form-group">
                             <label>City</label>
-                            <input class="form-control" type="text" placeholder="New York">
+                            <input class="form-control" type="text" value="New York">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>State</label>
-                            <input class="form-control" type="text" placeholder="New York">
+                            <input class="form-control" type="text" value="New York">
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-12 form-group">
                             <label>ZIP Code</label>
-                            <input class="form-control" type="text" placeholder="123">
+                            <input class="form-control" type="text" value="123">
                         </div>
                         <div class="col-md-12 form-group">
                             <div class="custom-control custom-checkbox">
@@ -123,29 +124,29 @@
                     <div class="row">
                         <div class="col-md-6 form-group">
                             <label>First Name</label>
-                            <input class="form-control" type="text" placeholder="John">
+                            <input class="form-control" type="text" value="John">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Last Name</label>
-                            <input class="form-control" type="text" placeholder="Doe">
+                            <input class="form-control" type="text" value="Doe">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>E-mail</label>
-                            <input class="form-control" type="text" placeholder="example@email.com">
+                            <input class="form-control" type="text" value="example@email.com">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Mobile No</label>
-                            <input class="form-control" type="text" placeholder="+123 456 789">
+                            <input class="form-control" type="text" value="+123 456 789">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Address Line 1</label>
-                            <input class="form-control" type="text" placeholder="123 Street">
+                            <input class="form-control" type="text" value="123 Street">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Address Line 2</label>
-                            <input class="form-control" type="text" placeholder="123 Street">
+                            <input class="form-control" type="text" value="123 Street">
                         </div>
-                        <div class="col-md-6 form-group">
+                        <!-- <div class="col-md-6 form-group">
                             <label>Country</label>
                             <select class="custom-select">
                                 <option selected>United States</option>
@@ -153,18 +154,18 @@
                                 <option>Albania</option>
                                 <option>Algeria</option>
                             </select>
-                        </div>
+                        </div> -->
                         <div class="col-md-6 form-group">
                             <label>City</label>
-                            <input class="form-control" type="text" placeholder="New York">
+                            <input class="form-control" type="text" value="New York">
                         </div>
                         <div class="col-md-6 form-group">
                             <label>State</label>
-                            <input class="form-control" type="text" placeholder="New York">
+                            <input class="form-control" type="text" value="New York">
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-12 form-group">
                             <label>ZIP Code</label>
-                            <input class="form-control" type="text" placeholder="123">
+                            <input class="form-control" type="text" value="123">
                         </div>
                     </div>
                 </div>
@@ -175,35 +176,12 @@
                         <h4 class="font-weight-semi-bold m-0">Order Total</h4>
                     </div>
                     <div class="card-body">
-                        <h5 class="font-weight-medium mb-3">Products</h5>
-                        <div class="d-flex justify-content-between">
-                            <p>Colorful Stylish Shirt 1</p>
-                            <p>$150</p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p>Colorful Stylish Shirt 2</p>
-                            <p>$150</p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p>Colorful Stylish Shirt 3</p>
-                            <p>$150</p>
-                        </div>
-                        <hr class="mt-0">
-                        <div class="d-flex justify-content-between mb-3 pt-1">
-                            <h6 class="font-weight-medium">Subtotal</h6>
-                            <h6 class="font-weight-medium">$150</h6>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <h6 class="font-weight-medium">Shipping</h6>
-                            <h6 class="font-weight-medium">$10</h6>
-                        </div>
+                        <h5 class='font-weight-medium mb-3'>Products</h5>
+
+
+                        <div id="order"></div>
                     </div>
-                    <div class="card-footer border-secondary bg-transparent">
-                        <div class="d-flex justify-content-between mt-2">
-                            <h5 class="font-weight-bold">Total</h5>
-                            <h5 class="font-weight-bold">$160</h5>
-                        </div>
-                    </div>
+
                 </div>
                 <div class="card border-secondary mb-5">
                     <div class="card-header bg-secondary border-0">
@@ -245,6 +223,110 @@
     include "includes/footer.php"
     ?>
     <!-- Footer End -->
+    <script>
+        var total = 0;
+        $(function() {
+            $(document).on('click', '.cart_delete', function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $.ajax({
+                    type: 'POST',
+                    url: 'cart_delete.php',
+                    data: {
+                        id: id
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (!response.error) {
+                            getDetails();
+                            getCart();
+                            getTotal();
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.minus', function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var qty = $('#qty_' + id).val();
+                if (qty > 1) {
+                    qty--;
+                }
+                $('#qty_' + id).val(qty);
+                $.ajax({
+                    type: 'POST',
+                    url: 'cart_update.php',
+                    data: {
+                        id: id,
+                        qty: qty,
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (!response.error) {
+                            getDetails();
+                            getCart();
+                            getTotal();
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.add', function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var qty = $('#qty_' + id).val();
+                qty++;
+                $('#qty_' + id).val(qty);
+                $.ajax({
+                    type: 'POST',
+                    url: 'cart_update.php',
+                    data: {
+                        id: id,
+                        qty: qty,
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (!response.error) {
+                            getDetails();
+                            getCart();
+                            getTotal();
+                        }
+                    }
+                });
+            });
+
+            getDetails();
+            getTotal();
+
+        });
+
+
+        function getDetails() {
+            $.ajax({
+                type: 'POST',
+                url: 'checkout_details.php',
+                dataType: 'json',
+                success: function(response) {
+                    $('#order').html(response);
+                    getCart();
+                }
+            });
+        }
+
+
+        function getTotal() {
+            $.ajax({
+                type: 'POST',
+                url: 'cart_total.php',
+                dataType: 'json',
+                success: function(response) {
+                    total = response;
+                }
+            });
+        }
+    </script>
+
 
 
 

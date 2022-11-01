@@ -77,9 +77,9 @@ $pdo->close();
 
 <body>
 
-    <?php
-    include "includes/header.php"
-    ?>
+   <?php
+    include "includes/header.php";?>
+    <?php include 'includes/navbar.php'; ?>
 
 
     <input type="hidden" value="">

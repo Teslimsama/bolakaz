@@ -158,7 +158,7 @@ function getRow(id){
       $('#edit_firstname').val(response.firstname);
       $('#edit_lastname').val(response.lastname);
       $('#edit_address').val(response.address);
-      $('#edit_contact').val(response.contact_info);
+      $('#edit_contact').val(response.phone);
       $('.fullname').html(response.firstname+' '+response.lastname);
     }
   });

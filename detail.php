@@ -59,6 +59,7 @@ include 'includes/session.php';
     <!-- Topbar Start -->
     <?php include 'includes/header.php'; ?>
 
+    <?php include 'includes/navbar.php'; ?>
     <!-- Navbar End -->
 
 
