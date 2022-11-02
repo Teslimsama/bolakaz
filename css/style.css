@@ -703,6 +703,7 @@ pre code {
 .col-auto {
   flex: 0 0 auto;
   width: auto;
+  height: 49%;
   max-width: 100%;
 }
 
@@ -2377,14 +2378,14 @@ fieldset:disabled a.btn {
 
 .btn-primary:hover {
   color: #fff;
-  background-color: #c5837c;
-  border-color: #c17a74;
+  background-color: #a18cd1;
+  border-color: var(--indigo);
 }
 
 .btn-primary:focus, .btn-primary.focus {
   color: #fff;
-  background-color: #c5837c;
-  border-color: #c17a74;
+  background-color: #a18cd1;
+  border-color: var(--indigo);
   box-shadow: 0 0 0 0.2rem rgba(183, 138, 135, 0.5);
 }
 
@@ -2397,13 +2398,13 @@ fieldset:disabled a.btn {
 .btn-primary:not(:disabled):not(.disabled):active, .btn-primary:not(:disabled):not(.disabled).active,
 .show > .btn-primary.dropdown-toggle {
   color: #fff;
-  background-color: #c17a74;
-  border-color: #bd726b;
+  background-color: #a18cd1;
+  border-color: var(--indigo);
 }
 
 .btn-primary:not(:disabled):not(.disabled):active:focus, .btn-primary:not(:disabled):not(.disabled).active:focus,
 .show > .btn-primary.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem rgba(183, 138, 135, 0.5);
+  box-shadow: 0 0 0 0.2rem var(--indigo);
 }
 
 .btn-secondary {
@@ -5012,7 +5013,6 @@ a.badge-dark:focus, a.badge-dark.focus {
 
 .list-group {
   display: flex;
-  flex-direction: column;
   padding-left: 0;
   margin-bottom: 0;
 }
