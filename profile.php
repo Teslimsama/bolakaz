@@ -43,11 +43,11 @@ if (!isset($_SESSION['user'])) {
     <!-- Page Header Start -->
     <div class="container-fluid bg-secondary mb-5">
         <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
-            <h1 class="font-weight-semi-bold text-uppercase mb-3">Our Shop</h1>
+            <h1 class="font-weight-semi-bold text-uppercase mb-3">Profile</h1>
             <div class="d-inline-flex">
                 <p class="m-0"><a href="index">Home</a></p>
                 <p class="m-0 px-2">-</p>
-                <p class="m-0">Shop</p>
+                <p class="m-0">Profile</p>
             </div>
         </div>
     </div>
@@ -63,12 +63,12 @@ if (!isset($_SESSION['user'])) {
                 </div>
                 <div class="col-sm-9">
                     <div class="float-end">
-                            <span class="">
-                                <a href="#edit" class="btn btn-primary btn-flat btn-sm" data-toggle="modal"><i class="fa fa-edit"></i> Edit</a>
-                            </span>
+                        <span class="">
+                            <a href="#edit" class="btn btn-primary btn-flat btn-sm" data-toggle="modal"><i class="fa fa-edit"></i> Edit</a>
+                        </span>
                     </div>
                     <ul class="list-group">
-                        
+
                         <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; <?php echo $user['firstname'] . ' ' . $user['lastname']; ?>
                         <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Mobile:</strong> &nbsp; <?php echo $user['phone']; ?></li>
                         <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Email:</strong> &nbsp; <?php echo $user['email']; ?></li>
@@ -78,16 +78,11 @@ if (!isset($_SESSION['user'])) {
                 </div>
             </div>
         </div>
-        <!-- <div class="card">
-            <div class="row">
-                
-            </div>
-        </div> -->
-        <!-- <div class="box box-solid">
-            <div class="box-header with-border">
+        <div class="box box-solid shadow-sm mt-4 card">
+            <div class="box-header with-border card-header">
                 <h4 class="box-title"><i class="fa fa-calendar"></i> <b>Transaction History</b></h4>
             </div>
-            <div class="box-body">
+            <div class="box-body table-responsive card-body">
                 <table class="table table-bordered" id="example1">
                     <thead>
                         <th class="hidden"></th>
@@ -116,8 +111,8 @@ if (!isset($_SESSION['user'])) {
 	        										<td class='hidden'></td>
 	        										<td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
 	        										<td>" . $row['pay_id'] . "</td>
-	        										<td>&#36; " . number_format($total, 2) . "</td>
-	        										<td><button class='btn btn-sm btn-flat btn-info transact' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</button></td>
+	        										<td>&#36;" . number_format($total, 2) . "</td>
+	        										<td><button class='btn btn-sm btn-flat btn-primary transact' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</button></td>
 	        									</tr>
 	        								";
                             }
@@ -131,7 +126,7 @@ if (!isset($_SESSION['user'])) {
                 </table>
             </div>
         </div>
-    </div> -->
+    </div>
 
     <!-- Footer Start -->
 
@@ -140,7 +135,33 @@ if (!isset($_SESSION['user'])) {
     <?php include 'includes/profile_modal.php'; ?>
 
     <!-- Footer End -->
+    <script>
+        $(function() {
+            $(document).on('click', '.transact', function(e) {
+                e.preventDefault();
+                $('#transaction').modal('show');
+                var id = $(this).data('id');
+                $.ajax({
+                    type: 'POST',
+                    url: 'transaction.php',
+                    data: {
+                        id: id
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        $('#date').html(response.date);
+                        $('#transid').html(response.transaction);
+                        $('#detail').prepend(response.list);
+                        $('#total').html(response.total);
+                    }
+                });
+            });
 
+            $("#transaction").on("hidden.bs.modal", function() {
+                $('.prepend_items').remove();
+            });
+        });
+    </script>
 
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
