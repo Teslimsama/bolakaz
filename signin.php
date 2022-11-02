@@ -63,7 +63,7 @@ if (isset($_SESSION['user'])) {
 					<?php
 					if (isset($_SESSION['error'])) {
 						echo "
-						<div class='callout callout-danger text-center'>
+						<div class='alert alert-danger text-center'>
 							<p>" . $_SESSION['error'] . "</p> 
 						</div>
 						";
@@ -71,7 +71,7 @@ if (isset($_SESSION['user'])) {
 					}
 					if (isset($_SESSION['success'])) {
 						echo "
-						<div class='callout callout-success text-center'>
+						<div class='alert alert-success text-center'>
 							<p>" . $_SESSION['success'] . "</p> 
 						</div>
 						";
@@ -96,7 +96,9 @@ if (isset($_SESSION['user'])) {
 						<button type="submit" name="login" class="action-button">Submit</button>
 					</div>
 				</form>
-
+					<div class="hey ms-3 mt-3">
+						<a href="password_forgot">I have forgotten my password</a>
+					</div>
 			</div>
 		</div>
 		<!-- JavaScript Bundle with Popper -->
