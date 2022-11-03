@@ -8,7 +8,7 @@
                     <h1 class="mb-4 font-weight-semi-bold"><span class="text-primary font-weight-bold border border-white px-3 mr-1">B</span>Bolakaz.Enterprise</h1>
                 </a>
                 <p>Dolore erat dolor sit lorem vero amet. Sed sit lorem magna, ipsum no sit erat lorem et magna ipsum dolore amet erat.</p>
-                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>katampe road , Kubwa ,Abuja ,Nigeria</p>
+                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>katampe road, Kubwa, Abuja, Nigeria</p>
                 <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>bolajimotunrayo20@gmail.com</p>
                 <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+234 8077747898</p>
             </div>
@@ -25,7 +25,7 @@
                     </div>
                     <div class="col-md-4 mb-5">
                         <h5 class="font-weight-bold text-dark mb-4">Newsletter</h5>
-                        <form action="">
+                        <form action="" method="$_GET">
                             <div class="form-group">
                                 <input type="text" class="form-control border-0 py-4" placeholder="Your Name" required="required" />
                             </div>

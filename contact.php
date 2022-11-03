@@ -36,7 +36,7 @@
 <body>
     <!-- Topbar Start -->
 
-   <?php
+    <?php
     include "includes/header.php"
     ?>
     <?php include 'includes/navbar.php'; ?>
@@ -49,7 +49,7 @@
         <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
             <h1 class="font-weight-semi-bold text-uppercase mb-3">Contact Us</h1>
             <div class="d-inline-flex">
-                <p class="m-0"><a href="">Home</a></p>
+                <p class="m-0"><a href="index">Home</a></p>
                 <p class="m-0 px-2">-</p>
                 <p class="m-0">Contact</p>
             </div>
@@ -67,7 +67,7 @@
             <div class="col-lg-7 mb-5">
                 <div class="contact-form">
                     <div id="success"></div>
-                    <form name="sentMessage" id="contactForm" novalidate="novalidate">
+                    <form name="sentMessage" action="mail/contact.php" id="contactForm" novalidate="novalidate">
                         <div class="control-group">
                             <input type="text" class="form-control" id="name" placeholder="Your Name" required="required" data-validation-required-message="Please enter your name" />
                             <p class="help-block text-danger"></p>
@@ -95,17 +95,17 @@
                 <h5 class="font-weight-semi-bold mb-3">Get In Touch</h5>
                 <p>Justo sed diam ut sed amet duo amet lorem amet stet sea ipsum, sed duo amet et. Est elitr dolor elitr erat sit sit. Dolor diam et erat clita ipsum justo sed.</p>
                 <div class="d-flex flex-column mb-3">
-                    <h5 class="font-weight-semi-bold mb-3">Store 1</h5>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                    <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
-                    <p class="mb-2"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
+                    <h5 class="font-weight-semi-bold mb-3">Store </h5>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>Katampe road, Kubwa, Abuja, Nigeria.</p>
+                    <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>bolajimotunrayo20@gmail.com</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt text-primary mr-3"></i>+234 8077747898</p>
                 </div>
-                <div class="d-flex flex-column">
+                <!-- <div class="d-flex flex-column">
                     <h5 class="font-weight-semi-bold mb-3">Store 2</h5>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                    <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
-                    <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
-                </div>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>Katampe road, Kubwa, Abuja, Nigeria</p>
+                    <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>bolajimotunrayo20@gmail.com</p>
+                    <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+234 8077747898</p>
+                </div> -->
             </div>
         </div>
     </div>
@@ -124,7 +124,72 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
 
+    <script>
+        $(function() {
 
+            $("#contactForm input, #contactForm textarea").jqBootstrapValidation({
+                preventSubmit: true,
+                submitError: function($form, event, errors) {},
+                submitSuccess: function($form, event) {
+                    event.preventDefault();
+                    var name = $("input#name").val();
+                    var email = $("input#email").val();
+                    var subject = $("input#subject").val();
+                    var message = $("textarea#message").val();
+
+                    $this = $("#sendMessageButton");
+                    $this.prop("disabled", true);
+
+                    $.ajax({
+                        url: "contact.php",
+                        type: "POST",
+                        data: {
+                            name: name,
+                            email: email,
+                            subject: subject,
+                            message: message
+                        },
+                        cache: false,
+                        success: function() {
+                            $('#success')(" <div class='alert alert-success'> ");
+                            $('#success > .alert-success')("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
+                                .append("</button>");
+                            $('#success > .alert-success')
+                                .append("<strong>Your message has been sent. </strong>");
+                            $('#success > .alert-success')
+                                .append('</div>');
+                            $('#contactForm').trigger("reset");
+                        },
+                        error: function() {
+                            $('#success')(" <div class='alert alert-danger'> ");
+                            $('#success > .alert-danger')("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
+                                .append("</button>");
+                            $('#success > .alert-danger').append($("<strong>").text("Sorry " + name + ", it seems that our mail server is not responding. Please try again later!"));
+                            $('#success > .alert-danger').append('</div>');
+                            $('#contactForm').trigger("reset");
+                        },
+                        complete: function() {
+                            setTimeout(function() {
+                                $this.prop("disabled", false);
+                            }, 1000);
+                        }
+                    });
+                },
+                filter: function() {
+                    return $(this).is(":visible");
+                },
+            });
+
+            $("a[data-toggle=\"tab\"]").click(function(e) {
+                e.preventDefault();
+                $(this).tab("show");
+            });
+        });
+
+        $('#name').focus(function() {
+            $('#success')('');
+        });
+    </script>
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
@@ -133,7 +198,7 @@
 
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>
-    <script src="mail/contact.js"></script>
+    <!-- <script src="mail/contact.js"></script> -->
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
     <!-- Template Javascript -->

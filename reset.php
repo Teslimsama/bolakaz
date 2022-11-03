@@ -29,39 +29,48 @@
 					<a href='http://localhost/ecommerce/password_reset.php?code=".$code."&user=".$row['id']."'>Reset Password</a>
 				";
 
-				//Load phpmailer
-	    		// require 'vendor/autoload.php';
+			//Load phpmailer
+			// require 'vendor/autoload.php';
 
-	    		// $mail = new PHPMailer(true);                             
-			    // try {
-			    //     //Server settings
-			    //     $mail->isSMTP();                                     
-			    //     $mail->Host = 'smtp.gmail.com';                      
-			    //     $mail->SMTPAuth = true;                               
-			    //     $mail->Username = 'testsourcecodester@gmail.com';     
-			    //     $mail->Password = 'mysourcepass';                    
-			    //     $mail->SMTPOptions = array(
-			    //         'ssl' => array(
-			    //         'verify_peer' => false,
-			    //         'verify_peer_name' => false,
-			    //         'allow_self_signed' => true
-			    //         )
-			    //     );                         
-			    //     $mail->SMTPSecure = 'ssl';                           
-			    //     $mail->Port = 465;                                   
+			// $mail = new PHPMailer(true);                             
+			try {
+			//     //Server settings
+			//     $mail->isSMTP();                                     
+			//     $mail->Host = 'smtp.gmail.com';                      
+			//     $mail->SMTPAuth = true;                               
+			//     $mail->Username = 'testsourcecodester@gmail.com';     
+			//     $mail->Password = 'mysourcepass';                    
+			//     $mail->SMTPOptions = array(
+			//         'ssl' => array(
+			//         'verify_peer' => false,
+			//         'verify_peer_name' => false,
+			//         'allow_self_signed' => true
+			//         )
+			//     );                         
+			//     $mail->SMTPSecure = 'ssl';                           
+			//     $mail->Port = 465;                                   
 
-			    //     $mail->setFrom('testsourcecodester@gmail.com');
-			        
-			    //     //Recipients
-			    //     $mail->addAddress($email);              
-			    //     $mail->addReplyTo('testsourcecodester@gmail.com');
-			       
-			    //     //Content
-			    //     $mail->isHTML(true);                                  
-			    //     $mail->Subject = 'ECommerce Site Password Reset';
-			    //     $mail->Body    = $message;
+			//     $mail->setFrom('testsourcecodester@gmail.com');
 
-			    //     $mail->send();
+			//     //Recipients
+			//     $mail->addAddress($email);              
+			//     $mail->addReplyTo('testsourcecodester@gmail.com');
+
+			//     //Content
+			//     $mail->isHTML(true);                                  
+			//     $mail->Subject = 'ECommerce Site Password Reset';
+			//     $mail->Body    = $message;
+
+			//     $mail->send();
+
+			$to = "bolajiteslim05@gmail.com"; // Change this email to your //
+			$subject = "$m_subject:  $name";
+			// $body = "You have received a new message from your website contact form.\n\n" . "Here are the details:\n\nName: $name\n\n\nEmail: $email\n\nSubject: $m_subject\n\nMessage: $message";
+			$header = "From: $email";
+			$header .= "Reply-To: $email";
+
+			if (!mail($email, $subject, $message, $header));
+			// http_response_code(500);
 
 			        $_SESSION['success'] = 'Password reset link sent';
 			     
