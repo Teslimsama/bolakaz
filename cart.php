@@ -34,7 +34,7 @@
 
 <body>
 
-   <?php
+    <?php
     include "includes/header.php"
     ?>
     <?php include 'includes/navbar.php'; ?>
@@ -281,6 +281,7 @@
             });
         }
     </script>
+    <!-- <?php include 'includes/scripts.php'; ?> -->
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

@@ -67,7 +67,7 @@
             <div class="col-lg-7 mb-5">
                 <div class="contact-form">
                     <div id="success"></div>
-                    <form name="sentMessage" action="mail/contact.php" id="contactForm" novalidate="novalidate">
+                    <form name="sentMessage" id="contactForm" novalidate="novalidate">
                         <div class="control-group">
                             <input type="text" class="form-control" id="name" placeholder="Your Name" required="required" data-validation-required-message="Please enter your name" />
                             <p class="help-block text-danger"></p>
@@ -124,80 +124,17 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
 
-    <script>
-        $(function() {
 
-            $("#contactForm input, #contactForm textarea").jqBootstrapValidation({
-                preventSubmit: true,
-                submitError: function($form, event, errors) {},
-                submitSuccess: function($form, event) {
-                    event.preventDefault();
-                    var name = $("input#name").val();
-                    var email = $("input#email").val();
-                    var subject = $("input#subject").val();
-                    var message = $("textarea#message").val();
-
-                    $this = $("#sendMessageButton");
-                    $this.prop("disabled", true);
-
-                    $.ajax({
-                        url: "contact.php",
-                        type: "POST",
-                        data: {
-                            name: name,
-                            email: email,
-                            subject: subject,
-                            message: message
-                        },
-                        cache: false,
-                        success: function() {
-                            $('#success')(" <div class='alert alert-success'> ");
-                            $('#success > .alert-success')("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
-                                .append("</button>");
-                            $('#success > .alert-success')
-                                .append("<strong>Your message has been sent. </strong>");
-                            $('#success > .alert-success')
-                                .append('</div>');
-                            $('#contactForm').trigger("reset");
-                        },
-                        error: function() {
-                            $('#success')(" <div class='alert alert-danger'> ");
-                            $('#success > .alert-danger')("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
-                                .append("</button>");
-                            $('#success > .alert-danger').append($("<strong>").text("Sorry " + name + ", it seems that our mail server is not responding. Please try again later!"));
-                            $('#success > .alert-danger').append('</div>');
-                            $('#contactForm').trigger("reset");
-                        },
-                        complete: function() {
-                            setTimeout(function() {
-                                $this.prop("disabled", false);
-                            }, 1000);
-                        }
-                    });
-                },
-                filter: function() {
-                    return $(this).is(":visible");
-                },
-            });
-
-            $("a[data-toggle=\"tab\"]").click(function(e) {
-                e.preventDefault();
-                $(this).tab("show");
-            });
-        });
-
-        $('#name').focus(function() {
-            $('#success')('');
-        });
-    </script>
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
+    
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-
+    
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>
+    <script src="mail/contact.js"></script>
     <!-- <script src="mail/contact.js"></script> -->
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
