@@ -59,20 +59,22 @@ if (isset($_SESSION['user'])) {
 					</h2>
 
 				</div>
-				<div class="msg">
+				<div class="msg pt-2 m-0">
 					<?php
 					if (isset($_SESSION['error'])) {
 						echo "
-						<div class='alert alert-danger text-center'>
+						<div class='alert alert-danger alert-dismissible fade show' role='alert'>
 							<p>" . $_SESSION['error'] . "</p> 
+							<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
 						</div>
 						";
 						unset($_SESSION['error']);
 					}
 					if (isset($_SESSION['success'])) {
 						echo "
-						<div class='alert alert-success text-center'>
+						<div class='alert alert-success alert-dismissible fade show' role='alert'>
 							<p>" . $_SESSION['success'] . "</p> 
+							<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
 						</div>
 						";
 						unset($_SESSION['success']);
@@ -86,7 +88,12 @@ if (isset($_SESSION['user'])) {
 						<label class="input-label">Email</label>
 					</div>
 					<div class="input">
-						<input type="password" class="input-field" name="password" placeholder="Password" required />
+						<input type="password" class="input-field" id="myInput" name="password" placeholder="Password" required />
+						<span class="eye" onclick="myFunction()">
+
+							<i id="hide1" class="fa fa-eye"></i>
+							<i id="hide2" class="fa fa-eye-slash"></i>
+						</span>
 						<label class="input-label">Password</label>
 					</div>
 
@@ -96,11 +103,28 @@ if (isset($_SESSION['user'])) {
 						<button type="submit" name="login" class="action-button">Submit</button>
 					</div>
 				</form>
-					<div class="hey ms-3 mt-3">
-						<a href="password_forgot">I have forgotten my password</a>
-					</div>
+				<div class="hey ms-3 mt-3">
+					<a href="password_forgot">I have forgotten my password</a>
+				</div>
 			</div>
 		</div>
+		<script>
+			function myFunction() {
+				var x = document.getElementById("myInput");
+				var y = document.getElementById("hide1");
+				var z = document.getElementById("hide2");
+
+				if (x.type === 'password') {
+					x.type = "text";
+					y.style.display = "block";
+					z.style.display = "none";
+				} else {
+					x.type = "password";
+					y.style.display = "none";
+					z.style.display = "block";
+				}
+			}
+		</script>
 		<!-- JavaScript Bundle with Popper -->
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
 		<script src="js/jquery.min.js"></script>

@@ -57,7 +57,7 @@
                                 if (isset($_SESSION['user'])) {
                                     $image = (!empty($user['photo'])) ? 'images/' . $user['photo'] : 'images/profile.jpg';
                                     echo "
-                                    <a href='logout' class='nav-item nav-link'>Logout<i class='fa-solid fa-right-from-bracket text-primary'></a>
+                                    <a href='logout' class='nav-item nav-link'>Logout</a>
                                     ";
                                 } else {
                                     echo "

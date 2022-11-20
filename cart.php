@@ -177,7 +177,6 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
 
-    <?php include 'includes/scripts.php'; ?>
     <script>
         var total = 0;
         $(function() {
@@ -281,7 +280,6 @@
             });
         }
     </script>
-    <!-- <?php include 'includes/scripts.php'; ?> -->
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

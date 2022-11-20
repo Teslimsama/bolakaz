@@ -42,7 +42,14 @@ $pdo->close();
 //     $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
 //     $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
 // }
-
+$num_pages = 3;
+if (isset($_GET["pages"])) {
+    $pages =$_GET["pages"];
+}
+else {
+    $pages=1;
+}
+$startfrom=($pages-1)*5;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -251,7 +258,7 @@ $pdo->close();
 
                     try {
                         $inc = 3;
-                        $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = :catid");
+                        $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = :catid LIMIT $startfrom,$num_pages");
                         $stmt->execute(['catid' => $catid]);
                         foreach ($stmt as $row) {
                             $image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
@@ -294,7 +301,10 @@ $pdo->close();
                     }
 
                     ?>
-
+                   
+                    
+                      
+               
                     <div class="col-12 pb-1">
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center mb-3">
@@ -304,9 +314,25 @@ $pdo->close();
                                         <span class="sr-only">Previous</span>
                                     </a>
                                 </li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                 <?php
+                    $conn = $pdo->open();
+                    $sql = $conn->prepare("SELECT * FROM products WHERE category_id = :catid");
+                    $sql->execute(['catid' => $catid]);
+                    $total_rec= $sql->rowCount();
+                    $total_pages=ceil($total_rec / $num_pages);
+                    
+                    for ($i=1; $i <= $total_pages ; $i++) { 
+                        foreach ($sql as $row) {
+                        # code...
+                    }
+                     echo "
+                       <li class='page-item active'><a class='page-link' href='shop.php?category=". $slug ."'>".$i."</a></li>
+                     ";
+                    }
+                        ?>
+                                <!-- <li class="page-item active"><a class="page-link" href="#">1</a></li>
                                 <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li> -->
                                 <li class="page-item">
                                     <a class="page-link" href="#" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
@@ -343,7 +369,6 @@ $pdo->close();
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
-    <!-- <?php include 'includes/scripts.php'; ?> -->
 
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>

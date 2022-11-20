@@ -1,4 +1,5 @@
     <!-- Footer Start -->
+    <?php include 'includes/scripts.php'; ?>
 
     <div class="container-fluid bg-secondary text-dark mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
@@ -42,9 +43,11 @@
         <div class="row border-top border-light mx-xl-5 py-4">
             <div class="col-md-6 px-xl-0">
                 <p class="mb-md-0 text-center text-md-left text-dark">
-                    &copy; <a class="text-dark font-weight-semi-bold" href="https://bolakaz.unibooks.com.ng">bolakaz.unibooks.com.ng</a>. All Rights Reserved. Designed
+                    &copy; <script>
+                         document.write(new Date().getFullYear())
+                    </script> <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng">teslim.unibooks.com.ng</a>. All Rights Reserved. Designed
                     by
-                    <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng">Teslim</a>
+                    <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng">Teslimsama</a>
                 </p>
             </div>
             <div class="col-md-6 px-xl-0 text-center text-md-right">

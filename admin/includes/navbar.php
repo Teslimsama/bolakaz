@@ -2,9 +2,9 @@
   <!-- Logo -->
   <a href="#" class="logo">
     <!-- mini logo for sidebar mini 50x50 pixels -->
-    <span class="logo-mini"><b>C</b>P</span>
+    <span class="logo-mini"><b>B</b>K</span>
     <!-- logo for regular state and mobile devices -->
-    <span class="logo-lg"><b>Ecommerce</b>Site</span>
+    <span class="m-0 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">B</span>Bolakaz.Enterprise</span>
   </a>
   <!-- Header Navbar: style can be found in header.less -->
   <nav class="navbar navbar-static-top">
@@ -18,16 +18,16 @@
         <!-- User Account: style can be found in dropdown.less -->
         <li class="dropdown user user-menu">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-            <img src="<?php echo (!empty($admin['photo'])) ? '../images/'.$admin['photo'] : '../images/profile.jpg'; ?>" class="user-image" alt="User Image">
-            <span class="hidden-xs"><?php echo $admin['firstname'].' '.$admin['lastname']; ?></span>
+            <img src="<?php echo (!empty($admin['photo'])) ? '../images/' . $admin['photo'] : '../images/profile.jpg'; ?>" class="user-image" alt="User Image">
+            <span class="hidden-xs"><?php echo $admin['firstname'] . ' ' . $admin['lastname']; ?></span>
           </a>
           <ul class="dropdown-menu">
             <!-- User image -->
             <li class="user-header">
-              <img src="<?php echo (!empty($admin['photo'])) ? '../images/'.$admin['photo'] : '../images/profile.jpg'; ?>" class="img-circle" alt="User Image">
+              <img src="<?php echo (!empty($admin['photo'])) ? '../images/' . $admin['photo'] : '../images/profile.jpg'; ?>" class="img-circle" alt="User Image">
 
               <p>
-                <?php echo $admin['firstname'].' '.$admin['lastname']; ?>
+                <?php echo $admin['firstname'] . ' ' . $admin['lastname']; ?>
                 <small>Member since <?php echo date('M. Y', strtotime($admin['created_on'])); ?></small>
               </p>
             </li>

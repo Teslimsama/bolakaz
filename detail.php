@@ -442,7 +442,6 @@ include 'includes/session.php';
 
         });
     </script>
-    <!-- <?php include 'includes/scripts.php'; ?> -->
 
     <script>
         $(document).ready(function() {
