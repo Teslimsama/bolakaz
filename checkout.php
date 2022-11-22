@@ -9,9 +9,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Title Page-->
     <title>Bolakaz</title>
-    <!-- Favicon -->
-    <link href="img/favicon.ico" rel="icon">
-
+    <!-- favicon  -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">

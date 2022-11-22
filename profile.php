@@ -20,7 +20,11 @@ if (!isset($_SESSION['user'])) {
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+    <!-- favicon  -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>

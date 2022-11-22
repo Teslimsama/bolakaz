@@ -17,7 +17,11 @@ if (isset($_SESSION['user'])) {
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
 	<link href="css/navbar.css" rel="stylesheet" media="all">
 	<link href="css/signin.css" rel="stylesheet" media="all">
-
+	<!-- favicon  -->
+	<link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
 
 </head>
 

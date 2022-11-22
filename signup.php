@@ -28,7 +28,11 @@ if (isset($_SESSION['captcha'])) {
     <link href="css/vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
     <!-- Font special for pages-->
     <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-
+    <!-- favicon  -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
     <!-- Vendor CSS-->
     <link href="css/vendor/select2/select2.min.css" rel="stylesheet" media="all">
     <link href="css/vendor/datepicker/daterangepicker.css" rel="stylesheet" media="all">
@@ -75,23 +79,23 @@ if (isset($_SESSION['captcha'])) {
 
                             <div class="msg">
                                 <?php
-                                    if(isset($_SESSION['error'])){
-                                        echo "
+                                if (isset($_SESSION['error'])) {
+                                    echo "
                                         <div class='callout callout-danger text-center'>
-                                            <p>".$_SESSION['error']."</p> 
+                                            <p>" . $_SESSION['error'] . "</p> 
                                         </div>
                                         ";
-                                        unset($_SESSION['error']);
-                                    }
+                                    unset($_SESSION['error']);
+                                }
 
-                                    if(isset($_SESSION['success'])){
-                                        echo "
+                                if (isset($_SESSION['success'])) {
+                                    echo "
                                         <div class='callout callout-success text-center'>
-                                            <p>".$_SESSION['success']."</p> 
+                                            <p>" . $_SESSION['success'] . "</p> 
                                         </div>
                                         ";
-                                        unset($_SESSION['success']);
-                                    }
+                                    unset($_SESSION['success']);
+                                }
                                 ?>
                             </div>
                             <div class="row row-space">

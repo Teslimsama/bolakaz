@@ -11,7 +11,11 @@
     <title>Bolakaz</title>
 
     <!-- Favicon -->
-    <link href="img/favicon.ico" rel="icon">
+    <!-- favicon  -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -257,7 +261,7 @@
                             <form method="get" id="productForm">
                                     <div class="card product-item border-0 mb-4">
                                         <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-                                            <img class="img-fluid w-100" src="./images/`+response.data[count].photo + `" alt="image">
+                                            <img class="img-fluid w-100" src="./images/` + response.data[count].photo + `" alt="image">
                                         </div>`;
 
                             html += `
