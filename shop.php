@@ -1,56 +1,5 @@
 <?php include 'includes/session.php'; ?>
-<?php
-$slug = $_GET['category'];
 
-$conn = $pdo->open();
-
-try {
-    $stmt = $conn->prepare("SELECT * FROM category WHERE cat_slug = :slug");
-    $stmt->execute(['slug' => $slug]);
-    $cat = $stmt->fetch();
-    $catid = $cat['id'];
-} catch (PDOException $e) {
-    echo "There is some problem in connection: " . $e->getMessage();
-}
-
-$pdo->close();
-
-
-
-
-?>
-<?php
-// $conn = $pdo->open();
-
-// $slug = $_GET['product'];
-
-// try {
-
-//     $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id WHERE slug = :slug");
-//     $stmt->execute(['slug' => $slug]);
-//     $product = $stmt->fetch();
-// } catch (PDOException $e) {
-//     echo "There is some problem in connection: " . $e->getMessage();
-// }
-
-// //page view
-// $now = date('Y-m-d');
-// if ($product['date_view'] == $now) {
-//     $stmt = $conn->prepare("UPDATE products SET counter=counter+1 WHERE id=:id");
-//     $stmt->execute(['id' => $product['prodid']]);
-// } else {
-//     $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
-//     $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
-// }
-$num_pages = 3;
-if (isset($_GET["pages"])) {
-    $pages =$_GET["pages"];
-}
-else {
-    $pages=1;
-}
-$startfrom=($pages-1)*5;
-?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -231,116 +180,38 @@ $startfrom=($pages-1)*5;
                 <div class="row pb-3">
                     <div class="col-12 pb-1">
                         <div class="d-flex align-items-center justify-content-between mb-4">
-                            <form action="">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Search by name">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text bg-transparent text-primary">
-                                            <i class="fa fa-search"></i>
-                                        </span>
-                                    </div>
+
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search" class="form-control" id="search" onkeyup="load_data(this.value);" placeholder="Search by name">
+                                <div class="input-group-append">
+                                    <span class="input-group-text bg-transparent text-primary">
+                                        <i class="fa fa-search"></i>
+                                    </span>
                                 </div>
-                            </form>
+                            </div>
+
                             <div class="dropdown ml-4">
                                 <button class="btn border dropdown-toggle" type="button" id="triggerId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Sort by
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
-                                    <a class="dropdown-item" href="#">Latest</a>
+                                    <a class="dropdown-item" href="#">Latest</a><span id="total_data"></span>
                                     <a class="dropdown-item" href="#">Popularity</a>
                                     <a class="dropdown-item" href="#">Best Rating</a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <?php
-                    $conn = $pdo->open();
+                    <div id="post_data">
 
-                    try {
-                        $inc = 3;
-                        $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = :catid LIMIT $startfrom,$num_pages");
-                        $stmt->execute(['catid' => $catid]);
-                        foreach ($stmt as $row) {
-                            $image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
-                            $inc = ($inc == 3) ? 1 : $inc + 1;
-                            if ($inc == 1) echo " <div class='col-lg-4 col-md-6 col-sm-12 pb-1'>";
-                            echo "
-    
-                   
-                    <form method='get' id='productForm'>
-                        <div class='card product-item border-0 mb-4'>
-                            <div class='card-header product-img position-relative overflow-hidden bg-transparent border p-0'>
-                                <img class='img-fluid w-100' src='$image' alt='image'>
-                            </div>
-                            <div class='card-body border-left border-right text-center p-0 pt-4 pb-3'>
-                                <h6 class='text-truncate mb-3'><a href='detail.php?product=" . $row['slug'] . "'>" . $row['name'] . "</a></h6>
-                                <div class='d-flex justify-content-center'> 
-                                <h6 class='text-truncate mb-3'>&#36; " . number_format($row['price'], 2) . "</h6>
-                                    <h6 class='text-muted ml-2'><del>&#36; " . number_format($row['price'], 2) . "</del></h6>
-                                </div>
-                            </div>
-                            <div class='card-footer d-flex justify-content-center bg-light border'>
-                           <a href='detail.php?product=" . $row['slug'] . "'>
-                                 <i class='fas fa-eye text-primary mr-1'></i>View Detail</a>
-                               
-                            
+                    </div>
 
-                             </div>
-                             </div>
-                             </form>
-                             
-                             
-                             
-                             ";
-                            if ($inc == 3) echo "</div>";
-                        }
-                        if ($inc == 1) echo "<div class='col-sm-4'></div><div class='col-sm-4'></div></div>";
-                        if ($inc == 2) echo "<div class='col-sm-4'></div></div>";
-                    } catch (PDOException $e) {
-                        echo "There is some problem in connection: " . $e->getMessage();
-                    }
 
-                    ?>
-                   
-                    
-                      
-               
-                    <div class="col-12 pb-1">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center mb-3">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                        <span class="sr-only">Previous</span>
-                                    </a>
-                                </li>
-                                 <?php
-                    $conn = $pdo->open();
-                    $sql = $conn->prepare("SELECT * FROM products WHERE category_id = :catid");
-                    $sql->execute(['catid' => $catid]);
-                    $total_rec= $sql->rowCount();
-                    $total_pages=ceil($total_rec / $num_pages);
-                    
-                    for ($i=1; $i <= $total_pages ; $i++) { 
-                        foreach ($sql as $row) {
-                        # code...
-                    }
-                     echo "
-                       <li class='page-item active'><a class='page-link' href='shop.php?category=". $slug ."'>".$i."</a></li>
-                     ";
-                    }
-                        ?>
-                                <!-- <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li> -->
-                                <li class="page-item">
-                                    <a class="page-link" href="#" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                        <span class="sr-only">Next</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
+
+
+
+                    <div id="pagination_link" class="col-12 pb-1">
+
                     </div>
                 </div>
             </div>
@@ -348,7 +219,86 @@ $startfrom=($pages-1)*5;
         </div>
     </div>
     <!-- Shop End -->
+    <script>
+        load_data();
 
+        function load_data(query = '', page_number = 1, catid = '') {
+            var form_data = new FormData();
+            const cat = window.location.search;
+            const o = cat.split('?')[1];
+            const getcat = new URLSearchParams(o);
+            for (let pair of getcat.entries()) {
+                const element = pair[1];
+                form_data.append('category', element);
+            }
+            form_data.append('query', query);
+
+            form_data.append('page', page_number);
+
+
+            var ajax_request = new XMLHttpRequest();
+
+            ajax_request.open('POST', 'process_data.php');
+
+            ajax_request.send(form_data);
+
+            ajax_request.onreadystatechange = function() {
+                if (ajax_request.readyState == 4 && ajax_request.status == 200) {
+                    var response = JSON.parse(ajax_request.responseText);
+
+                    var html = '';
+
+                    var serial_no = 1;
+
+                    if (response.data.length > 0) {
+                        for (var count = 0; count < response.data.length; count++) {
+                            html += ` 
+                            <div  class='col-lg-4 col-md-6 col-sm-12 pb-1'>
+                            <form method="get" id="productForm">
+                                    <div class="card product-item border-0 mb-4">
+                                        <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                                            <img class="img-fluid w-100" src="./images/`+response.data[count].photo + `" alt="image">
+                                        </div>`;
+
+                            html += `
+                            <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
+                                    <h6 class="text-truncate mb-3"><a href="detail.php?product=` + response.data[count].slug + `"> ` + response.data[count].name + `</a></h6>
+                                <div class="d-flex justify-content-center"> 
+                                <h6 class="text-truncate mb-3">&#36; ` + response.data[count].price + `</h6>
+                                    <h6 class="text-muted ml-2"><del>&#36;` + response.data[count].price + `</del></h6>
+                                </div>`;
+                            html += ` 
+                            </div>
+                            <div class="card-footer d-flex justify-content-center bg-light border">
+                                <a href="detail.php?product=` + response.data[count].slug + `">
+                                 <i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
+                               
+                            `;
+                            html += `  
+                            </div>
+                             </div>
+                             </form>
+                             </div>
+                             
+                             `;
+
+                            serial_no++;
+                        }
+                    } else {
+                        html += '<h1 colspan="3" class="text-center">No Data Found</h1>';
+                    }
+
+                    document.getElementById('post_data').innerHTML = html;
+
+                    document.getElementById('total_data').innerHTML = response.total_data;
+
+                    document.getElementById('pagination_link').innerHTML = response.pagination;
+
+                }
+
+            }
+        }
+    </script>
 
     <!-- Footer Start -->
 

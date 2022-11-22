@@ -32,7 +32,7 @@
 				$total += $subtotal;
 				$output .= "
 					 <tr>
-                            <td class='align-middle'><img src'" . $image . "' alt=' style='width: 50px;'>" . $row['name'] . "</td>
+                            <td class='align-middle'><img src='" . $image . "' alt='' style='width: 50px;'>" . $row['name'] . "</td>
                             <td class='align-middle'>&#36; " . number_format($row['price'], 2) . "</td>
                             <td class='align-middle'>
                                 <div class='input-group quantity mx-auto' style='width: 100px;'>
@@ -81,7 +81,7 @@
 				$output .= "
 								 <tr>
         
-                            <td class='align-middle'><img src'" . $image . "' alt=' style='width: 50px;'>" . $row['name'] . "</td>
+                            <td class='align-middle'><img src='" . $image . "' alt='' style='width: 50px;'>" . $row['name'] . "</td>
                             <td class='align-middle'>&#36; " . number_format($row['price'], 2) . "</td>
                             <td class='align-middle'>
                                 <div class='input-group quantity mx-auto' style='width: 100px;'>
