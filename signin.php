@@ -93,10 +93,10 @@ if (isset($_SESSION['user'])) {
 					</div>
 					<div class="input">
 						<input type="password" class="input-field" id="myInput" name="password" placeholder="Password" required />
-						<span class="eye" onclick="myFunction()">
+						<span class="eye ey" onclick="myFunction()">
 
-							<i id="hide1" class="fa fa-eye"></i>
-							<i id="hide2" class="fa fa-eye-slash"></i>
+							<i id="hide1" class="fa fa-eye "></i>
+							<i id="hide2" class="fa fa-eye-slash "></i>
 						</span>
 						<label class="input-label">Password</label>
 					</div>

@@ -20,13 +20,13 @@ img {
 	display: block;
 }
 
-.fa{
-	margin-right: 10px;
+.ey{
+	margin-left: 11em;
 }
 .eye{
 	position: absolute;
 }
-.hide1{
+#hide1{
 	display: none;
 }
 /* // iOS Reset  */

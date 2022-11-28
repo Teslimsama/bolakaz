@@ -1,33 +1,36 @@
 <?php
 
 //submit_rating.php
+include 'includes/session.php';
 
-$connect = new PDO("mysql:host=localhost;dbname=bolakaz", "root", "");
-
+$connect = $pdo->open();
 if(isset($_POST["rating_data"]))
+
 {
 
 	$data = array(
-		':user_name'		=>	$_POST["user_name"],
+		':user_name'		=>	$_POST["user_name"], 
 		':user_rating'		=>	$_POST["rating_data"],
+		':page_id'		=>	$_POST["prodid"],
 		':user_review'		=>	$_POST["user_review"],
 		':datetime'			=>	time()
 	);
 
 	$query = "
 	INSERT INTO review_table 
-	(user_name, user_rating, user_review, datetime) 
-	VALUES (:user_name, :user_rating, :user_review, :datetime)
+	(user_name, page_id, user_rating, user_review, datetime) 
+	VALUES (:user_name, :page_id, :user_rating, :user_review, :datetime)
 	";
-
+	
 	$statement = $connect->prepare($query);
-
+	
 	$statement->execute($data);
-
+	
 	echo "Your Review & Rating Successfully Submitted";
-
+	
 }
 
+// $prodid		=	$_POST["prodid"];
 if(isset($_POST["action"]))
 {
 	$average_rating = 0;
@@ -40,8 +43,14 @@ if(isset($_POST["action"]))
 	$total_user_rating = 0;
 	$review_content = array();
 
+	
+	$stmt = $conn->prepare("SELECT * FROM review_table  
+	ORDER BY review_id DESC");
+	$stmt->execute();
+	$cat = $stmt->fetch();
+	$proid = $cat['page_id'];
 	$query = "
-	SELECT * FROM review_table 
+	SELECT * FROM review_table WHERE page_id=$proid
 	ORDER BY review_id DESC
 	";
 
@@ -51,6 +60,7 @@ if(isset($_POST["action"]))
 	{
 		$review_content[] = array(
 			'user_name'		=>	$row["user_name"],
+			'page_id'		=>	$row["page_id"],
 			'user_review'	=>	$row["user_review"],
 			'rating'		=>	$row["user_rating"],
 			'datetime'		=>	date('l jS, F Y h:i:s A', $row["datetime"])

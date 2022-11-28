@@ -22,7 +22,7 @@ if (isset($_POST["query"])) {
 	
 	$data = array();
 
-	$limit = 5;
+	$limit = 9;
 
 	$page = 1;
 
@@ -106,10 +106,7 @@ if (isset($_POST["query"])) {
 
 		foreach ($result as $row) {
 			$data[] = array(
-				'catid'				=>	$row["id"],
-				'price'			=>	$row['price'],
-				'name'			=>	$row['name'],
-				'photo'		=>	$row['photo']
+				
 			);
 		}
 	}
@@ -173,8 +170,10 @@ if (isset($_POST["query"])) {
 			$previous_id = $page_array[$count] - 1;
 
 			if ($previous_id > 0) {
-				$previous_link = "<li class='page-item disabled'>
-                                    <a class='page-link' href='javascript:load_data(` " . $_POST["query"] . "`, " . $previous_id . ")' aria-label='Previous'>
+				$previous_link = "
+				<li class='page-item disabled'>
+                                    
+				<a class='page-link' href='javascript:load_data(` " . $_POST["query"] . "`, " . $previous_id . ")' aria-label='Previous'>
                                         <span aria-hidden='true'>&laquo;</span>
                                         <span class='sr-only'>Previous</span>
                                     </a>

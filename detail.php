@@ -120,7 +120,7 @@ include 'includes/session.php';
                         <small class="fas fa-star main_star"></small>
                         <small class="fas fa-star main_star"></small>
                         <small class="fas fa-star main_star"></small>
-                        <small class="far fa-star main_star"></small>
+                        <small class="fas fa-star main_star"></small>
                     </div>
                     <small class="pt-1">(<span id="total_review">50</span> Reviews)</small>
                 </div>
@@ -276,11 +276,11 @@ include 'includes/session.php';
                                 <div class="d-flex my-3">
                                     <p class="mb-0 mr-2">Your Rating * :</p>
                                     <div class="text-primary">
-                                        <i class="far fa-star star-light submit_star" id="submit_star_1" data-rating="1"></i>
-                                        <i class="far fa-star star-light submit_star" id="submit_star_2" data-rating="2"></i>
-                                        <i class="far fa-star star-light submit_star" id="submit_star_3" data-rating="3"></i>
-                                        <i class="far fa-star star-light submit_star" id="submit_star_4" data-rating="4"></i>
-                                        <i class="far fa-star star-light submit_star" id="submit_star_5" data-rating="5"></i>
+                                        <i class="fas fa-star star-light submit_star" id="submit_star_1" data-rating="1"></i>
+                                        <i class="fas fa-star star-light submit_star" id="submit_star_2" data-rating="2"></i>
+                                        <i class="fas fa-star star-light submit_star" id="submit_star_3" data-rating="3"></i>
+                                        <i class="fas fa-star star-light submit_star" id="submit_star_4" data-rating="4"></i>
+                                        <i class="fas fa-star star-light submit_star" id="submit_star_5" data-rating="5"></i>
                                     </div>
                                 </div>
                                 <form>
@@ -288,6 +288,7 @@ include 'includes/session.php';
                                         <label for="message">Your Review *</label>
                                         <textarea id="user_review" name="user_review" cols="30" rows="5" class="form-control"></textarea>
                                     </div>
+                                    <input type="hidden" value="<?php echo $product['prodid']; ?>" id="prodid" name="id">
                                     <div class="form-group">
                                         <label for="name">Your Name *</label>
                                         <input type="text" class="form-control" name="user_name" id="user_name">
@@ -466,7 +467,7 @@ include 'includes/session.php';
 
                 for (var count = 1; count <= rating; count++) {
 
-                    $('#submit_star_' + count).addClass('text-warning');
+                    $('#submit_star_' + count).addClass('text-primary');
 
                 }
 
@@ -477,7 +478,7 @@ include 'includes/session.php';
 
                     $('#submit_star_' + count).addClass('star-light');
 
-                    $('#submit_star_' + count).removeClass('text-warning');
+                    $('#submit_star_' + count).removeClass('text-primary');
 
                 }
             }
@@ -490,7 +491,7 @@ include 'includes/session.php';
 
                     $('#submit_star_' + count).removeClass('star-light');
 
-                    $('#submit_star_' + count).addClass('text-warning');
+                    $('#submit_star_' + count).addClass('text-primary');
                 }
 
             });
@@ -506,6 +507,7 @@ include 'includes/session.php';
                 var user_name = $('#user_name').val();
 
                 var user_review = $('#user_review').val();
+                var prodid = $('#prodid').val();
 
                 if (user_name == '' || user_review == '') {
                     alert("Please Fill Both Field");
@@ -516,6 +518,7 @@ include 'includes/session.php';
                         method: "POST",
                         data: {
                             rating_data: rating_data,
+                            prodid: prodid,
                             user_name: user_name,
                             user_review: user_review
                         },
