@@ -1,7 +1,5 @@
 <?php
-	// use PHPMailer\PHPMailer\PHPMailer;
-	// use PHPMailer\PHPMailer\Exception;
-
+	
 	include 'includes/session.php';
 
 	if(isset($_POST['reset'])){
@@ -43,18 +41,9 @@
 			}else{
 				die($_SESSION['error'] = "unable to locate file ");
 			}
-// <html>
-// 					<body>
-// 						<h1 style='color:#f40;'>Password Reset</h1>
-// 						<p style='color:#080;font-size:18px;'>Your Account:</p>
-// 						<p style='color:#080;font-size:18px;'>Email: " . $email . "</p>
-// 						<p style='color:#080;font-size:18px;'>Please click the link below to reset your password.</p>
-// 						<a href='http://localhost/bolakaz/password_reset.php?code=" . $code . "&user=" . $row['id'] . "'>Reset Password</a>
-// 					</body>
-			if (!mail($email, $subject, $message, $header));
-			
 
-			        $_SESSION['success'] = 'Password reset link sent';
+			mail($email, $subject, $message, $header);
+			$_SESSION['success'] = 'Password reset link sent';
 			     
 			    } 
 			    catch (Exception $e) {
@@ -77,5 +66,3 @@
 	}
 
 	header('location: password_forgot.php');
-
-?>

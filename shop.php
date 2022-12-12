@@ -1,5 +1,7 @@
-<?php include 'includes/session.php'; ?>
+<?php
+include 'includes/session.php';
 
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -15,7 +17,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="favicomatic/site.webmanifest">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -59,363 +61,205 @@
 
     <!-- Shop Start -->
     <div class="container-fluid pt-5">
-        <div class="row px-xl-5">
-            <!-- Shop Sidebar Start -->
-            <div class="col-lg-3 col-md-12">
-                <!-- Price Start -->
-                <div id="price_filter" class="border-bottom mb-4 pb-4">
+        <form method="post" id="search_form">
+            <div class="row px-xl-5">
+                <!-- Shop Sidebar Start -->
+                <div class="col-lg-3 col-md-12">
+                    <!-- Price Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by price</h5>
+                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                            <input type="hidden" id="hidden_minimum_price" value="0" />
+                            <input type="hidden" id="hidden_maximum_price" value="65000" />
+                            <p id="price_show">1000 - 65000</p>
+                            <div id="price_range"></div>
+                        </div>
+                    </div>
+                    <!-- Price End -->
 
-
-                </div>
-                <!-- Price End -->
-
-                <!-- Color Start -->
-                <div id="gender_filter" class="border-bottom mb-4 pb-4">
-
-
-
-                </div>
-                <!-- Color End -->
-
-                <!-- Size Start -->
-                <div class="mb-5">
-                    <h5 class="font-weight-semi-bold mb-4">Filter by size</h5>
-
-
-
-                </div>
-                <!-- Size End -->
-            </div>
-            <!-- Shop Sidebar End -->
-
-
-            <!-- Shop Product Start -->
-            <div class="col-lg-9 col-md-12">
-                <div class="row pb-3">
-                    <div class="col-12 pb-1">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" class="form-control" id="search" onkeyup="load_data(this.value);" placeholder="Search by name">
-                                <div class="input-group-append">
-                                    <span class="input-group-text bg-transparent text-primary">
-                                        <i class="fa fa-search"></i>
-                                    </span>
-                                </div>
+                    <!--Category Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by category</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(category_name) FROM producto GROUP BY category_name DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector category" value="<?php echo $row['category_name']; ?>" id="<?php echo 'cat-' . $n ?>">
+                                <label class=" custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo ucwords($row['category_name']); ?></label>
+                                <span class="text-dark badge border font-weight-normal">150</span>
                             </div>
+                        <?php
+                            $n++;
+                        }
 
-                            <div class="dropdown ml-4">
-                                <button class="btn border dropdown-toggle" type="button" id="triggerId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Sort by
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
-                                    <a class="dropdown-item" href="#">Latest</a><span id="total_data"></span>
-                                    <a class="dropdown-item" href="#">Popularity</a>
-                                    <a class="dropdown-item" href="#">Best Rating</a>
+                        ?>
+                    </div>
+                    <!-- Category End -->
+
+                    <!--Brand Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by brand</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(brand) FROM producto GROUP BY brand DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector brand" value="<?php echo $row['brand']; ?>" id="<?php echo 'brand-' . $n ?>">
+                                <label class=" custom-control-label" for="<?php echo 'brand-' . $n ?>"><?php echo ucwords($row['brand']); ?></label>
+                                <span class="text-dark badge border font-weight-normal">150</span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+
+                        ?>
+                    </div>
+                    <!-- Brand End -->
+
+                    <!--Mate rial Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by material</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(material) FROM producto GROUP BY material DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector material" value="<?php echo $row['material']; ?>" id="<?php echo 'mat-' . $n ?>">
+                                <label class=" custom-control-label" for="<?php echo 'mat-' . $n ?>"><?php echo ucwords($row['material']); ?></label>
+                                <span class="text-dark badge border font-weight-normal">150</span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+
+                        ?>
+                    </div>
+                    <!-- Material End -->
+
+                    <!--Color Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by color</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(color) FROM producto GROUP BY color DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector color" value="<?php echo $row['color']; ?>" id="<?php echo 'col-' . $n ?>">
+                                <label class=" custom-control-label" for="<?php echo 'col-' . $n ?>"><?php echo ucwords($row['color']); ?></label>
+                                <span class="text-dark badge border font-weight-normal">150</span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+
+                        ?>
+                    </div>
+                    <!-- Color End -->
+
+                    <!-- Size Start -->
+                    <div class="mb-5">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by size</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(size) FROM producto GROUP BY size DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector size" value="<?php echo $row['size']; ?>" id="<?php echo 'size-' . $n ?>">
+                                <label class="custom-control-label" for="<?php echo 'size-' . $n ?>"><?php echo $row['size']; ?> </label>
+                                <span class="badge border font-weight-normal">150</span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+                        ?>
+                    </div>
+                    <!-- Size End -->
+
+                </div>
+                <!-- Shop Sidebar End -->
+
+
+                <!-- Shop Product Start -->
+                <div class="col-lg-9 col-md-12">
+                    <div class="row pb-3">
+                        <div class="col-12 pb-1">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="search" class="form-control" id="search" onkeyup="load_data(this.value);" placeholder="Search by name">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-transparent text-primary">
+                                            <i class="fa fa-search"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="dropdown ml-4">
+                                    <button class="btn border dropdown-toggle" type="button" id="triggerId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Sort by
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
+                                        <label class="dropdown-item"><input type="radio" name="sorting" value="newest" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'newest' || $_POST['sorting'] == '')) {
+                                                                                                                            echo "checked";
+                                                                                                                        } ?> class="sort_rang sorting">
+                                            Latest</label>
+
+                                        <label class="dropdown-item"><input type="radio" name="sorting" value="low" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'low' || $_POST['sorting'] == '')) {
+                                                                                                                        echo "checked";
+                                                                                                                    } ?> class="sort_rang sorting">
+                                            Popularity</label>
+
+                                        <label class="dropdown-item"><input type="radio" name="sorting" value="high" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'high' || $_POST['sorting'] == '')) {
+                                                                                                                            echo "checked";
+                                                                                                                        } ?> class="sort_rang sorting">
+                                            Best Rating</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div id="product_area">
+                        <div class=" row filter_data">
 
-                    </div>
-                    <div id="skeleton_area">
-
-                    </div>
+                        </div>
 
 
 
-
-
-                    <div id="pagination_area" class="col-12 pb-1">
-
-                    </div>
-                </div>
-            </div>
-            <!-- Shop Product End -->
-        </div>
+        </form>
+    </div>
+    </div>
+    <!-- Shop Product End -->
+    </div>
     </div>
     <!-- Shop End -->
-    <script>
-        function $(selector) {
-            return document.querySelector(selector);
-        }
-
-        load_product(1, '');
-
-        function load_product(page = 1, query = '', category = '') {
-            function cat() {
-                fetch('shop.php?category=' + element ).then(function(response) {
-                    // var form_data = new FormData();
-                    const cat = window.location.search;
-                    const o = cat.split('?')[1];
-                    const getcat = new URLSearchParams(o);
-                    for (let pair of getcat.entries()) {
-                        const element = pair[1];
-                        // form_data.append('category', element);
-                    }
-                    return response.json();
-
-                })
-
-            }
-
-
-
-
-
-            $('#product_area').style.display = 'none';
-
-            $('#skeleton_area').style.display = 'block';
-
-            $('#skeleton_area').innerHTML = make_skeleton();
-
-            fetch('process.php?page=' + page + query + '').then(function(response) {
-
-                return response.json();
-
-            }).then(function(responseData) {
-
-                var t_html = '';
-                if (responseData.data) {
-                    if (responseData.data.length > 0) {
-                        t_html += '<p class="h6">' + responseData.total_data + ' Products Found</p>';
-                        // t_html += '<div class="row">';
-                        for (var i = 0; i < responseData.data.length; i++) {
-                            t_html += ` 
-                            <div  class='col-lg-4 col-md-6 col-sm-12 pb-1'>
-                            <form method="get" id="productForm">
-                                    <div class="card product-item border-0 mb-4">
-                                        <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-                                            <img class="img-fluid w-100" src="./images/` + response.data[count].photo + `" alt="image">
-                                        </div>`;
-                            t_html += `
-                            <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
-                                    <h6 class="text-truncate mb-3"><a href="detail.php?product=` + response.data[count].slug + `"> ` + response.data[count].name + `</a></h6>
-                                <div class="d-flex justify-content-center"> 
-                                <h6 class="text-truncate mb-3">&#36; ` + response.data[count].price + `</h6>
-                                    <h6 class="badge border font-weight-normal ml-2"><del>&#36;` + response.data[count].price + `</del></h6>
-                                </div>`;
-                            t_html += ` 
-                            </div>
-                            <div class="card-footer d-flex justify-content-center bg-light border">
-                                <a href="detail.php?product=` + response.data[count].slug + `">
-                                 <i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
-                               
-                            `;
-                            t_html += `  
-                            </div>
-                             </div>
-                             </form>
-                             </div>
-                             
-                             `;
-                            // t_html += '</div>';
-                        }
-                        // t_html += '</div>';
-                        $('#product_area').innerHTML = t_html;
-                    } else {
-                        $('#product_area').innerHTML = '<p class="h6">No Product Found</p>';
-                    }
-                }
-
-                if (responseData.pagination) {
-                    $('#pagination_area').innerHTML = responseData.pagination;
-                }
-
-                setTimeout(function() {
-
-                    $('#product_area').style.display = 'block';
-
-                    $('#skeleton_area').style.display = 'none';
-
-                }, 3000);
-
-            });
-        }
-
-        function make_skeleton() {
-            var output = '<div class="row">';
-            for (var count = 0; count < 8; count++) {
-                output += '<div class="col-md-3 mb-3 p-4">';
-                output += '<div class="mb-2 bg-light text-dark" style="height:240px;"></div>';
-                output += '<div class="mb-2 bg-light text-dark" style="height:50px;"></div>';
-                output += '<div class="mb-2 bg-light text-dark" style="height:25px;"></div>';
-                output += '</div>';
-            }
-            output += '</div>';
-            return output;
-        }
-
-        load_filter();
-
-        function load_filter() {
-            fetch('process.php?action=filter').then(function(response) {
-
-                return response.json();
-
-            }).then(function(responseData) {
-
-                if (responseData.gender) {
-                    if (responseData.gender.length > 0) {
-                        var html = '<h5 class="font-weight-semi-bold mb-4">Filter by color</h5> <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">';
-                        for (var i = 0; i < responseData.gender.length; i++) {
-                            html += '<label class="custom-control-label">';
-
-                            html += '<input class="custom-control-input  gender_filter" type="radio" name="gender_filter" value="' + responseData.gender[i].name + '">';
-
-                            html += responseData.gender[i].name + ' <span class="badge border font-weight-normal">(' + responseData.gender[i].total + ')</span>';
-
-                            html += '</label>';
-                        }
-
-                        html += '</div>';
-
-                        $('#gender_filter').innerHTML = html;
-
-                        var gender_elements = document.getElementsByClassName("gender_filter");
-
-                        for (var i = 0; i < gender_elements.length; i++) {
-                            gender_elements[i].onclick = function() {
-
-                                load_product(page = 1, make_query());
-
-                            };
-                        }
-                    }
-                }
-
-                if (responseData.brand) {
-                    if (responseData.brand.length > 0) {
-                        var html = '<div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">';
-                        for (var i = 0; i < responseData.brand.length; i++) {
-                            html += '<label class="custom-control-label">';
-
-                            html += '<input class="custom-control-input  brand_filter" type="checkbox" value="' + responseData.brand[i].name + '">';
-
-                            html += responseData.brand[i].name + ' <span class="badge border font-weight-normal">(' + responseData.brand[i].total + ')</span>';
-
-                            html += '</label>';
-                        }
-
-                        html += '</div>';
-
-                        $('#brand_filter').innerHTML = html;
-
-                        var brand_elements = document.getElementsByClassName("brand_filter");
-
-                        for (var i = 0; i < brand_elements.length; i++) {
-                            brand_elements[i].onclick = function() {
-
-                                load_product(page = 1, make_query());
-
-                            };
-                        }
-                    }
-                }
-
-                if (responseData.price) {
-                    if (responseData.price.length > 0) {
-                        var html = '<h5 class = "font-weight-semi-bold mb-4"> Filter by price </h5> <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3" > ';
-
-                        for (var i = 0; i < responseData.price.length; i++) {
-                            html += '<a href="#" class="list-group-item list-group-item-action price_filter" id="' + responseData.price[i].condition + '"><span>&#8377;</span> ' + responseData.price[i].name + ' <span class="badge border font-weight-normal">(' + responseData.price[i].total + ')</a>';
-                        }
-
-                        html += '</div>';
-
-                        $('#price_filter').innerHTML = html;
-
-                        var price_elements = document.getElementsByClassName("price_filter");
-
-                        for (var i = 0; i < price_elements.length; i++) {
-                            price_elements[i].onclick = function() {
-
-                                remove_active_class(price_elements);
-
-                                this.classList.add("active");
-
-                                load_product(page = 1, make_query());
-
-                            };
-                        }
-
-                    }
-                }
-
-            });
-        }
-
-        function remove_active_class(element) {
-            for (var i = 0; i < element.length; i++) {
-                if (element[i].matches('.active')) {
-                    element[i].classList.remove("active");
-                }
-            }
-        }
-
-        function make_query() {
-            var query = '';
-
-            var gender_elements = document.getElementsByClassName("gender_filter");
-
-            for (var i = 0; i < gender_elements.length; i++) {
-                if (gender_elements[i].checked) {
-                    query += '&gender_filter=' + gender_elements[i].value + '';
-                }
-            }
-
-            var price_elements = document.getElementsByClassName("price_filter");
-
-            for (var i = 0; i < price_elements.length; i++) {
-                if (price_elements[i].matches('.active')) {
-                    query += '&price_filter=' + price_elements[i].getAttribute("id") + '';
-                }
-            }
-
-            var brand_elements = document.getElementsByClassName("brand_filter");
-
-            var brandlist = '';
-
-            for (var i = 0; i < brand_elements.length; i++) {
-                if (brand_elements[i].checked) {
-                    brandlist += brand_elements[i].value + ',';
-                }
-            }
-
-            if (brandlist != '') {
-                query += '&brand_filter=' + brandlist + '';
-            }
-
-            return query;
-        }
-
-        $('#clear_filter').onclick = function() {
-
-            var gender_elements = document.getElementsByClassName("gender_filter");
-
-            for (var i = 0; i < gender_elements.length; i++) {
-                gender_elements[i].checked = false;
-            }
-
-            var price_elements = document.getElementsByClassName("price_filter");
-
-            remove_active_class(price_elements);
-
-            var brand_elements = document.getElementsByClassName("brand_filter");
-
-            for (var i = 0; i < brand_elements.length; i++) {
-                brand_elements[i].checked = false;
-            }
-
-            load_product(1, '');
-
-        };
-    </script>
-
-
 
     <!-- Footer Start -->
+    <style>
+        #loading {
+            text-align: center;
+            background: url('loader.gif') no-repeat center;
+            height: 150px;
+        }
+    </style>
 
     <?php
     include "includes/footer.php"
@@ -428,12 +272,14 @@
 
 
     <!-- JavaScript Libraries -->
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src="js/filter.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <script src="js/bootstrap.min.js"></script>
 
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>
