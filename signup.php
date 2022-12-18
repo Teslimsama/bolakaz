@@ -32,11 +32,12 @@ if (isset($_SESSION['captcha'])) {
     <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="favicomatic/site.webmanifest">
     <!-- Vendor CSS-->
     <link href="css/vendor/select2/select2.min.css" rel="stylesheet" media="all">
     <link href="css/vendor/datepicker/daterangepicker.css" rel="stylesheet" media="all">
     <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <!-- CSS only -->
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous"> -->
     <!-- Main CSS-->
@@ -210,9 +211,9 @@ if (isset($_SESSION['captcha'])) {
         <?php
         if (!isset($_SESSION['captcha'])) {
             echo '
-                <di class="form-group" style="width:100%;">
-                  <div class="g-recaptcha" data-sitekey="6LevO1IUAAAAAFX5PpmtEoCxwae-I8cCQrbhTfM6"></div>
-                </di>
+                <div class="form-group" style="width:100%;">
+                  <div class="g-recaptcha" data-sitekey="6Le_IHojAAAAAHIjl-dX5WxJ1VYSwgy_XSmZAnAI"></div>
+                </div>
               ';
         }
         ?>

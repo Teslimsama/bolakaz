@@ -35,6 +35,7 @@ include 'includes/session.php';
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/jquery-ui.css" rel="stylesheet">
 </head>
 
 <body>
@@ -68,7 +69,7 @@ include 'includes/session.php';
                     <!-- Price Start -->
                     <div class="border-bottom mb-4 pb-4">
                         <h5 class="font-weight-semi-bold mb-4">Filter by price</h5>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                        <div class="custom-control custom-checkbox justify-content-between mb-3">
                             <input type="hidden" id="hidden_minimum_price" value="0" />
                             <input type="hidden" id="hidden_maximum_price" value="65000" />
                             <p id="price_show">1000 - 65000</p>
@@ -125,7 +126,7 @@ include 'includes/session.php';
                     </div>
                     <!-- Brand End -->
 
-                    <!--Mate rial Start -->
+                    <!--Material Start -->
                     <div class="border-bottom mb-4 pb-4">
                         <h5 class="font-weight-semi-bold mb-4">Filter by material</h5>
                         <?php
@@ -220,20 +221,13 @@ include 'includes/session.php';
                                         Sort by
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
-                                        <label class="dropdown-item"><input type="radio" name="sorting" value="newest" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'newest' || $_POST['sorting'] == '')) {
-                                                                                                                            echo "checked";
-                                                                                                                        } ?> class="sort_rang sorting">
-                                            Latest</label>
+                                        <label class="dropdown-item"><input type="radio"<?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'newest' || $_POST['sorting'] == '')) {echo "checked";} ?>  name="sorting" class="common_selector sorting" value="newest">Latest</label>
 
-                                        <label class="dropdown-item"><input type="radio" name="sorting" value="low" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'low' || $_POST['sorting'] == '')) {
-                                                                                                                        echo "checked";
-                                                                                                                    } ?> class="sort_rang sorting">
+                                        <label class="dropdown-item"><input type="radio" <?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'most_viewed' || $_POST['sorting'] == '')) {echo "checked";} ?> name="sorting"class="common_selector sorting" value="most_viewed">
                                             Popularity</label>
 
-                                        <label class="dropdown-item"><input type="radio" name="sorting" value="high" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'high' || $_POST['sorting'] == '')) {
-                                                                                                                            echo "checked";
-                                                                                                                        } ?> class="sort_rang sorting">
-                                            Best Rating</label>
+                                        <!-- <label class="dropdown-item"><input type="radio"<?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'best' || $_POST['sorting'] == '')) {echo "checked";} ?>  name="sorting" class="common_selector"value="high">
+                                            Best Rating</label> -->
                                     </div>
                                 </div>
                             </div>
@@ -253,13 +247,7 @@ include 'includes/session.php';
     <!-- Shop End -->
 
     <!-- Footer Start -->
-    <style>
-        #loading {
-            text-align: center;
-            background: url('loader.gif') no-repeat center;
-            height: 150px;
-        }
-    </style>
+   
 
     <?php
     include "includes/footer.php"
@@ -272,9 +260,10 @@ include 'includes/session.php';
 
 
     <!-- JavaScript Libraries -->
-    <script src="js/jquery-1.10.2.min.js"></script>
-    <script src="js/filter.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src="js/jquery-ui.js"></script>
+    <script src="js/filter.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>

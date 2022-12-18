@@ -11,6 +11,7 @@ $(document).ready(function () {
 		var material = get_filter("material");
 		var color = get_filter("color");
 		var size = get_filter("size");
+		var sorting = get_filter("sorting");
 		$.ajax({
 			url: "fetch_data.php",
 			method: "POST",
@@ -22,6 +23,7 @@ $(document).ready(function () {
 				category: category,
 				size: size,
 				color: color,
+				sorting: sorting,
 				material: material
 			},
 			success: function (data) {

@@ -15,7 +15,7 @@ $(function () {
             $this.prop("disabled", true);
 
             $.ajax({
-                url: "contact.php",
+                url: "mail/contact_mail.php",
                 type: "POST",
                 data: {
                     name: name,
@@ -45,7 +45,7 @@ $(function () {
                 complete: function () {
                     setTimeout(function () {
                         $this.prop("disabled", false);
-                    }, 1000);
+                    }, 5000);
                 }
             });
         },

@@ -53,6 +53,19 @@ if(isset($_POST["action"]))
 		 AND size IN('".$size_filter."')
 		";
 	}
+	if (isset($_POST['sorting']) && $_POST['sorting'] != "") {
+		$sorting = implode("','", $_POST['sorting']);
+		if ($sorting == 'newest' || $sorting == '') {
+			$query .= " ORDER BY id DESC";
+		} else if ($sorting == 'most_viewed') {
+			$query .= " ORDER BY counter DESC";
+		}
+		//  else if ($sorting == 'best') {
+		// 	$query .= " ORDER BY price DESC";
+		// }
+	} else {
+		$query .= " ORDER BY id DESC";
+	}		
 
 	$statement = $conn->prepare($query);
 	$statement->execute();
@@ -67,10 +80,10 @@ if(isset($_POST["action"]))
 			<div class="col-lg-4 col-md-6 col-sm-12 pb-1">
                         <div class="card product-item border-0 mb-4">
                             <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-                                <img class="img-fluid w-100" src="img/' . $row['photo'] . '" alt="">
+                                <img class="img-fluid w-100" src="images/' . $row['photo'] . '" alt="">
                             </div>
                             <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
-                                <h6 class="text-truncate mb-3">' . $row['name'] . '</h6>
+                                <h6 class="text-truncate mb-3">' .$row['name']. '</h6>
                                 <div class="d-flex justify-content-center">
                                     <h6>$' . $row['price'] . '</h6><h6 class="text-muted ml-2"><del>$' . $row['price'] . '</del></h6>
                                 </div>
@@ -87,7 +100,12 @@ if(isset($_POST["action"]))
 	}
 	else
 	{
-		$output = '<h3>No Data Found</h3>';
+		$output = '<h3 class="text-center my-5" style="
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+">No Data Found</h3>';
 	}
 	echo $output;
 }

@@ -16,18 +16,24 @@
 		$_SESSION['email'] = $email;
 
 		if(!isset($_SESSION['captcha'])){
-			require('recaptcha/src/autoload.php');		
-			$recaptcha = new \ReCaptcha\ReCaptcha('6LevO1IUAAAAAFCCiOHERRXjh3VrHa5oywciMKcw', new \ReCaptcha\RequestMethod\SocketPost());
-			$resp = $recaptcha->verify($_POST['g-recaptcha-response'], $_SERVER['REMOTE_ADDR']);
+		$secret = "6Le_IHojAAAAAJ9fMx7K8fx3kSdea0rq60iP_pH-";
+		$response = $_POST['g-recaptcha-response'];
+		$remoteip = $_SERVER['REMOTE_ADDR'];
+		$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
+		$data = file_get_contents($url);
+		$row = json_decode($data, true);
 
-			if (!$resp->isSuccess()){
+
+			if ($row['success'] == "true"){
+		  		$_SESSION['captcha'] = time() + (10*60);
+		  	}	
+		  	else{
 		  		$_SESSION['error'] = 'Please answer recaptcha correctly';
 		  		header('location: signup.php');	
 		  		exit();	
-		  	}	
-		  	else{
-		  		$_SESSION['captcha'] = time() + (10*60);
 		  	}
+		
+		
 
 		}
 
@@ -132,5 +138,3 @@
 		$_SESSION['error'] = 'Fill up signup form first';
 		header('location: signup.php');
 	}
-
-?>
