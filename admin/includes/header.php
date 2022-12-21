@@ -6,14 +6,14 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Bolakaz Enterprise</title>
   <!-- Tell the browser to be responsive to screen width -->
-  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1 " name="viewport">
   <!-- Bootstrap 3.3.7 -->
   <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css">
   <!-- favicon  -->
   <link rel="apple-touch-icon" sizes="180x180" href="../favicomatic/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../favicomatic/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../favicomatic/favicon-16x16.png">
-  <link rel="manifest" href="../site.webmanifest">
+  <link rel="manifest" href="../favicomatic/site.webmanifest">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <!-- Select2 -->

@@ -93,6 +93,11 @@ if (isset($_GET['category'])) {
                     <th>Price</th>
                     <th>Views Today</th>
                     <th>Tools</th>
+                    <th>Color</th>
+                    <th>Brand</th>
+                    <th>Size</th>
+                    <th>Material</th>
+                    <th>Quantity</th>
                   </thead>
                   <tbody>
                     <?php
@@ -119,6 +124,11 @@ if (isset($_GET['category'])) {
                               <button class='btn btn-success btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
                               <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
+                            <td>" . $row['color'] . "</td>
+                            <td>" . $row['brand'] . "</td>
+                            <td>" . $row['size'] . "</td>
+                            <td>" . $row['material'] . "</td>
+                            <td>" . $row['qty'] . "</td>
                           </tr>
                         ";
                       }

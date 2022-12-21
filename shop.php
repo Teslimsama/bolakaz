@@ -83,7 +83,7 @@ include 'includes/session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by category</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT DISTINCT(category_name) FROM producto GROUP BY category_name DESC";
+                        $query = "SELECT DISTINCT(category_name) FROM products GROUP BY category_name DESC";
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
@@ -107,7 +107,7 @@ include 'includes/session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by brand</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT DISTINCT(brand) FROM producto GROUP BY brand DESC";
+                        $query = "SELECT DISTINCT(brand) FROM products GROUP BY brand DESC";
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
@@ -131,7 +131,7 @@ include 'includes/session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by material</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT DISTINCT(material) FROM producto GROUP BY material DESC";
+                        $query = "SELECT DISTINCT(material) FROM products GROUP BY material DESC";
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
@@ -155,7 +155,7 @@ include 'includes/session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by color</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT DISTINCT(color) FROM producto GROUP BY color DESC";
+                        $query = "SELECT DISTINCT(color) FROM products GROUP BY color DESC";
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
@@ -179,7 +179,7 @@ include 'includes/session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by size</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT DISTINCT(size) FROM producto GROUP BY size DESC";
+                        $query = "SELECT DISTINCT(size) FROM products GROUP BY size DESC";
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
