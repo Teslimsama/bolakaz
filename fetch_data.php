@@ -10,7 +10,7 @@ if(isset($_POST["action"]))
 {
 	$conn = $pdo->open();
 	$query = "
-		SELECT * FROM producto WHERE product_status = '1'
+		SELECT * FROM products WHERE product_status = '1'
 	";
 	if(isset($_POST["minimum_price"], $_POST["maximum_price"]) && !empty($_POST["minimum_price"]) && !empty($_POST["maximum_price"]))
 	{
@@ -89,7 +89,7 @@ if(isset($_POST["action"]))
                                 </div>
                             </div>
                             <div class="card-footer d-flex justify-content-between bg-light border">
-                                <a href="" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
+                                <a href="detail.php?product='. $row['slug'] .'" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
 								
                                 <button type="submit" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Add To Cart</button>
                             </div>

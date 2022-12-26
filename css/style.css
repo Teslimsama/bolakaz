@@ -3697,7 +3697,7 @@ input[type="button"].btn-block {
 	z-index: -1;
 	width: 1rem;
 	height: 1.25rem;
-	/* opacity: 0; */
+	opacity: 0;
 }
 
 .custom-control-input:checked ~ .custom-control-label::before {

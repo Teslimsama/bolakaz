@@ -221,12 +221,12 @@ include 'includes/session.php';
                                         Sort by
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
-                                        <label class="dropdown-item"><input type="radio"<?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'newest' || $_POST['sorting'] == '')) {echo "checked";} ?>  name="sorting" class="common_selector sorting" value="newest">Latest</label>
+                                        <label class="dropdown-item"><input type="radio"<?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'newest' || $_POST['sorting'] == '')) {echo "checked";} ?>  name="sorting" class="custom-control-input common_selector sorting" value="newest">Latest</label>
 
-                                        <label class="dropdown-item"><input type="radio" <?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'most_viewed' || $_POST['sorting'] == '')) {echo "checked";} ?> name="sorting"class="common_selector sorting" value="most_viewed">
+                                        <label class="dropdown-item"><input type="radio" <?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'most_viewed' || $_POST['sorting'] == '')) {echo "checked";} ?> name="sorting"class="custom-control-input common_selector sorting" value="most_viewed">
                                             Popularity</label>
 
-                                        <!-- <label class="dropdown-item"><input type="radio"<?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'best' || $_POST['sorting'] == '')) {echo "checked";} ?>  name="sorting" class="common_selector"value="high">
+                                        <!-- <label class="dropdown-item"><input type="radio"<?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'best' || $_POST['sorting'] == '')) {echo "checked";} ?>  name="sorting" class="custom-control-input common_selector"value="high">
                                             Best Rating</label> -->
                                     </div>
                                 </div>

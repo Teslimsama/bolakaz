@@ -1,22 +1,8 @@
- <?php
-
-    $query = "SELECT DISTINCT(color) FROM products WHERE status = '0' ORDER BY id DESC";
-    $conn = $pdo->open();
-
-    $statement = $conn->prepare($query);
-    $statement->execute();
-    $result = $statement->fetchAll();
-    foreach ($result as $row) {
-    ?>
-     <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-
-         <label class="custom-control-label" for="color-1"><input type="checkbox" class="custom-control-input" value="<?php echo $row['color']; ?>" id="color-1"><?php echo $row['color']; ?></label>
-         <span class="badge border font-weight-normal">150</span>
-     </div>
- <?php
-    }
-
-    ?>
+ <!-- <i class="fas fa-star star-light submit_star" id="submit_star_1" data-rating="1"></i>
+ <i class="fas fa-star star-light submit_star" id="submit_star_2" data-rating="2"></i>
+ <i class="fas fa-star star-light submit_star" id="submit_star_3" data-rating="3"></i>
+ <i class="fas fa-star star-light submit_star" id="submit_star_4" data-rating="4"></i>
+ <i class="fas fa-star star-light submit_star" id="submit_star_5" data-rating="5"></i> -->
 
 
  <script>
