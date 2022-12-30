@@ -29,10 +29,13 @@ if (isset($_SESSION['user'])) {
 			$image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
 			$subtotal = $row['price'] * $row['quantity'];
 			$total += $subtotal;
+			$total_c = $total + 10;
+
 			$output .= "					  <div class='d-flex justify-content-between'>
-     <p>" . $row['name'] . "</p>
-     <p> $" . number_format($row['price'], 2) . "</p>
- </div>
+			<p>" . $row['quantity'] . " &times;</p>
+			<p>" . $row['name'] . "</p>
+			<p> $" . number_format($row['price'], 2) . "</p>
+		</div>
         
                         ";
 		}
@@ -54,7 +57,8 @@ if (isset($_SESSION['user'])) {
 <div class='card-footer border-secondary bg-transparent'>
     <div class='d-flex justify-content-between mt-2'>
         <h5 class='font-weight-bold'>Total</h5>
-        <h5 class='font-weight-bold'> $" . number_format($total, 2) . "</h5>
+<input type='hidden' value='". $total_c  ."' id='amount'>
+        <h5 class='font-weight-bold'> $" . number_format($total + 10, 2) . "</h5>
     </div>
 </div>
 </div>";
@@ -72,6 +76,7 @@ if (isset($_SESSION['user'])) {
 			$image = (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg';
 			$subtotal = $product['price'] * $row['quantity'];
 			$total += $subtotal;
+			$total_c = $total + 10;
 			$output .= "
 							 <div class='d-flex justify-content-between'>
      <p>". $row['name'] . "</p>
@@ -96,7 +101,9 @@ if (isset($_SESSION['user'])) {
 <div class='card-footer border-secondary bg-transparent'>
     <div class='d-flex justify-content-between mt-2'>
         <h5 class='font-weight-bold'>Total</h5>
-        <h5 class='font-weight-bold'> $" . number_format($total, 2) . "</h5>
+		<input type='hidden' value=' " . $total_c . "' id='amount'>
+        <h5 class='font-weight-bold'> $" . number_format($total +10, 2) . "</h5>
+
     </div>
 </div>
 </div>";

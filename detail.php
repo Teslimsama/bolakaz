@@ -161,7 +161,6 @@ if ($ratingNumber && $count) {
                         <?php } ?>
                         <?php printf('%.1f', $average); ?>
                     </div>
-                    <small class="pt-1">(<span id="total_review">50</span> Reviews)</small>
                 </div>
                 <h3 class="font-weight-semi-bold mb-4">$<?php echo number_format($product['price'], 2); ?></h3>
                 <p class="mb-4"><?php echo $product['description']; ?></p>
@@ -322,7 +321,7 @@ if ($ratingNumber && $count) {
                                     <div class="media mb-4">
                                         <img src="<?php echo (!empty($rating['photo'])) ? 'images/' . $rating['photo'] : 'images/noimage.jpg'; ?>" alt="Image" class="img-fluid rounded mr-3 mt-1" style="width: 45px;">
                                         <div class="media-body">
-                                            <h6><?php echo $rating['firstname']; ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
+                                            <h6><?php echo ucwords($user['firstname'] ." ". $user['lastname']); ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
                                             <div class="mb-2">
                                                 <?php
                                                 for ($i = 1; $i <= 5; $i++) {
@@ -369,7 +368,7 @@ if ($ratingNumber && $count) {
                                         <label for="message">Your Review *</label>
                                         <textarea id="comment" name="comment" cols="30" rows="5" class="form-control" required></textarea>
                                     </div>
-                                    <input type="hidden" value="<?php echo $user['id']; ?>" name="user" id="user">
+                                    <!-- <input type="hidden" value="<?php echo $user['id']; ?>" name="user" id="user"> -->
                                     <input type="hidden" value="<?php echo $product['prodid']; ?>" id="itemid" name="itemid">
                                     <input type="hidden" class="form-control" id="rating" name="rating" value="1">
 
@@ -506,16 +505,15 @@ if ($ratingNumber && $count) {
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="js/rating.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <!-- <script src="js/rating.js"></script> -->
     <script src="lib/easing/easing.min.js"></script>
-    <!-- <script src="lib/owlcarousel/owl.carousel.min.js"></script> -->
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>
     <script src="mail/contact.js"></script>
+    <script src="js/rating.js"></script>
 
     <script>
         $(function() {
