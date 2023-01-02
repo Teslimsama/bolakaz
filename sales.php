@@ -1,16 +1,19 @@
 <?php
 	include 'includes/session.php';
+	$status=$_GET['status'];
 
-	if(isset($_GET['pay'])){
-		$payid = $_GET['pay'];
-		$date = date('Y-m-d');
+	if($status === 'successful'){
+		$txid = $_GET['transaction_id'];
+		$tx_ref = $_GET['tx_ref'];
+		date_default_timezone_set('Africa/lagos');
+		$date = date("m/d/Y H:i:s");
 
 		$conn = $pdo->open();
 
 		try{
 			
-			$stmt = $conn->prepare("INSERT INTO sales (user_id, pay_id, sales_date) VALUES (:user_id, :pay_id, :sales_date)");
-			$stmt->execute(['user_id'=>$user['id'], 'pay_id'=>$payid, 'sales_date'=>$date]);
+			$stmt = $conn->prepare("INSERT INTO sales (user_id, tx_ref, txid, sales_date) VALUES (:user_id, :tx_ref, :txid, :sales_date)");
+			$stmt->execute(['user_id'=>$user['id'], 'tx_ref'=>$tx_ref, 'txid'=>$txid,'sales_date'=>$date]);
 			$salesid = $conn->lastInsertId();
 			
 			try{
@@ -40,6 +43,6 @@
 		$pdo->close();
 	}
 	
-	header('location: profile.php');
+	header('location: profile#trans');
 	
 ?>

@@ -1,5 +1,5 @@
 <?php include 'includes/session.php';
-    
+
 ?>
 
 <!DOCTYPE html>
@@ -31,6 +31,7 @@
     <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
     <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script src="https://checkout.flutterwave.com/v3.js"></script>
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
@@ -177,7 +178,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4">
+                <div id="payment" class="col-lg-4">
                     <div class="card border-secondary mb-5">
                         <div class="card-header bg-secondary border-0">
                             <h4 class="font-weight-semi-bold m-0">Order Total</h4>
@@ -230,38 +231,6 @@
         <!-- Checkout End -->
     </form>
 
-    <!-- <script>
-        const paymentForm = document.getElementById('payForm');
-        paymentForm.addEventListener("submit", payWithPaystack, false);
-
-        function payWithPaystack(e) {
-            e.preventDefault();
-
-            let handler = PaystackPop.setup({
-                key: 'pk_test_3d44964799de7e2a5abdbf2eef2fbe6852e60833', // Replace with your public key
-                email: document.getElementById("email-address").value,
-                amount: document.getElementById("amount").value * 100,
-                firstname: document.getElementById("first-name").value,
-                lastname: document.getElementById("last-name").value,
-                phone: document.getElementById("phone").value,
-                ref: 'unibooks' + Math.floor((Math.random() * 1000000000) + 1), // generates a pseudo-unique reference. Please replace with a reference you generated. Or remove the line entirely so our API will generate one for you
-                // label: "Optional string that replaces customer email"
-                onClose: function() {
-                    // window.location
-                    alert('Failed Transaction.');
-                },
-                callback: function(response) {
-                    let message = 'Payment complete! Your Reference Number: ' + response.reference + ' Thank you!';
-                    alert(message);
-
-                    window.location = "http://localhost/my_project/transact_verify?reference=" + response.reference;
-
-                }
-            });
-
-            handler.openIframe();
-        }
-    </script> -->
     <!-- Footer Start -->
     <script src="js/checkout.js"></script>
 

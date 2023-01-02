@@ -20,7 +20,7 @@
 			<tr>
 				<td>'.date('M d, Y', strtotime($row['sales_date'])).'</td>
 				<td>'.$row['firstname'].' '.$row['lastname'].'</td>
-				<td>'.$row['pay_id'].'</td>
+				<td>'.$row['tx_ref'].'</td>
 				<td align="right">&#36; '.number_format($amount, 2).'</td>
 			</tr>
 			';

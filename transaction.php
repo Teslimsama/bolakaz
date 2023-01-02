@@ -12,7 +12,7 @@
 
 	$total = 0;
 	foreach($stmt as $row){
-		$output['transaction'] = $row['pay_id'];
+		$output['transaction'] = $row['tx_ref'];
 		$output['date'] = date('M d, Y', strtotime($row['sales_date']));
 		$subtotal = $row['price']*$row['quantity'];
 		$total += $subtotal;

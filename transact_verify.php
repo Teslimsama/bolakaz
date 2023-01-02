@@ -1,6 +1,6 @@
 <?php
 //  $customerid = $_SESSION['id'] ;
-include_once 'config/database.php';
+include_once 'includes/session.php';
 
 $ref = $_GET['reference'];
 if ($ref == "") {
@@ -32,39 +32,53 @@ if ($ref == "") {
     if ($err) {
       echo "cURL Error #:" . $err;
     } else {
-      // echo $response;
+      echo $response;
       $result = json_decode($response);
     }
     if ($result->data->status == 'success') {
       $status = $result->data->status;
-      $reference = $result->data->reference;
+      $payid = $result->data->reference;
       $amount = $result->data->amount;
-      $lname = $result->data->customer->last_name;
-      $fname = $result->data->customer->first_name;
-      $fullname = $fname . ' ' . $lname;
-      $Cus_email = $result->data->customer->email;
+      // $lname = $result->data->customer->last_name;
+      // $fname = $result->data->customer->first_name;
+      // $fullname = $fname . ' ' . $lname;
+      // $Cus_email = $result->data->customer->email;
       date_default_timezone_set('Africa/lagos');
-      $Date_time = date('m/d/Y h:i:s a', time());
+      
+      $date = date("Y-m-d H:i:s");
 
-      include_once 'config/database.php';
+      $conn = $pdo->open();
 
-      $sql = "INSERT INTO payments ( status,amount, reference, fullname, date, email) VALUES(?,?,?,?,?,?); ";
+      try {
 
-      $stmt = mysqli_stmt_init($db_connect);
-      mysqli_stmt_prepare($stmt, $sql);
-      mysqli_stmt_bind_param($stmt, 'ssssss', $status, $amount, $reference, $fullname, $Date_time, $Cus_email);
-      // $stmt = $db_connect->prepare("INSERT INTO payments ( status, reference, fullname, date, email, customerid) VALUES (?,?,?,?,?,?)");
-      // $stmt->bind_param("sssssi", $status,$reference,$fullname,$Date_time,$Cus_email,$customerid);
-      // $stmt->execute();
-      if (mysqli_stmt_execute($stmt)) {
-        header("location:success?status=success");
-        exit;
-      } else {
-        echo 'there was a problem on your code' . mysqli_error($db_connect);
+        $stmt = $conn->prepare("INSERT INTO sales (user_id, tx_ref, sales_date) VALUES (:user_id, :tx_ref, :sales_date)");
+        $stmt->execute(['user_id' => $user['id'], 'tx_ref' => $payid, 'sales_date' => $date]);
+        $salesid = $conn->lastInsertId();
+
+        try {
+          $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products ON products.id=cart.product_id WHERE user_id=:user_id");
+          $stmt->execute(['user_id' => $user['id']]);
+
+          foreach ($stmt as $row) {
+            $stmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
+            $stmt->execute(['sales_id' => $salesid, 'product_id' => $row['product_id'], 'quantity' => $row['quantity']]);
+          }
+
+          $stmt = $conn->prepare("DELETE FROM cart WHERE user_id=:user_id");
+          $stmt->execute(['user_id' => $user['id']]);
+          header('location: profile#trans');
+
+          exit;
+          $_SESSION['success'] = 'Transaction successful. Thank you.';
+        } catch (PDOException $e) {
+          $_SESSION['error'] = $e->getMessage();
+        }
+      } catch (PDOException $e) {
+        $_SESSION['error'] = $e->getMessage();
       }
-      $stmt->close();
-      $db_connect->close();
-    } else {
-      header("location:error");
+
+      $pdo->close();
+    }else {
+      header("location:checkout#payment");
     }
     ?>

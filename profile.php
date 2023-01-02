@@ -82,7 +82,7 @@ if (!isset($_SESSION['user'])) {
                 </div>
             </div>
         </div>
-        <div class="box box-solid shadow-sm mt-4 card">
+        <div id="trans" class="box box-solid shadow-sm mt-4 card">
             <div class="box-header with-border card-header">
                 <h4 class="box-title"><i class="fa fa-calendar"></i> <b>Transaction History</b></h4>
             </div>
@@ -114,7 +114,7 @@ if (!isset($_SESSION['user'])) {
 	        									<tr>
 	        										<td class='hidden'></td>
 	        										<td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
-	        										<td>" . $row['pay_id'] . "</td>
+	        										<td>" . $row['tx_ref'] . "</td>
 	        										<td>&#36;" . number_format($total, 2) . "</td>
 	        										<td><button class='btn btn-sm btn-flat btn-primary transact' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</button></td>
 	        									</tr>

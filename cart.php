@@ -156,7 +156,7 @@
                                     }
                                     ?></h5>
                             </div>
-                            <a href="checkout" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>
+                            <a href="checkout#payment" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>
                         </div>
                     </div>
             </div>
