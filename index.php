@@ -22,7 +22,7 @@ include 'includes/session.php';
     <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="favicomatic/site.webmanifest">
     <!-- Font Awesome -->
     <!-- CSS only -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
@@ -296,10 +296,10 @@ include 'includes/session.php';
                                     <h6>$' . $row['price'] . '</h6><h6 class="text-muted ml-2"><del>$' . $row['price'] . '</del></h6>
                                 </div>
                             </div>
-                            <div class="card-footer d-flex justify-content-between bg-light border">
+                            <div class="card-footer d-flex justify-content-center bg-light border">
                                 <a href="detail.php?product=' . $row['slug'] . '" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
 								
-                                <button type="submit" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Add To Cart</button>
+                                
                             </div>
                         </div>
                     </div>';
@@ -360,10 +360,10 @@ include 'includes/session.php';
                                     <h6>$' . $row['price'] . '</h6><h6 class="text-muted ml-2"><del>$' . $row['price'] . '</del></h6>
                                 </div>
                             </div>
-                            <div class="card-footer d-flex justify-content-between bg-light border">
+                            <div class="card-footer d-flex justify-content-center bg-light border">
                                 <a href="detail.php?product=' . $row['slug'] . '" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
 								
-                                <button type="submit" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Add To Cart</button>
+                                
                             </div>
                         </div>
                     </div>

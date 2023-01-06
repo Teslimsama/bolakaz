@@ -45,7 +45,7 @@ if ($ref == "") {
       // $Cus_email = $result->data->customer->email;
       date_default_timezone_set('Africa/lagos');
       
-      $date = date("Y-m-d H:i:s");
+      $date = date("Y-m-d ");
 
       $conn = $pdo->open();
 

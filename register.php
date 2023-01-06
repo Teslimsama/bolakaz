@@ -1,22 +1,22 @@
 <?php
-	use PHPMailer\PHPMailer\PHPMailer;
-	use PHPMailer\PHPMailer\Exception;
-
+	
 	include 'includes/session.php';
 
-	if(isset($_POST['signup'])){
+	if(isset($_POST['submit'])){
 		$firstname = $_POST['firstname'];
 		$lastname = $_POST['lastname'];
 		$email = $_POST['email'];
+		$gender = $_POST['gender'];
 		$password = $_POST['password'];
 		$repassword = $_POST['repassword'];
+		$referral = $_POST['referral'];
 
 		$_SESSION['firstname'] = $firstname;
 		$_SESSION['lastname'] = $lastname;
 		$_SESSION['email'] = $email;
 
 		if(!isset($_SESSION['captcha'])){
-		$secret = "6Le_IHojAAAAAJ9fMx7K8fx3kSdea0rq60iP_pH-";
+		$secret = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
 		$response = $_POST['g-recaptcha-response'];
 		$remoteip = $_SERVER['REMOTE_ADDR'];
 		$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
@@ -24,12 +24,12 @@
 		$row = json_decode($data, true);
 
 
-			if ($row['success'] == "true"){
+			if ($row['success'] == true){
 		  		$_SESSION['captcha'] = time() + (10*60);
 		  	}	
 		  	else{
 		  		$_SESSION['error'] = 'Please answer recaptcha correctly';
-		  		header('location: signup.php');	
+		  		header('location: signup');	
 		  		exit();	
 		  	}
 		
@@ -39,7 +39,7 @@
 
 		if($password != $repassword){
 			$_SESSION['error'] = 'Passwords did not match';
-			header('location: signup.php');
+			header('location: signup');
 		}
 		else{
 			$conn = $pdo->open();
@@ -49,7 +49,7 @@
 			$row = $stmt->fetch();
 			if($row['numrows'] > 0){
 				$_SESSION['error'] = 'Email already taken';
-				header('location: signup.php');
+				header('location: signup');
 			}
 			else{
 				$now = date('Y-m-d');
@@ -61,7 +61,7 @@
 
 				try{
 					$stmt = $conn->prepare("INSERT INTO users (email, password, firstname, lastname, activate_code, created_on) VALUES (:email, :password, :firstname, :lastname, :code, :now)");
-					$stmt->execute(['email'=>$email, 'password'=>$password, 'firstname'=>$firstname, 'lastname'=>$lastname, 'code'=>$code, 'now'=>$now]);
+					$stmt->execute(['email'=>$email, 'password'=>$password, 'firstname'=>$firstname, 'lastname'=>$lastname, 'code'=>$code, 'now'=>$now,]);
 					$userid = $conn->lastInsertId();
 
 					$message = "
@@ -73,58 +73,37 @@
 						<a href='http://localhost/ecommerce/activate.php?code=".$code."&user=".$userid."'>Activate Account</a>
 					";
 
-					//Load phpmailer
-		    		require 'vendor/autoload.php';
+					
 
-		    		$mail = new PHPMailer(true);                             
+		    		                       
 				    try {
-				        //Server settings
-				        $mail->isSMTP();                                     
-				        $mail->Host = 'smtp.gmail.com';                      
-				        $mail->SMTPAuth = true;                               
-				        $mail->Username = 'testsourcecodester@gmail.com';     
-				        $mail->Password = 'mysourcepass';                    
-				        $mail->SMTPOptions = array(
-				            'ssl' => array(
-				            'verify_peer' => false,
-				            'verify_peer_name' => false,
-				            'allow_self_signed' => true
-				            )
-				        );                         
-				        $mail->SMTPSecure = 'ssl';                           
-				        $mail->Port = 465;                                   
+					$to = $email; // Change this email to your //
+					$subject = "$to";
+					$header  = 'MIME-Version: 1.0' . "\r\n";
+					$header .= 'Content-Type: text/html; charset=ISO-8859-1' . "\r\n";
+					$From = "bolajiteslim05@gmail.com";
+					mail($to, $subject, $message, $header);
+					unset($_SESSION['firstname']);
+					unset($_SESSION['lastname']);
+					unset($_SESSION['email']);
 
-				        $mail->setFrom('testsourcecodester@gmail.com');
-				        
-				        //Recipients
-				        $mail->addAddress($email);              
-				        $mail->addReplyTo('testsourcecodester@gmail.com');
+					$_SESSION['success'] = 'Account created. Check your email to activate.';
+					header('location: signup');
+					
+
 				       
-				        //Content
-				        $mail->isHTML(true);                                  
-				        $mail->Subject = 'ECommerce Site Sign Up';
-				        $mail->Body    = $message;
-
-				        $mail->send();
-
-				        unset($_SESSION['firstname']);
-				        unset($_SESSION['lastname']);
-				        unset($_SESSION['email']);
-
-				        $_SESSION['success'] = 'Account created. Check your email to activate.';
-				        header('location: signup.php');
 
 				    } 
 				    catch (Exception $e) {
 				        $_SESSION['error'] = 'Message could not be sent. Mailer Error: '.$mail->ErrorInfo;
-				        header('location: signup.php');
+				        header('location: signup');
 				    }
 
 
 				}
 				catch(PDOException $e){
 					$_SESSION['error'] = $e->getMessage();
-					header('location: register.php');
+					header('location: register');
 				}
 
 				$pdo->close();
@@ -136,5 +115,5 @@
 	}
 	else{
 		$_SESSION['error'] = 'Fill up signup form first';
-		header('location: signup.php');
+		header('location: signup');
 	}

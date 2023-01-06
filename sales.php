@@ -6,7 +6,7 @@
 		$txid = $_GET['transaction_id'];
 		$tx_ref = $_GET['tx_ref'];
 		date_default_timezone_set('Africa/lagos');
-		$date = date("m/d/Y H:i:s");
+		$date = date("m-d-Y");
 
 		$conn = $pdo->open();
 

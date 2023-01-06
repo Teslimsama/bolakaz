@@ -166,7 +166,7 @@ if ($ratingNumber && $count) {
                 <p class="mb-4"><?php echo $product['description']; ?></p>
                 <div class="d-flex mb-3">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
-                    <form>
+        <form id="productForm">
                         <div class="custom-control custom-radio custom-control-inline">
                             <input type="radio" class="custom-control-input" id="size-1" name="size">
                             <label class="custom-control-label" for="size-1">XS</label>
@@ -187,11 +187,11 @@ if ($ratingNumber && $count) {
                             <input type="radio" class="custom-control-input" id="size-5" name="size">
                             <label class="custom-control-label" for="size-5">XL</label>
                         </div>
-                    </form>
+                    
                 </div>
                 <div class="d-flex mb-4">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
-                    <form>
+                   
                         <div class="custom-control custom-radio custom-control-inline">
                             <input type="radio" class="custom-control-input" id="color-1" name="color">
                             <label class="custom-control-label" for="color-1">Black</label>
@@ -212,9 +212,9 @@ if ($ratingNumber && $count) {
                             <input type="radio" class="custom-control-input" id="color-5" name="color">
                             <label class="custom-control-label" for="color-5">Green</label>
                         </div>
-                    </form>
+                  
                 </div>
-                <form id="productForm">
+               
 
 
                     <div class="d-flex align-items-center mb-4 pt-2">
@@ -234,7 +234,7 @@ if ($ratingNumber && $count) {
                         </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
                         <button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
                     </div>
-                </form>
+        </form>
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
                     <div class="d-inline-flex">

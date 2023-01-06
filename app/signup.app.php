@@ -21,19 +21,19 @@
 		$_SESSION['email'] = $email;
 
 		if(!isset($_SESSION['captcha'])){
-			require('recaptcha/src/autoload.php');		
-			$recaptcha = new \ReCaptcha\ReCaptcha('6LevO1IUAAAAAFCCiOHERRXjh3VrHa5oywciMKcw', new \ReCaptcha\RequestMethod\SocketPost());
-			$resp = $recaptcha->verify($_POST['g-recaptcha-response'], $_SERVER['REMOTE_ADDR']);
-
-			if (!$resp->isSuccess()){
-		  		$_SESSION['error'] = 'Please answer recaptcha correctly';
-		  		header('location: ../signup.php');	
-		  		exit();	
-		  	}	
-		  	else{
-		  		$_SESSION['captcha'] = time() + (10*60);
-		  	}
-
+		$secret = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+		$response = $_POST['g-recaptcha-response'];
+		$remoteip = $_SERVER['REMOTE_ADDR'];
+		$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
+		$data = file_get_contents($url);
+		$row = json_decode($data, true);
+		if ($row['success'] == "false") {
+			$_SESSION['captcha'] = time() + (10 * 60);
+		} else {
+			$_SESSION['error'] = 'Please answer recaptcha correctly';
+			header('location: signup.php');
+			exit();
+		}
 		}
 
 		if($password != $repassword){

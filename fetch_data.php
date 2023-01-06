@@ -3,15 +3,21 @@
 //fetch_data.php
 include 'includes/session.php';
 
-// $conn = new PDO("mysql:host=localhost;dbname=testing", "root", "");
-
-
 if(isset($_POST["action"]))
 {
 	$conn = $pdo->open();
-	$query = "
+	$cat = $_POST["cat"];
+	if (isset($_POST["cat"])) {
+		$query = "
+		SELECT * FROM products WHERE product_status = '1'  AND category_name='$cat'
+	";
+	} else {
+		$query = "
 		SELECT * FROM products WHERE product_status = '1'
 	";
+	}
+	
+	
 	if(isset($_POST["minimum_price"], $_POST["maximum_price"]) && !empty($_POST["minimum_price"]) && !empty($_POST["maximum_price"]))
 	{
 		$query .= "
@@ -88,10 +94,9 @@ if(isset($_POST["action"]))
                                     <h6>$' . $row['price'] . '</h6><h6 class="text-muted ml-2"><del>$' . $row['price'] . '</del></h6>
                                 </div>
                             </div>
-                            <div class="card-footer d-flex justify-content-between bg-light border">
+                            <div class="card-footer d-flex justify-content-center bg-light border">
                                 <a href="detail.php?product='. $row['slug'] .'" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
 								
-                                <button type="submit" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Add To Cart</button>
                             </div>
                         </div>
                     </div>

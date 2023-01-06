@@ -72,6 +72,7 @@ include 'includes/session.php';
                         <div class="custom-control custom-checkbox justify-content-between mb-3">
                             <input type="hidden" id="hidden_minimum_price" value="0" />
                             <input type="hidden" id="hidden_maximum_price" value="65000" />
+                            <input type="hidden"  id="cat" value="<?php echo $_GET['category']; ?>">
                             <p id="price_show">1000 - 65000</p>
                             <div id="price_range"></div>
                         </div>
@@ -208,7 +209,7 @@ include 'includes/session.php';
                             <div class="d-flex align-items-center justify-content-between mb-4">
 
                                 <div class="input-group">
-                                    <input type="text" class="form-control" name="search" class="form-control" id="search" onkeyup="load_data(this.value);" placeholder="Search by name">
+                                    <input type="text" class="form-control" name="search" class="form-control" id="search" placeholder="Search by name">
                                     <div class="input-group-append">
                                         <span class="input-group-text bg-transparent text-primary">
                                             <i class="fa fa-search"></i>
@@ -221,12 +222,18 @@ include 'includes/session.php';
                                         Sort by
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
-                                        <label class="dropdown-item"><input type="radio"<?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'newest' || $_POST['sorting'] == '')) {echo "checked";} ?>  name="sorting" class="custom-control-input common_selector sorting" value="newest">Latest</label>
+                                        <label class="dropdown-item"><input type="radio" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'newest' || $_POST['sorting'] == '')) {
+                                                                                                echo "checked";
+                                                                                            } ?> name="sorting" class="custom-control-input common_selector sorting" value="newest">Latest</label>
 
-                                        <label class="dropdown-item"><input type="radio" <?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'most_viewed' || $_POST['sorting'] == '')) {echo "checked";} ?> name="sorting"class="custom-control-input common_selector sorting" value="most_viewed">
+                                        <label class="dropdown-item"><input type="radio" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'most_viewed' || $_POST['sorting'] == '')) {
+                                                                                                echo "checked";
+                                                                                            } ?> name="sorting" class="custom-control-input common_selector sorting" value="most_viewed">
                                             Popularity</label>
 
-                                        <!-- <label class="dropdown-item"><input type="radio"<?php if(isset($_POST['sorting']) && ($_POST['sorting'] == 'best' || $_POST['sorting'] == '')) {echo "checked";} ?>  name="sorting" class="custom-control-input common_selector"value="high">
+                                        <!-- <label class="dropdown-item"><input type="radio"<?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'best' || $_POST['sorting'] == '')) {
+                                                                                                    echo "checked";
+                                                                                                } ?>  name="sorting" class="custom-control-input common_selector"value="high">
                                             Best Rating</label> -->
                                     </div>
                                 </div>
@@ -247,7 +254,7 @@ include 'includes/session.php';
     <!-- Shop End -->
 
     <!-- Footer Start -->
-   
+
 
     <?php
     include "includes/footer.php"

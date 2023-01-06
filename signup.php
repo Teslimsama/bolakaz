@@ -37,7 +37,7 @@ if (isset($_SESSION['captcha'])) {
     <link href="css/vendor/select2/select2.min.css" rel="stylesheet" media="all">
     <link href="css/vendor/datepicker/daterangepicker.css" rel="stylesheet" media="all">
     <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
     <!-- CSS only -->
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous"> -->
     <!-- Main CSS-->
@@ -76,13 +76,13 @@ if (isset($_SESSION['captcha'])) {
                 <div class="card card-4">
                     <div class="card-body">
                         <h2 class="title">Registration Form</h2>
-                        <form action="app/signup.app.php" method="POST">
+                        <form action="register.php" method="POST">
 
                             <div class="msg">
                                 <?php
                                 if (isset($_SESSION['error'])) {
                                     echo "
-                                        <div class='callout callout-danger text-center'>
+                                        <div class='alert alert-danger text-center'>
                                             <p>" . $_SESSION['error'] . "</p> 
                                         </div>
                                         ";
@@ -91,7 +91,7 @@ if (isset($_SESSION['captcha'])) {
 
                                 if (isset($_SESSION['success'])) {
                                     echo "
-                                        <div class='callout callout-success text-center'>
+                                        <div class='alert alert-success text-center'>
                                             <p>" . $_SESSION['success'] . "</p> 
                                         </div>
                                         ";
@@ -110,12 +110,6 @@ if (isset($_SESSION['captcha'])) {
                                     <div class="input-group">
                                         <label class="label">last name</label>
                                         <input class="input--style-4" type="text" name="lastname" required>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">username</label>
-                                        <input class="input--style-4" type="text" name="username" required>
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +167,7 @@ if (isset($_SESSION['captcha'])) {
                                     </div>
                                 </div>
                             </div>
-                            <div class="input-group">
+                            <!-- <div class="input-group">
                                 <label class="label">state</label>
                                 <div class="rs-select2 js-select-simple select--no-search">
                                     <select name="state" required>
@@ -184,7 +178,7 @@ if (isset($_SESSION['captcha'])) {
                                     </select>
                                     <div class="select-dropdown"></div>
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="input-group">
                                 <label class="label">referral</label>
                                 <div class="rs-select2 js-select-simple select--no-search">
@@ -199,24 +193,26 @@ if (isset($_SESSION['captcha'])) {
                                     <div class="select-dropdown"></div>
                                 </div>
                             </div>
-
+                                <?php
+                                        if (!isset($_SESSION['captcha'])) {
+                                            echo '
+                                                <div class="form-group captcha">
+                                                            <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+                                                        </div>
+                                            ';
+                                        }
+                                ?>
                             <div class="p-t-15">
-                                <input class="btn btn--radius-2 btn--blue" name="submit" value="Submit" type="submit">
-                            </div>
+                                <button class="btn btn--radius-2 btn--blue w-100" name="submit" type="submit">Submit</button>
+                            </div>                        
+                            
                         </form>
+                        
                     </div>
                 </div>
             </div>
         </div>
-        <?php
-        if (!isset($_SESSION['captcha'])) {
-            echo '
-                <div class="form-group" style="width:100%;">
-                  <div class="g-recaptcha" data-sitekey="6Le_IHojAAAAAHIjl-dX5WxJ1VYSwgy_XSmZAnAI"></div>
-                </div>
-              ';
-        }
-        ?>
+       
 
         <!-- Jquery JS-->
         <script src="css/vendor/jquery/jquery.min.js"></script>

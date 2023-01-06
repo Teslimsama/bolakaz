@@ -3618,6 +3618,7 @@ input[type="button"].btn-block {
 
 .input-group-append {
 	margin-left: -1px;
+	height: 38px;
 }
 
 .input-group-text {

@@ -6,6 +6,7 @@ $(document).ready(function () {
 		var action = "fetch_data";
 		var minimum_price = $("#hidden_minimum_price").val();
 		var maximum_price = $("#hidden_maximum_price").val();
+		var cat = $("#cat").val();
 		var brand = get_filter("brand"); 
 		var category = get_filter("category"); 
 		var material = get_filter("material");
@@ -17,6 +18,7 @@ $(document).ready(function () {
 			method: "POST",
 			data: {
 				action: action,
+				cat: cat,
 				minimum_price: minimum_price,
 				maximum_price: maximum_price,
 				brand: brand,
@@ -57,4 +59,15 @@ $(document).ready(function () {
 			filter_data();
 		},
 	});
+	$("#search").keyup(function() {
+		var search = $(this).val();
+		$.ajax({
+			url: "action.php",
+			method: "POST",
+			data: { query: search },
+			success:function(response){
+				$(".filter_data").html(response);
+			}
+		})
+	})
 });
