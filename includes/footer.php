@@ -60,7 +60,7 @@
         <img src="cookie.png" alt="">
         <div class="content">
             <header>Cookies Consent</header>
-            <p>This website use cookies to ensure you get the best experience on our website.<!-- <a href="https://www.cookiepolicygenerator.com/live.php?token=Fvk6GUWOvOCcZMrvHcADOW8VSlKiCODj" class="item">Privacy Policy</a> --></p>
+            <p>This website use cookies to ensure you get the best experience on our website.<a href="https://www.cookiepolicygenerator.com/live.php?token=Fvk6GUWOvOCcZMrvHcADOW8VSlKiCODj" class="item">Privacy Policy</a></p>
             <div class="buttons">
                 <button class="item">I understand</button>
                 <a href="https://www.cookiepolicygenerator.com/live.php?token=uBgdxMgsAPvwDPbMPRhemkYvreQN9cvT" class="item">Learn more</a>
