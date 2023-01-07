@@ -2,19 +2,21 @@
 
 //fetch_data.php
 include 'includes/session.php';
-
 if(isset($_POST["action"]))
 {
 	$conn = $pdo->open();
 	$cat = $_POST["cat"];
-	if (isset($_POST["cat"])) {
-		$query = "
-		SELECT * FROM products WHERE product_status = '1'  AND category_name='$cat'
-	";
-	} else {
-		$query = "
-		SELECT * FROM products WHERE product_status = '1'
-	";
+	
+
+	$query = "SELECT * FROM products WHERE product_status = '1' ";
+	
+	
+
+	if ($_POST["cat"] !== '0') {
+		$query .= " AND category_name='$cat'";
+	}
+	else {
+		$query.=" ";
 	}
 	
 	
@@ -96,7 +98,7 @@ if(isset($_POST["action"]))
                             </div>
                             <div class="card-footer d-flex justify-content-center bg-light border">
                                 <a href="detail.php?product='. $row['slug'] .'" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
-								
+								'.$cat.'
                             </div>
                         </div>
                     </div>

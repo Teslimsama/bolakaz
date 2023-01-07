@@ -72,7 +72,11 @@ include 'includes/session.php';
                         <div class="custom-control custom-checkbox justify-content-between mb-3">
                             <input type="hidden" id="hidden_minimum_price" value="0" />
                             <input type="hidden" id="hidden_maximum_price" value="65000" />
-                            <input type="hidden"  id="cat" value="<?php echo $_GET['category']; ?>">
+                            <input type="hidden" id="cat" value="<?php if (isset($_GET['category'])) {
+                                echo $_GET['category'];
+                            }else {
+                                echo "0";
+                            } ?>">
                             <p id="price_show">1000 - 65000</p>
                             <div id="price_range"></div>
                         </div>
@@ -88,12 +92,21 @@ include 'includes/session.php';
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
+
                         foreach ($result as $row) {
                         ?>
                             <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
                                 <input type="checkbox" class="custom-control-input common_selector category" value="<?php echo $row['category_name']; ?>" id="<?php echo 'cat-' . $n ?>">
                                 <label class=" custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo ucwords($row['category_name']); ?></label>
-                                <span class="text-dark badge border font-weight-normal">150</span>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['category_name'];
+                                    $sql = "SELECT * FROM products WHERE category_name='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
                             </div>
                         <?php
                             $n++;
@@ -117,7 +130,15 @@ include 'includes/session.php';
                             <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
                                 <input type="checkbox" class="custom-control-input common_selector brand" value="<?php echo $row['brand']; ?>" id="<?php echo 'brand-' . $n ?>">
                                 <label class=" custom-control-label" for="<?php echo 'brand-' . $n ?>"><?php echo ucwords($row['brand']); ?></label>
-                                <span class="text-dark badge border font-weight-normal">150</span>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['brand'];
+                                    $sql = "SELECT * FROM products WHERE brand='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
                             </div>
                         <?php
                             $n++;
@@ -141,7 +162,15 @@ include 'includes/session.php';
                             <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
                                 <input type="checkbox" class="custom-control-input common_selector material" value="<?php echo $row['material']; ?>" id="<?php echo 'mat-' . $n ?>">
                                 <label class=" custom-control-label" for="<?php echo 'mat-' . $n ?>"><?php echo ucwords($row['material']); ?></label>
-                                <span class="text-dark badge border font-weight-normal">150</span>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['material'];
+                                    $sql = "SELECT * FROM products WHERE material='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
                             </div>
                         <?php
                             $n++;
@@ -165,7 +194,15 @@ include 'includes/session.php';
                             <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
                                 <input type="checkbox" class="custom-control-input common_selector color" value="<?php echo $row['color']; ?>" id="<?php echo 'col-' . $n ?>">
                                 <label class=" custom-control-label" for="<?php echo 'col-' . $n ?>"><?php echo ucwords($row['color']); ?></label>
-                                <span class="text-dark badge border font-weight-normal">150</span>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['color'];
+                                    $sql = "SELECT * FROM products WHERE color='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
                             </div>
                         <?php
                             $n++;
@@ -189,7 +226,15 @@ include 'includes/session.php';
                             <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
                                 <input type="checkbox" class="custom-control-input common_selector size" value="<?php echo $row['size']; ?>" id="<?php echo 'size-' . $n ?>">
                                 <label class="custom-control-label" for="<?php echo 'size-' . $n ?>"><?php echo $row['size']; ?> </label>
-                                <span class="badge border font-weight-normal">150</span>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['size'];
+                                    $sql = "SELECT * FROM products WHERE size='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
                             </div>
                         <?php
                             $n++;
