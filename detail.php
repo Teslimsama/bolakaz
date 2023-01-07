@@ -115,6 +115,10 @@ if ($ratingNumber && $count) {
 
     <!-- Shop Detail Start -->
     <div class="container-fluid py-5">
+        <div class="alert" id="callout" style="display:none">
+            <button type="button" class="close"><span aria-hidden="true">&times;</span></button>
+            <span class="message"></span>
+        </div>
         <div class="row px-xl-5">
             <div class="col-lg-5 pb-5">
                 <div id="product-carousel" class="carousel slide" data-ride="carousel">
@@ -140,10 +144,7 @@ if ($ratingNumber && $count) {
                     </a>
                 </div>
             </div>
-            <!-- <div class="callout" id="callout" style="display:none">
-                <button type="button" class="close"><span aria-hidden="true">&times;</span></button>
-                <span class="message"></span>
-            </div> -->
+
             <div class="col-lg-7 pb-5">
                 <h3 class="font-weight-semi-bold"><?php echo $product['prodname']; ?></h3>
                 <div class="d-flex mb-3">
@@ -166,7 +167,7 @@ if ($ratingNumber && $count) {
                 <p class="mb-4"><?php echo $product['description']; ?></p>
                 <div class="d-flex mb-3">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
-        <form id="productForm">
+                    <form id="productForm">
                         <div class="custom-control custom-radio custom-control-inline">
                             <input type="radio" class="custom-control-input" id="size-1" name="size">
                             <label class="custom-control-label" for="size-1">XS</label>
@@ -187,54 +188,54 @@ if ($ratingNumber && $count) {
                             <input type="radio" class="custom-control-input" id="size-5" name="size">
                             <label class="custom-control-label" for="size-5">XL</label>
                         </div>
-                    
+
                 </div>
                 <div class="d-flex mb-4">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
-                   
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-1" name="color">
-                            <label class="custom-control-label" for="color-1">Black</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-2" name="color">
-                            <label class="custom-control-label" for="color-2">White</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-3" name="color">
-                            <label class="custom-control-label" for="color-3">Red</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-4" name="color">
-                            <label class="custom-control-label" for="color-4">Blue</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-5" name="color">
-                            <label class="custom-control-label" for="color-5">Green</label>
-                        </div>
-                  
-                </div>
-               
 
-
-                    <div class="d-flex align-items-center mb-4 pt-2">
-                        <div class="input-group quantity mr-3" style="width: 130px;">
-                            <div class="input-group-btn">
-                                <button id="minus" type="button" class="btn btn-primary btn-minus">
-                                    <i class="fa fa-minus"></i>
-                                </button>
-                            </div>
-                            <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
-
-                            <div class="input-group-btn">
-                                <button id="add" type="button" class="btn btn-primary btn-plus">
-                                    <i class="fa fa-plus"></i>
-                                </button>
-                            </div>
-                        </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
-                        <button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" class="custom-control-input" id="color-1" name="color">
+                        <label class="custom-control-label" for="color-1">Black</label>
                     </div>
-        </form>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" class="custom-control-input" id="color-2" name="color">
+                        <label class="custom-control-label" for="color-2">White</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" class="custom-control-input" id="color-3" name="color">
+                        <label class="custom-control-label" for="color-3">Red</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" class="custom-control-input" id="color-4" name="color">
+                        <label class="custom-control-label" for="color-4">Blue</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" class="custom-control-input" id="color-5" name="color">
+                        <label class="custom-control-label" for="color-5">Green</label>
+                    </div>
+
+                </div>
+
+
+
+                <div class="d-flex align-items-center mb-4 pt-2">
+                    <div class="input-group quantity mr-3" style="width: 130px;">
+                        <div class="input-group-btn">
+                            <button id="minus" type="button" class="btn btn-primary btn-minus">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                        <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
+
+                        <div class="input-group-btn">
+                            <button id="add" type="button" class="btn btn-primary btn-plus">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
+                    <button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
+                </div>
+                </form>
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
                     <div class="d-inline-flex">
@@ -321,7 +322,7 @@ if ($ratingNumber && $count) {
                                     <div class="media mb-4">
                                         <img src="<?php echo (!empty($rating['photo'])) ? 'images/' . $rating['photo'] : 'images/noimage.jpg'; ?>" alt="Image" class="img-fluid rounded mr-3 mt-1" style="width: 45px;">
                                         <div class="media-body">
-                                            <h6><?php echo ucwords($user['firstname'] ." ". $user['lastname']); ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
+                                            <h6><?php echo ucwords($user['firstname'] . " " . $user['lastname']); ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
                                             <div class="mb-2">
                                                 <?php
                                                 for ($i = 1; $i <= 5; $i++) {

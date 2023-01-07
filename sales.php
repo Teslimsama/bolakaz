@@ -6,14 +6,14 @@
 		$txid = $_GET['transaction_id'];
 		$tx_ref = $_GET['tx_ref'];
 		date_default_timezone_set('Africa/lagos');
-		$date = date("m-d-Y");
+		$date = date("Y-m-d");
 
 		$conn = $pdo->open();
 
 		try{
 			
 			$stmt = $conn->prepare("INSERT INTO sales (user_id, tx_ref, txid, sales_date) VALUES (:user_id, :tx_ref, :txid, :sales_date)");
-			$stmt->execute(['user_id'=>$user['id'], 'tx_ref'=>$tx_ref, 'txid'=>$txid,'sales_date'=>$date]);
+			$stmt->execute(['user_id'=>$user['id'], 'tx_ref'=>$tx_ref, 'txid'=>$txid, 'sales_date'=>$date]);
 			$salesid = $conn->lastInsertId();
 			
 			try{

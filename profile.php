@@ -100,7 +100,7 @@ if (!isset($_SESSION['user'])) {
                         $conn = $pdo->open();
 
                         try {
-                            $stmt = $conn->prepare("SELECT * FROM sales WHERE user_id=:user_id ORDER BY sales_date DESC");
+                            $stmt = $conn->prepare("SELECT * FROM sales WHERE user_id=:user_id ORDER BY id DESC");
                             $stmt->execute(['user_id' => $user['id']]);
                             foreach ($stmt as $row) {
                                 $stmt2 = $conn->prepare("SELECT * FROM details LEFT JOIN products ON products.id=details.product_id WHERE sales_id=:id");

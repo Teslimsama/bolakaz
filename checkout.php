@@ -222,7 +222,10 @@
                             <button onclick="payNow()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
                         </div>
                         <div style="display: none;" id="bank_transfer" class="card-footer border-secondary bg-transparent">
-                            <button type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
+                            <button type="button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Place Order</button>
+                            <?php
+                            include "includes/pay_modal.php"
+                            ?>
                         </div>
                     </div>
                 </div>
