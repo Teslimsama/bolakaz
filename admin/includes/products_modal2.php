@@ -60,33 +60,33 @@
             <label for="photo" class="col-sm-1 control-label">Color</label>
 
             <div class="col-sm-5">
-              <input type="text" id="color" class="form-control" name="color">
+              <input type="text" id="edit_color" class="form-control" name="color">
             </div>
           </div>
           <div class="form-group ">
             <label for="material" class="col-sm-1 control-label">Material</label>
 
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="material" name="material" required>
+              <input type="text" class="form-control" id="edit_material" name="material" required>
             </div>
 
             <label for="quantity" class="col-sm-1 control-label">Quantity</label>
 
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="quantity" name="quantity">
+              <input type="text" class="form-control" id="edit_quantity" name="quantity">
             </div>
           </div>
           <div class="form-group ">
             <label for="brand" class="col-sm-1 control-label">Brand</label>
 
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="brand" name="brand" required>
+              <input type="text" class="form-control" id="edit_brand" name="brand" required>
             </div>
 
             <label for="size" class="col-sm-1 control-label">Size</label>
 
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="size" name="size">
+              <input type="text" class="form-control" id="edit_size" name="size">
             </div>
 
           </div>

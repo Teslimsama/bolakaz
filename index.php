@@ -321,11 +321,12 @@ include 'includes/session.php';
                     <h2 class="section-title px-5 mb-3"><span class="bg-secondary px-2">Stay Updated</span></h2>
                     <p>Amet lorem at rebum amet dolores. Elitr lorem dolor sed amet diam labore at justo ipsum eirmod duo labore labore.</p>
                 </div>
-                <form action="">
+                <form method="POST" action="includes/newletter.php">
                     <div class="input-group">
-                        <input type="text" class="form-control border-white p-4" placeholder="Email Goes Here">
+                        <input type="email" class="form-control border-white p-4" name="email" placeholder="Email Goes Here">
+                        <input type="hidden" class="form-control border-white p-4" value="nil" name="name" placeholder="Email Goes Here">
                         <div class="input-group-append">
-                            <button class="btn btn-primary px-4">Subscribe</button>
+                            <button type="submit" class="btn btn-primary px-4">Subscribe</button>
                         </div>
                     </div>
                 </form>

@@ -56,7 +56,8 @@ $(function() {
 			url : 'action.php',					
 			data : formData,
 			success:function(response){
-				if(response.success == 1) {
+				if (response.success == 1) {
+					console.log(response);
 					$("#ratingForm")[0].reset();
 					window.location.reload();
 				}

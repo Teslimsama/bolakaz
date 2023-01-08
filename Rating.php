@@ -36,14 +36,7 @@ class Rating{
 		}
 		$numRows = mysqli_num_rows($result);
 		return $numRows;
-	}	
-	// public function userLogin($username, $password){
-	// 	$sqlQuery = "
-	// 		SELECT * 
-	// 		FROM ".$this->itemUsersTable." 
-	// 		WHERE username='".$username."' AND password='".$password."'";
-    //     return  $this->getData($sqlQuery);
-	// }		
+	}			
 	public function getItemList(){
 		$sqlQuery = "
 			SELECT * FROM ".$this->itemTable;

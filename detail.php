@@ -369,7 +369,7 @@ if ($ratingNumber && $count) {
                                         <label for="message">Your Review *</label>
                                         <textarea id="comment" name="comment" cols="30" rows="5" class="form-control" required></textarea>
                                     </div>
-                                    <!-- <input type="hidden" value="<?php echo $user['id']; ?>" name="user" id="user"> -->
+                                    
                                     <input type="hidden" value="<?php echo $product['prodid']; ?>" id="itemid" name="itemid">
                                     <input type="hidden" class="form-control" id="rating" name="rating" value="1">
 
@@ -398,7 +398,7 @@ if ($ratingNumber && $count) {
 
 
     <!-- Products Start -->
-    <div class="container-fluid py-5">
+    <!-- <div class="container-fluid py-5">
         <div class="text-center mb-4">
             <h2 class="section-title px-5"><span class="px-2">You May Also Like</span></h2>
         </div>
@@ -488,7 +488,7 @@ if ($ratingNumber && $count) {
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     <!-- Products End -->
 
 

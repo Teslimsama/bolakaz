@@ -222,6 +222,11 @@ if (isset($_GET['category'])) {
           $('#edit_name').val(response.prodname);
           $('#catselected').val(response.category_id).html(response.catname);
           $('#edit_price').val(response.price);
+          $('#edit_material').val(response.material);
+          $('#edit_color').val(response.color);
+          $('#edit_quantity').val(response.qty);
+          $('#edit_brand').val(response.brand);
+          $('#edit_size').val(response.size);
           CKEDITOR.instances["editor2"].setData(response.description);
           getCategory();
         }

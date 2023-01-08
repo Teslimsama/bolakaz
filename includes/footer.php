@@ -26,12 +26,12 @@
                     </div>
                     <div class="col-md-4 mb-5">
                         <h5 class="font-weight-bold text-dark mb-4">Newsletter</h5>
-                        <form action="" method="$_GET">
+                        <form action="includes/newletter.php" method="POST">
                             <div class="form-group">
-                                <input type="text" class="form-control border-0 py-4" placeholder="Your Name" required="required" />
+                                <input type="text" class="form-control border-0 py-4" name="name" placeholder="Your Name" required="required" />
                             </div>
                             <div class="form-group">
-                                <input type="email" class="form-control border-0 py-4" placeholder="Your Email" required="required" />
+                                <input type="email" class="form-control border-0 py-4" name="email" placeholder="Your Email" required="required" />
                             </div>
                             <div>
                                 <button class="btn btn-primary btn-block border-0 py-3" type="submit">Subscribe Now</button>
@@ -57,14 +57,14 @@
         </div>
     </div>
     <div class="wrapper">
-        <img src="cookie.png" alt="">
+        <img src="images/cookie.png" alt="">
         <div class="content">
             <header>Cookies Consent</header>
-            <p>This website use cookies to ensure you get the best experience on our website.<a href="https://www.cookiepolicygenerator.com/live.php?token=Fvk6GUWOvOCcZMrvHcADOW8VSlKiCODj" class="item">Privacy Policy</a></p>
+            <p>This website use cookies to ensure you get the best experience on our website.<a target="_blank" href="https://www.cookiepolicygenerator.com/live.php?token=Fvk6GUWOvOCcZMrvHcADOW8VSlKiCODj" class="item">Privacy Policy</a></p>
             <div class="buttons">
                 <button class="item">I understand</button>
-                <a href="https://www.cookiepolicygenerator.com/live.php?token=uBgdxMgsAPvwDPbMPRhemkYvreQN9cvT" class="item">Learn more</a>
-                
+                <a target="_blank" href="https://www.cookiepolicygenerator.com/live.php?token=uBgdxMgsAPvwDPbMPRhemkYvreQN9cvT" class="item">Learn more</a>
+
             </div>
         </div>
     </div>

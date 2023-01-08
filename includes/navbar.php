@@ -16,7 +16,7 @@
                                 $stmt->execute();
                                 foreach ($stmt as $row) {
                                     echo "
-                            <a class='nav-item nav-link' href='shop.php?category=" . $row['cat_slug'] . "'>" . $row['name'] . "</a>
+                            <a class='nav-item nav-link' href='shop.php?category=" . $row['name'] . "'>" . $row['name'] . "</a>
                             ";
                                 }
                             } catch (PDOException $e) {
