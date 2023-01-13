@@ -239,16 +239,16 @@ if ($ratingNumber && $count) {
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
                     <div class="d-inline-flex">
-                        <a class="text-dark px-2" href="">
+                        <a class="text-dark px-2" href="https://www.facebook.com/sharer/sharer.php?u=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a class="text-dark px-2" href="">
+                        <a class="text-dark px-2" href="https://twitter.com/intent/tweet?url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&text=">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a class="text-dark px-2" href="">
+                        <a class="text-dark px-2" href="https://www.linkedin.com/shareArticle?mini=true&url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
-                        <a class="text-dark px-2" href="">
+                        <a class="text-dark px-2" href="https://pinterest.com/pin/create/button/?url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&media=&description=">
                             <i class="fab fa-pinterest"></i>
                         </a>
                     </div>
@@ -369,7 +369,7 @@ if ($ratingNumber && $count) {
                                         <label for="message">Your Review *</label>
                                         <textarea id="comment" name="comment" cols="30" rows="5" class="form-control" required></textarea>
                                     </div>
-                                    
+
                                     <input type="hidden" value="<?php echo $product['prodid']; ?>" id="itemid" name="itemid">
                                     <input type="hidden" class="form-control" id="rating" name="rating" value="1">
 
