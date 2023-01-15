@@ -34,6 +34,8 @@ if (isset($_SESSION['user'])) {
 			$output .= "					  <div class='d-flex justify-content-between'>
 			<p>" . $row['quantity'] . " &times;</p>
 			<p>" . $row['name'] . "</p>
+			<p>Size(" . $row['size'] . ")</p>
+			<p>Color(" . $row['color'] . ")</p>
 			<p> $" . number_format($row['price'], 2) . "</p>
 		</div>
         

@@ -24,9 +24,6 @@
 		$row = $stmt->fetch();
 
 		if($row['numrows'] > 0){
-			$_SESSION['error'] = 'Product already exist';
-		}
-		else{
 			if(!empty($filename)){
 				$ext = pathinfo($filename, PATHINFO_EXTENSION);
 				$new_filename = $slug.'.'.$ext;
@@ -46,6 +43,10 @@
 				$_SESSION['error'] = $e->getMessage();
 			}
 		}
+		else{
+			
+			$_SESSION['error'] = 'Product already exist';
+		}
 
 		$pdo->close();
 	}
@@ -53,6 +54,6 @@
 		$_SESSION['error'] = 'Fill up product form first';
 	}
 
-	header('location: products.php');
+	header('location: products');
 
 ?>
