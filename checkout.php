@@ -198,7 +198,7 @@
                         <div class="card-body">
                             <div class="form-group">
                                 <div class="custom-control custom-radio">
-                                    <input type="radio" class="custom-control-input" name="payment" onclick="paystack()" id="paypal">
+                                    <input type="radio" checked class="custom-control-input" name="payment" onclick="paystack()" id="paypal">
                                     <label class="custom-control-label" for="paypal">Paystack</label>
                                 </div>
                             </div>

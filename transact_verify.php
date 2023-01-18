@@ -80,5 +80,6 @@ if ($ref == "") {
       $pdo->close();
     }else {
       header("location:checkout#payment");
+      echo $result;
     }
     ?>
