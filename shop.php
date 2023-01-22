@@ -1,5 +1,5 @@
 <?php
-include 'includes/session.php';
+include 'session.php';
 
 ?>
 <!DOCTYPE html>
@@ -41,8 +41,8 @@ include 'includes/session.php';
 <body>
 
     <?php
-    include "includes/header.php"; ?>
-    <?php include 'includes/navbar.php'; ?>
+    include "header.php"; ?>
+    <?php include 'navbar.php'; ?>
 
 
     <input type="hidden" value="">
@@ -73,10 +73,10 @@ include 'includes/session.php';
                             <input type="hidden" id="hidden_minimum_price" value="0" />
                             <input type="hidden" id="hidden_maximum_price" value="65000" />
                             <input type="hidden" id="cat" value="<?php if (isset($_GET['category'])) {
-                                echo $_GET['category'];
-                            }else {
-                                echo "0";
-                            } ?>">
+                                                                        echo $_GET['category'];
+                                                                    } else {
+                                                                        echo "0";
+                                                                    } ?>">
                             <p id="price_show">1000 - 65000</p>
                             <div id="price_range"></div>
                         </div>
@@ -302,7 +302,7 @@ include 'includes/session.php';
 
 
     <?php
-    include "includes/footer.php"
+    include "footer.php"
     ?>
     <!-- Footer End -->
 

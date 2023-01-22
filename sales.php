@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 	$status=$_GET['status'];
 
 	if($status === 'successful'){
@@ -44,5 +44,3 @@
 	}
 	
 	header('location: profile#trans');
-	
-?>

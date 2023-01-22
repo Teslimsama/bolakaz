@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 <?php
 $where = '';
 if (isset($_GET['category'])) {
@@ -7,13 +7,13 @@ if (isset($_GET['category'])) {
 }
 
 ?>
-<?php include 'includes/header.php'; ?>
+<?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="wrapper">
 
-    <?php include 'includes/navbar.php'; ?>
-    <?php include 'includes/menubar.php'; ?>
+    <?php include 'navbar.php'; ?>
+    <?php include 'menubar.php'; ?>
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
@@ -147,14 +147,14 @@ if (isset($_GET['category'])) {
       </section>
 
     </div>
-    <?php include 'includes/footer.php'; ?>
-    <?php include 'includes/products_modal.php'; ?>
-    <?php include 'includes/products_modal2.php'; ?>
+    <?php include 'footer.php'; ?>
+    <?php include 'products_modal.php'; ?>
+    <?php include 'products_modal2.php'; ?>
 
   </div>
   <!-- ./wrapper -->
 
-  <?php include 'includes/scripts.php'; ?>
+  <?php include 'scripts.php'; ?>
   <script>
     $(function() {
       $(document).on('click', '.edit', function(e) {

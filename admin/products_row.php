@@ -1,5 +1,5 @@
 <?php 
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_POST['id'])){
 		$id = $_POST['id'];
@@ -14,4 +14,3 @@
 
 		echo json_encode($row);
 	}
-?>

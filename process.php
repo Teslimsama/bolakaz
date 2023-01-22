@@ -1,7 +1,7 @@
 <?php
 
 //process.php
-include 'includes/session.php';
+include 'session.php';
 
 $conn = $pdo->open();
 
@@ -364,7 +364,3 @@ if(isset($_GET["action"]))
 
 	echo json_encode($data);
 }
-
-
-
-?>

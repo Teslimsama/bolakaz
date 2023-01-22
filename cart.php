@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -38,9 +38,9 @@
 <body>
 
     <?php
-    include "includes/header.php"
+    include "header.php"
     ?>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
 
 
 
@@ -171,7 +171,7 @@
     <!-- Footer Start -->
 
     <?php
-    include "includes/footer.php";
+    include "footer.php";
     ?>
     <!-- Footer End -->
 
@@ -224,6 +224,7 @@
                             getDetails();
                             getCart();
                             getTotal();
+                            window.location.reload();
                         }
                     }
                 });
@@ -248,6 +249,7 @@
                             getDetails();
                             getCart();
                             getTotal();
+                            window.location.reload();
                         }
                     }
                 });

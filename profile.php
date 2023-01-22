@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 <?php
 if (!isset($_SESSION['user'])) {
     header('location: index.php');
@@ -42,8 +42,8 @@ if (!isset($_SESSION['user'])) {
 <body>
 
     <?php
-    include "includes/header.php"; ?>
-    <?php include 'includes/navbar.php'; ?>
+    include "header.php"; ?>
+    <?php include 'navbar.php'; ?>
     <!-- Page Header Start -->
     <div class="container-fluid bg-secondary mb-5">
         <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
@@ -135,8 +135,8 @@ if (!isset($_SESSION['user'])) {
     <!-- Footer Start -->
 
     <?php
-    include "includes/footer.php"; ?>
-    <?php include 'includes/profile_modal.php'; ?>
+    include "footer.php"; ?>
+    <?php include 'profile_modal.php'; ?>
 
     <!-- Footer End -->
     <script>

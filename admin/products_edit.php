@@ -1,6 +1,6 @@
 <?php
-	include 'includes/session.php';
-	include 'includes/slugify.php';
+	include 'session.php';
+	include 'slugify.php';
 
 	if(isset($_POST['edit'])){
 		$id = $_POST['id'];
@@ -33,5 +33,3 @@
 	}
 
 	header('location: products.php');
-
-?>

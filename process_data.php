@@ -1,5 +1,5 @@
 <?php
-include 'includes/session.php';
+include 'session.php';
 
 $conn = $pdo->open();
 $slug = $_POST['category'];
@@ -244,5 +244,3 @@ if (isset($_POST["query"])) {
 	echo json_encode($output);
 
 }
-
-?>

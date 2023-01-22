@@ -1,5 +1,5 @@
 <?php
-include 'includes/session.php';
+include 'session.php';
 include 'Rating.php';
 $rating = new Rating();
 ?>
@@ -93,9 +93,9 @@ if ($ratingNumber && $count) {
 
 <body>
     <!-- Topbar Start -->
-    <?php include 'includes/header.php'; ?>
+    <?php include 'header.php'; ?>
 
-    <?php include 'includes/navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
     <!-- Navbar End -->
 
 
@@ -182,7 +182,8 @@ if ($ratingNumber && $count) {
                                 <label class="custom-control-label" for="<?php echo 'size-' . $n ?>"><?php echo $row['size']; ?></label>
                             </div>
                         <?php
-                            $n++;} ?>
+                            $n++;
+                        } ?>
 
                 </div>
                 <div class="d-flex mb-4">
@@ -201,7 +202,8 @@ if ($ratingNumber && $count) {
                             <label class="custom-control-label" for="<?php echo 'color-' . $n ?>"><?php echo $row['color']; ?></label>
                         </div>
                     <?php
-                        $n++;} ?>
+                        $n++;
+                    } ?>
 
                 </div>
 
@@ -484,7 +486,7 @@ if ($ratingNumber && $count) {
     <!-- Footer Start -->
 
     <?php
-    include 'includes/footer.php';
+    include 'footer.php';
     ?>
     <!-- Footer End -->
 

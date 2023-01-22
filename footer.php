@@ -1,5 +1,5 @@
     <!-- Footer Start -->
-    <?php include 'includes/scripts.php'; ?>
+    <?php include 'scripts.php'; ?>
 
     <div class="container-fluid bg-secondary text-dark mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
@@ -26,7 +26,7 @@
                     </div>
                     <div class="col-md-4 mb-5">
                         <h5 class="font-weight-bold text-dark mb-4">Newsletter</h5>
-                        <form action="includes/newletter.php" method="POST">
+                        <form action="newletter.php" method="POST">
                             <div class="form-group">
                                 <input type="text" class="form-control border-0 py-4" name="name" placeholder="Your Name" required="required" />
                             </div>

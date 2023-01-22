@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 <?php
 if (isset($_SESSION['user'])) {
     header('location: cart');
@@ -193,26 +193,26 @@ if (isset($_SESSION['captcha'])) {
                                     <div class="select-dropdown"></div>
                                 </div>
                             </div>
-                                <?php
-                                        if (!isset($_SESSION['captcha'])) {
-                                            echo '
+                            <?php
+                            if (!isset($_SESSION['captcha'])) {
+                                echo '
                                                 <div class="form-group captcha">
                                                             <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
                                                         </div>
                                             ';
-                                        }
-                                ?>
+                            }
+                            ?>
                             <div class="p-t-15">
                                 <button class="btn btn--radius-2 btn--blue w-100" name="submit" type="submit">Submit</button>
-                            </div>                        
-                            
+                            </div>
+
                         </form>
-                        
+
                     </div>
                 </div>
             </div>
         </div>
-       
+
 
         <!-- Jquery JS-->
         <script src="css/vendor/jquery/jquery.min.js"></script>

@@ -1,7 +1,7 @@
 <?php
 
 //fetch_data.php
-include 'includes/session.php';
+include 'session.php';
 if(isset($_POST["action"]))
 {
 	$conn = $pdo->open();
@@ -116,5 +116,3 @@ if(isset($_POST["action"]))
 	}
 	echo $output;
 }
-
-?>

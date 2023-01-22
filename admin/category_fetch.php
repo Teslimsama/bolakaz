@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	$output = '';
 
@@ -16,5 +16,3 @@
 
 	$pdo->close();
 	echo json_encode($output);
-
-?>

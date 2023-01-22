@@ -45,4 +45,4 @@
     </div>
   </nav>
 </header>
-<?php include 'includes/profile_modal.php'; ?>
+<?php include 'profile_modal.php'; ?>

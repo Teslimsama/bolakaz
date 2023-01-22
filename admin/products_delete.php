@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_POST['delete'])){
 		$id = $_POST['id'];
@@ -23,5 +23,3 @@
 	}
 
 	header('location: products.php');
-	
-?>

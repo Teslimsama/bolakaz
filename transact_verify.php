@@ -1,6 +1,6 @@
 <?php
 //  $customerid = $_SESSION['id'] ;
-include_once 'includes/session.php';
+include_once 'session.php';
 
 $ref = $_GET['reference'];
 if ($ref == "") {
@@ -44,7 +44,7 @@ if ($ref == "") {
       // $fullname = $fname . ' ' . $lname;
       // $Cus_email = $result->data->customer->email;
       date_default_timezone_set('Africa/lagos');
-      
+
       $date = date("Y-m-d ");
 
       $conn = $pdo->open();
@@ -78,7 +78,7 @@ if ($ref == "") {
       }
 
       $pdo->close();
-    }else {
+    } else {
       header("location:checkout#payment");
       echo $result;
     }

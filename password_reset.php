@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 <?php
 if (!isset($_GET['code']) or !isset($_GET['user'])) {
   header('location: index.php');
@@ -67,7 +67,7 @@ if (!isset($_GET['code']) or !isset($_GET['user'])) {
     </div>
   </div>
 
-  <?php include 'includes/scripts.php' ?>
+  <?php include 'scripts.php' ?>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(!isset($_GET['code']) OR !isset($_GET['user'])){
 		header('location: index.php');
@@ -51,5 +51,3 @@
 		$_SESSION['error'] = 'Input new password first';
 		header('location: '.$path);
 	}
-
-?>

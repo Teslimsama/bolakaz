@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	function generateRow($from, $to, $conn){
 		$contents = '';
@@ -84,4 +84,3 @@
 		$_SESSION['error'] = 'Need date range to provide sales print';
 		header('location: sales.php');
 	}
-?>

@@ -1,5 +1,5 @@
 <?php
-include 'includes/session.php';
+include 'session.php';
 include 'Rating.php';
 $rating = new Rating();
 
@@ -15,6 +15,3 @@ if(!empty($_POST['action']) && $_POST['action'] == 'saveRating'
 		);
 		echo json_encode($data);		
 }
-
- 
-?>

@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_POST['upload'])){
 		$id = $_POST['id'];
@@ -27,4 +27,3 @@
 	}
 
 	header('location: users.php');
-?>

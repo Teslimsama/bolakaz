@@ -1,4 +1,4 @@
-<?php include 'includes/session.php';
+<?php include 'session.php';
 
 ?>
 <!DOCTYPE html>
@@ -39,9 +39,9 @@
     <!-- Topbar Start -->
 
     <?php
-    include "includes/header.php"
+    include "header.php"
     ?>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
 
     <!-- Navbar End -->
 
@@ -117,7 +117,7 @@
     <!-- Footer Start -->
 
     <?php
-    // include "includes/footer.php";
+    // include "footer.php";
     // include "mail/contact_mail.php";
     ?>
     <!-- Footer End -->
@@ -125,20 +125,20 @@
 
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
-    
+
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <!-- Contact Javascript File -->
-        <script src="mail/jqBootstrapValidation.min.js"></script>
-        <script src="mail/contact.js"></script>
+    <script src="mail/jqBootstrapValidation.min.js"></script>
+    <script src="mail/contact.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
-    
+
 
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
 
 
-    
+
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
     <!-- Template Javascript -->

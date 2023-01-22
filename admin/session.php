@@ -1,5 +1,5 @@
 <?php
-	include '../includes/CreateDb.php';
+	include '../CreateDb.php';
 	session_start();
 
 	if(!isset($_SESSION['admin']) || trim($_SESSION['admin']) == ''){
@@ -14,5 +14,3 @@
 	$admin = $stmt->fetch();
 
 	$pdo->close();
-
-?>

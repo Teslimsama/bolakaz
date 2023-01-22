@@ -1,5 +1,5 @@
 <?php
-include 'includes/session.php';
+include 'session.php';
 $conn = $pdo->open();
 
 $output = '';
@@ -59,12 +59,11 @@ if (isset($_SESSION['user'])) {
 <div class='card-footer border-secondary bg-transparent'>
     <div class='d-flex justify-content-between mt-2'>
         <h5 class='font-weight-bold'>Total</h5>
-<input type='hidden' value='". $total_c  ."' id='amount'>
+<input type='hidden' value='" . $total_c  . "' id='amount'>
         <h5 class='font-weight-bold'> $" . number_format($total + 10, 2) . "</h5>
     </div>
 </div>
 </div>";
- 
 	} catch (PDOException $e) {
 		$output .= $e->getMessage();
 	}
@@ -81,7 +80,7 @@ if (isset($_SESSION['user'])) {
 			$total_c = $total + 10;
 			$output .= "
 							 <div class='d-flex justify-content-between'>
-     <p>". $row['name'] . "</p>
+     <p>" . $row['name'] . "</p>
      <p>$ " . number_format($row['price'], 2) . "</p>
  </div>
         
@@ -104,12 +103,11 @@ if (isset($_SESSION['user'])) {
     <div class='d-flex justify-content-between mt-2'>
         <h5 class='font-weight-bold'>Total</h5>
 		<input type='hidden' value=' " . $total_c . "' id='amount'>
-        <h5 class='font-weight-bold'> $" . number_format($total +10, 2) . "</h5>
+        <h5 class='font-weight-bold'> $" . number_format($total + 10, 2) . "</h5>
 
     </div>
 </div>
 </div>";
-
 	} else {
 		$output .= "
 				<tr>

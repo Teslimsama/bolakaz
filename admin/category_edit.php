@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_POST['edit'])){
 		$id = $_POST['id'];
@@ -21,5 +21,3 @@
 	}
 
 	header('location: category.php');
-
-?>

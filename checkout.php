@@ -1,4 +1,4 @@
-<?php include 'includes/session.php';
+<?php include 'session.php';
 
 ?>
 
@@ -39,9 +39,9 @@
 
 <body>
     <?php
-    include "includes/header.php"
+    include "header.php"
     ?>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
     <!-- Footer End -->
 
     <!-- Navbar End -->
@@ -224,7 +224,7 @@
                         <div style="display: none;" id="bank_transfer" class="card-footer border-secondary bg-transparent">
                             <button type="button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Place Order</button>
                             <?php
-                            include "includes/pay_modal.php"
+                            include "pay_modal.php"
                             ?>
                         </div>
                     </div>
@@ -238,7 +238,7 @@
     <script src="js/checkout.js"></script>
 
     <?php
-    include "includes/footer.php"
+    include "footer.php"
     ?>
     <!-- Footer End -->
     <script>

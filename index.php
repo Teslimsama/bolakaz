@@ -1,5 +1,5 @@
 <?php
-include 'includes/session.php';
+include 'session.php';
 
 ?>
 <!DOCTYPE html>
@@ -37,7 +37,7 @@ include 'includes/session.php';
 
 <body>
     <?php
-    include "includes/header.php"
+    include "header.php"
     ?>
     <div class="container-fluid">
         <div class="row border-top px-xl-5">
@@ -321,7 +321,7 @@ include 'includes/session.php';
                     <h2 class="section-title px-5 mb-3"><span class="bg-secondary px-2">Stay Updated</span></h2>
                     <p>Amet lorem at rebum amet dolores. Elitr lorem dolor sed amet diam labore at justo ipsum eirmod duo labore labore.</p>
                 </div>
-                <form method="POST" action="includes/newletter.php">
+                <form method="POST" action="newletter.php">
                     <div class="input-group">
                         <input type="email" class="form-control border-white p-4" name="email" placeholder="Email Goes Here">
                         <input type="hidden" class="form-control border-white p-4" value="nil" name="name" placeholder="Email Goes Here">
@@ -382,7 +382,7 @@ include 'includes/session.php';
 
 
     <?php
-    include "includes/footer.php"
+    include "footer.php"
     ?>
     <!-- Footer End -->
 

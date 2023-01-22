@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_GET['return'])){
 		$return = $_GET['return'];
@@ -56,5 +56,3 @@
 	}
 
 	header('location:'.$return);
-
-?>
