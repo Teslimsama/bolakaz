@@ -392,10 +392,10 @@ template {
 	display: none !important;
 }
 .wrapper {
-	position: absolute;
+	/* position: absolute; */
 	bottom: 30px;
 	left: 30px;
-	max-width: 365px;
+	width: 80vw;
 	background: #fff;
 	padding: 25px 25px 30px 25px;
 	border-radius: 15px;

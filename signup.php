@@ -193,11 +193,19 @@ if (isset($_SESSION['captcha'])) {
                                     <div class="select-dropdown"></div>
                                 </div>
                             </div>
+                            <style>
+                                .g-recaptcha {
+                                    transform: scale(0.77);
+                                    -webkit-transform: scale(0.77);
+                                    transform-origin: 0 0;
+                                    -webkit-transform-origin: 0 0;
+                                }
+                            </style>
                             <?php
                             if (!isset($_SESSION['captcha'])) {
                                 echo '
-                                                <div class="form-group captcha">
-                                                            <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+                                                <div class="form-group">
+                                                            <div class="g-recaptcha " data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
                                                         </div>
                                             ';
                             }

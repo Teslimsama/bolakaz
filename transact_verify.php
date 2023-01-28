@@ -62,6 +62,16 @@ if ($ref == "") {
           foreach ($stmt as $row) {
             $stmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
             $stmt->execute(['sales_id' => $salesid, 'product_id' => $row['product_id'], 'quantity' => $row['quantity']]);
+            $subtraction_value = $row['quantity'];
+            $current_value= $row['qty'];
+            $new_value = $current_value - $subtraction_value;
+            $id= $row['product_id'];
+            $sql = "UPDATE products SET qty = '$new_value' WHERE id = $id";
+            $sqll= $conn->prepare($sql);
+            $sqll->execute(['qty'=>$new_value]);
+           
+
+
           }
 
           $stmt = $conn->prepare("DELETE FROM cart WHERE user_id=:user_id");

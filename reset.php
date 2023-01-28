@@ -19,28 +19,28 @@ if (isset($_POST['reset'])) {
 			$stmt = $conn->prepare("UPDATE users SET reset_code=:code WHERE id=:id");
 			$stmt->execute(['code' => $code, 'id' => $row['id']]);
 
-			$tempfile = "./email.php";
+			$message = "./email.php";
 
 			try {
 
 
-				$to = "bolajiteslim05@gmail.com"; // Change this email to your //
-				$subject = "$m_subject:  $to";
+				// $to = "bolajiteslim05@gmail.com"; // Change this email to your //
+				$subject = "$to";
 				$headers  = 'MIME-Version: 1.0' . "\r\n";
 				$headers .= 'Content-Type: text/html; charset=ISO-8859-1' . "\r\n";
 				$From = "bolajiteslim05@gmail.com";
 				// Create email headers
 
 
-				$header .= 'From: Bolakaz Enterprise <bolajiteslim05gmail.com>' . "\r\n";
+				// $header .= 'From: Bolakaz Enterprise <bolajiteslim05gmail.com>' . "\r\n";
 
-				if (file_exists($tempfile)) {
+				// if (file_exists($tempfile)) {
 
-					$message = file_get_contents($tempfile);
-					$_SESSION['error'] = "sent";
-				} else {
-					die($_SESSION['error'] = "unable to locate file ");
-				}
+				// 	$message = file_get_contents($tempfile);
+				// 	$_SESSION['error'] = "sent";
+				// } else {
+				// 	die($_SESSION['error'] = "unable to locate file ");
+				// }
 
 				mail($email, $subject, $message, $header);
 				$_SESSION['success'] = 'Password reset link sent';
