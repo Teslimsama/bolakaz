@@ -115,8 +115,13 @@
                             </div>
                             <div class="col-md-12 form-group">
                                 <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="newaccount">
+                                    <input type="checkbox" class="custom-control-input" onclick="redirect()" id="newaccount">
                                     <label class="custom-control-label" for="newaccount">Create an account</label>
+                                    <script>
+                                        function redirect() {
+                                            window.location.href = "http://localhost/bolakaz/signup";
+                                        }
+                                    </script>
                                 </div>
                             </div>
                             <div class="col-md-12 form-group">

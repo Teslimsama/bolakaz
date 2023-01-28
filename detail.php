@@ -224,7 +224,9 @@ if ($ratingNumber && $count) {
                             </button>
                         </div>
                     </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
-                    <button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
+                    <?php echo (!empty($user['id'])) ? '<button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart 1</button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>'; ?>
+
+
                 </div>
                 </form>
                 <div class="d-flex pt-2">
@@ -313,7 +315,7 @@ if ($ratingNumber && $count) {
                                     <div class="media mb-4">
                                         <img src="<?php echo (!empty($rating['photo'])) ? 'images/' . $rating['photo'] : 'images/noimage.jpg'; ?>" alt="Image" class="img-fluid rounded mr-3 mt-1" style="width: 45px;">
                                         <div class="media-body">
-                                            <h6><?php echo ucwords($user['firstname'] . " " . $user['lastname']); ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
+                                            <h6><?php echo ucwords($rating['firstname'] . " " . $rating['lastname']); ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
                                             <div class="mb-2">
                                                 <?php
                                                 for ($i = 1; $i <= 5; $i++) {
@@ -375,7 +377,8 @@ if ($ratingNumber && $count) {
                                         <input type="email" class="form-control" id="email" required>
                                     </div>
                                     <div class="form-group mb-0">
-                                        <button type="submit" id="saveReview" class="btn btn-primary px-3">Leave Your Review</button>
+                                        <?php echo (!empty($user['id'])) ? '<button type="submit" id="saveReview" class="btn btn-primary px-3">Leave Your Review</button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="Leave Your Review</a>'; ?>
+                                        
                                     </div>
                                 </form>
                             </div>

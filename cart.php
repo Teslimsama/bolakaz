@@ -156,7 +156,8 @@
                                     }
                                     ?></h5>
                             </div>
-                            <a href="checkout#payment" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>
+                            <?php echo (!empty($user['id'])) ? '<a href="checkout#payment" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>'  : '<a href="signin" class="btn btn-primary px-3"><i class="Proceed To Checkout</a>'; ?>
+                            
                         </div>
                     </div>
             </div>
