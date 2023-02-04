@@ -9,7 +9,7 @@
 	$stmt->execute();
 
 	foreach($stmt as $row){
-		$output .= "<input type='hidden'  name='category_name' value='" . $row['name'] . "'>
+		$output .= "
 			<option value='".$row['id']. "' class='append_items'>".$row['name']. "</option>
 		";
 	}
