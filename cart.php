@@ -101,8 +101,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-3 pt-1">
                                 <h6 class="font-weight-medium">Subtotal</h6>
-                                <h6 class="font-weight-medium">&#36;
-                                    <?php
+                                <h6 class="font-weight-medium"> ₦ <?php
                                     if (isset($_SESSION['user'])) {
                                         $conn = $pdo->open();
 
@@ -124,13 +123,13 @@
                             </div>
                             <div class="d-flex justify-content-between">
                                 <h6 class="font-weight-medium">Shipping</h6>
-                                <h6 class="font-weight-medium">$10 each</h6>
+                                <h6 class="font-weight-medium">₦10 each</h6>
                             </div>
                         </div>
                         <div class="card-footer border-secondary bg-transparent">
                             <div class="d-flex justify-content-between mt-2">
                                 <h5 class="font-weight-bold">Total</h5>
-                                <h5 class="font-weight-bold">&#36;
+                                <h5 class="font-weight-bold"> ₦
                                     <?php
                                     if (isset($_SESSION['user'])) {
                                         $conn = $pdo->open();
@@ -157,7 +156,7 @@
                                     ?></h5>
                             </div>
                             <?php echo (!empty($user['id'])) ? '<a href="checkout#payment" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>'  : '<a href="signin" class="btn btn-primary px-3"><i class="Proceed To Checkout</a>'; ?>
-                            
+
                         </div>
                     </div>
             </div>

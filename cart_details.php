@@ -33,7 +33,7 @@
 				$output .= "
 					 <tr>
                             <td class='align-middle'><img src='" . $image . "' alt='' style='width: 50px;'>" . $row['name'] . "</td>
-                            <td class='align-middle'>&#36; " . number_format($row['price'], 2) . "</td>
+                            <td class='align-middle'> ₦" . number_format($row['price'], 2) . "</td>
                             <td class='align-middle'>
                                 <div class='input-group quantity mx-auto' style='width: 100px;'>
                                     <div class='input-group-btn'>
@@ -49,7 +49,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class='align-middle w-80'>&#36; " . number_format($subtotal, 2) . "</td>
+                            <td class='align-middle w-80'> ₦" . number_format($subtotal, 2) . "</td>
                             <td class='align-middle'><button type='submit' name='remove' data-id='" . $row['cartid'] . "' class='btn btn-sm btn-primary cart_delete'><i class='fa fa-times'></i></button></td>
                         </tr>
         
@@ -58,7 +58,7 @@
 			// $output .= "
 			// 	<tr>
 			// 		<td colspan='5' align='right'><b>Total</b></td>
-			// 		<td><b>&#36; ".number_format($total, 2)."</b></td>
+			// 		<td><b> ₦".number_format($total, 2)."</b></td>
 			// 	<tr>
 			// ";
 
@@ -82,7 +82,7 @@
 								 <tr>
         
                             <td class='align-middle'><img src='" . $image . "' alt='' style='width: 50px;'>" . $row['name'] . "</td>
-                            <td class='align-middle'>&#36; " . number_format($row['price'], 2) . "</td>
+                            <td class='align-middle'> ₦" . number_format($row['price'], 2) . "</td>
                             <td class='align-middle'>
                                 <div class='input-group quantity mx-auto' style='width: 100px;'>
                                     <div class='input-group-btn'>
@@ -98,7 +98,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class='align-middle w-80'>&#36; " . number_format($subtotal, 2) . "</td>
+                            <td class='align-middle w-80'> ₦" . number_format($subtotal, 2) . "</td>
                             <td class='align-middle'><button type='submit' name='remove' data-id='" . $row['cartid'] . "' class='btn btn-sm btn-primary cart_delete'><i class='fa fa-times'></i></button></td>
                         </tr>
         
@@ -107,7 +107,7 @@
 			// $output .= "
 			// 	<tr>
 			// 		<td colspan='5' align='right'><b>Total</b></td>
-			// 		<td><b>&#36; ".number_format($total, 1)."</b></td>
+			// 		<td><b> ₦".number_format($total, 1)."</b></td>
 			// 	<tr>
 			// ";
 		}

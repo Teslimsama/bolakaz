@@ -72,7 +72,7 @@ $conn = $pdo->open();
                   $total += $subtotal;
                 }
 
-                echo "<h3>&#36; " . number_format_short($total, 2) . "</h3>";
+                echo "<h3> ₦ " . number_format_short($total, 2) . "</h3>";
                 ?>
                 <p>Total Sales</p>
               </div>
@@ -139,7 +139,7 @@ $conn = $pdo->open();
                   $total += $subtotal;
                 }
 
-                echo "<h3>&#36; " . number_format_short($total, 2) . "</h3>";
+                echo "<h3> ₦ " . number_format_short($total, 2) . "</h3>";
 
                 ?>
 

@@ -77,7 +77,7 @@ include 'session.php';
                                                                     } else {
                                                                         echo "0";
                                                                     } ?>">
-                            <p id="price_show">1000 - 65000</p>
+                            <p id="price_show"> ₦1000 - ₦65000</p>
                             <div id="price_range"></div>
                         </div>
                     </div>
