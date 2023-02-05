@@ -13,8 +13,8 @@ if($status ==='sent'){
 
 	try{
 
-		$stmt = $conn->prepare("INSERT INTO sales (user_id, tx_ref, txid, status, sales_date) VALUES (:user_id, :tx_ref, :txid, :status,:sales_date)");
-		$stmt->execute(['user_id'=>$user['id'], 'tx_ref'=>$tx_ref, 'txid'=>$txid, 'status'=>$Tstatus, 'sales_date'=>$date]);
+		$stmt = $conn->prepare("INSERT INTO sales (user_id, tx_ref, txid, Status, sales_date) VALUES (:user_id, :tx_ref, :txid, :Status,:sales_date)");
+		$stmt->execute(['user_id'=>$user['id'], 'tx_ref'=>$tx_ref, 'txid'=>$txid, 'Status'=>$Tstatus, 'sales_date'=>$date]);
 		$salesid = $conn->lastInsertId();
 
 		try{

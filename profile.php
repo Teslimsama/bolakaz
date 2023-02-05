@@ -92,6 +92,7 @@ if (!isset($_SESSION['user'])) {
                         <th class="hidden"></th>
                         <th>Date</th>
                         <th>Transaction#</th>
+                        <th>Status</th>
                         <th>Amount</th>
                         <th>Full Details</th>
                     </thead>
@@ -115,8 +116,8 @@ if (!isset($_SESSION['user'])) {
 	        										<td class='hidden'></td>
 	        										<td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
 	        										<td>" . $row['tx_ref'] . "</td>
-	        										<td>" . $row['status'] . "</td>
-	        										<td>&#36;" . number_format($total, 2) . "</td>
+	        										<td>" . $row['Status'] . "</td>
+	        										<td> ₦" . number_format($total, 2) . "</td>
 	        										<td><button class='btn btn-sm btn-flat btn-primary transact' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</button></td>
 	        									</tr>
 	        								";

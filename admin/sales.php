@@ -45,6 +45,7 @@
                     <th>Date</th>
                     <th>Buyer Name</th>
                     <th>Transaction#</th>
+                    <th>Status</th>
                     <th>Amount</th>
                     <th>Full Details</th>
                   </thead>
@@ -69,6 +70,7 @@
                             <td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
                             <td>" . $row['firstname'] . ' ' . $row['lastname'] . "</td>
                             <td>" . $row['tx_ref'] . "</td>
+                            <td>" . $row['Status'] . "</td>
                             <td> ₦ " . number_format($total, 2) . "</td>
                             <td><button type='button' class='btn btn-info btn-sm btn-flat transact' data-id='" . $row['salesid'] . "'><i class='fa fa-search'></i> View</button></td>
                           </tr>
