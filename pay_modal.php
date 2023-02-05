@@ -36,7 +36,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Understood</button>
+                
+                    <a href="bank_transfer.php?status=sent" class="btn btn-primary">Understood</a>
+                
             </div>
         </div>
     </div>
