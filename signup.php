@@ -163,7 +163,7 @@ if (isset($_SESSION['captcha'])) {
                                 <div class="col-2">
                                     <div class="input-group">
                                         <label class="label">Phone Number</label>
-                                        <input class="input--style-4" type="text" name="phone" required>
+                                        <input class="input--style-4" type="tel" name="phone" required>
                                     </div>
                                 </div>
                             </div>

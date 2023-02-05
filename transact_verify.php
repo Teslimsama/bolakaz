@@ -51,7 +51,7 @@ if ($ref == "") {
 
       try {
 
-        $stmt = $conn->prepare("INSERT INTO sales (user_id, tx_ref, Status, sales_date) VALUES (:user_id, :tx_ref, :status, :sales_date)");
+        $stmt = $conn->prepare("INSERT INTO sales (user_id, tx_ref, Status, sales_date) VALUES (:user_id, :tx_ref, :Status, :sales_date)");
         $stmt->execute(['user_id' => $user['id'], 'tx_ref' => $payid, 'Status'=>$status, 'sales_date' => $date]);
         $salesid = $conn->lastInsertId();
 

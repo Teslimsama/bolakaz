@@ -8,30 +8,32 @@ if (isset($_POST['submit'])) {
 	$email = $_POST['email'];
 	$gender = $_POST['gender'];
 	$password = $_POST['password'];
+	$phone =$_POST['phone'];
 	$repassword = $_POST['repassword'];
 	$referral = $_POST['referral'];
+	$dob=$_POST['dob'];
 
 	$_SESSION['firstname'] = $firstname;
 	$_SESSION['lastname'] = $lastname;
 	$_SESSION['email'] = $email;
 
-	if (!isset($_SESSION['captcha'])) {
-		$secret = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
-		$response = $_POST['g-recaptcha-response'];
-		$remoteip = $_SERVER['REMOTE_ADDR'];
-		$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
-		$data = file_get_contents($url);
-		$row = json_decode($data, true);
+	// if (!isset($_SESSION['captcha'])) {
+	// 	$secret = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+	// 	$response = $_POST['g-recaptcha-response'];
+	// 	$remoteip = $_SERVER['REMOTE_ADDR'];
+	// 	$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
+	// 	$data = file_get_contents($url);
+	// 	$row = json_decode($data, true);
 
 
-		if ($row['success'] == true) {
-			$_SESSION['captcha'] = time() + (10 * 60);
-		} else {
-			$_SESSION['error'] = 'Please answer recaptcha correctly';
-			header('location: signup');
-			exit();
-		}
-	}
+	// 	if ($row['success'] == true) {
+	// 		$_SESSION['captcha'] = time() + (10 * 60);
+	// 	} else {
+	// 		$_SESSION['error'] = 'Please answer recaptcha correctly';
+	// 		header('location: signup');
+	// 		exit();
+	// 	}
+	// }
 
 	if ($password != $repassword) {
 		$_SESSION['error'] = 'Passwords did not match';
@@ -54,8 +56,8 @@ if (isset($_POST['submit'])) {
 			$code = substr(str_shuffle($set), 0, 12);
 
 			try {
-				$stmt = $conn->prepare("INSERT INTO users (email, password, firstname, lastname, activate_code, created_on) VALUES (:email, :password, :firstname, :lastname, :code, :now)");
-				$stmt->execute(['email' => $email, 'password' => $password, 'firstname' => $firstname, 'lastname' => $lastname, 'code' => $code, 'now' => $now,]);
+				$stmt = $conn->prepare("INSERT INTO users (email, password, firstname, lastname, gender,dob, phone, activate_code, created_on, referral) VALUES (:email, :password, :firstname, :lastname, :gender, :dob, :phone, :code, :now, :referral)");
+				$stmt->execute(['email' => $email, 'password' => $password, 'firstname' => $firstname, 'lastname' => $lastname,'gender'=>$gender,'dob'=>$dob, 'phone'=>$phone, 'code' => $code, 'now' => $now,'referral'=>$referral]);
 				$userid = $conn->lastInsertId();
 
 				$message = "
@@ -64,7 +66,7 @@ if (isset($_POST['submit'])) {
 						<p>Email: " . $email . "</p>
 						<p>Password: " . $_POST['password'] . "</p>
 						<p>Please click the link below to activate your account.</p>
-						<a href='http://localhost/ecommerce/activate.php?code=" . $code . "&user=" . $userid . "'>Activate Account</a>
+						<a href='http://localhost/bolakaz/activate.php?code=" . $code . "&user=" . $userid . "'>Activate Account</a>
 					";
 
 
