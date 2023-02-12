@@ -163,7 +163,7 @@ if ($ratingNumber && $count) {
                         <?php printf('%.1f', $average); ?>
                     </div>
                 </div>
-                <h3 class="font-weight-semi-bold mb-4">$<?php echo number_format($product['price'], 2); ?></h3>
+                <h3 class="font-weight-semi-bold mb-4">₦<?php echo number_format($product['price'], 2); ?></h3>
                 <p class="mb-4"><?php echo $product['description']; ?></p>
                 <div class="d-flex mb-3">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
@@ -378,7 +378,7 @@ if ($ratingNumber && $count) {
                                     </div>
                                     <div class="form-group mb-0">
                                         <?php echo (!empty($user['id'])) ? '<button type="submit" id="saveReview" class="btn btn-primary px-3">Leave Your Review</button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="Leave Your Review</a>'; ?>
-                                        
+
                                     </div>
                                 </form>
                             </div>

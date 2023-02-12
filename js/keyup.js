@@ -18,7 +18,7 @@
             html +='</div>';
         html +=' <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">';
             html +='<h6 class="text-truncate mb-3">' + products[i].name + '</h6>';
-            html +='<div class="d-flex justify-content-center"><h6>' + products[i].price +'</h6><h6 class="text-muted ml-2"><del>' +products[i].price +'</del></h6></div>';
+            html +='<div class="d-flex justify-content-center"><h6>₦' + products[i].price +'</h6><h6 class="text-muted ml-2"><del>₦' +products[i].price +'</del></h6></div>';
             html +="</div> ";
         html +=' <div class="card product-item border-0 mb-4">';
             html += '<div class="card-footer d-flex justify-content-between bg-light border">';
