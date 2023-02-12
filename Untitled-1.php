@@ -6,72 +6,48 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9">
-
 </head>
 
 <body>
-    <footer>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h3>About</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed auctor, magna a malesuada congue, augue augue mollis tellus, id tempus augue augue non augue.</p>
-                </div>
-                <div class="col-md-4">
-                    <h3>Contact</h3>
-                    <ul>
-                        <li>Email: info@example.com</li>
-                        <li>Phone: 555-555-5555</li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h3>Follow Us</h3>
-                    <ul class="social-icons">
-                        <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                        <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                        <li><a href="#"><i class="fa fa-instagram"></i></a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="copyright">
-            <p>Copyright © 2021 Example Company</p>
-        </div>
-    </footer>
-    <style>
-        footer {
-            background-color: #333333;
-            color: #ffffff;
-            padding: 50px 0;
-        }
+    <form>
+        <input type="text" id="search-input">
+    </form>
+    <div id="results"></div>
 
-        footer h3 {
-            color: #ffffff;
-            margin-bottom: 20px;
-        }
+    <!--  -->
+    <script src="js/jquery-1.10.2.min.js"></script>
 
-        footer p,
-        footer ul {
-            color: #cccccc;
-            margin-bottom: 20px;
-        }
-
-        footer .social-icons li {
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        footer .social-icons li a {
-            color: #cccccc;
-        }
-
-        footer .copyright {
-            background-color: #222222;
-            padding: 10px 0;
-            text-align: center;
-        }
-    </style>
+    <script>
+        $(document).ready(function() {
+            $("#search-input").on("keyup", function() {
+                var searchTerm = $(this).val();
+                if (searchTerm.length > 2) {
+                    $.ajax({
+                        url: "keyup.php",
+                        type: "post",
+                        data: {
+                            search: searchTerm
+                        },
+                        success: function(response) {
+                            var products = JSON.parse(response);
+                            var html = "";
+                            for (var i = 0; i < products.length; i++) {
+                                html += "<div class='product'>";
+                                html += "<h3>" + products[i].name + "</h3>";
+                                html += "<p>" + products[i].description + "</p>";
+                                html += "<p>$" + products[i].price + "</p>";
+                                html += "</div>";
+                            }
+                            $("#results").html(html);
+                        }
+                    });
+                } else {
+                    $("#results").html("");
+                }
+            });
+        });
+    </script>
+    
 </body>
 
 </html>

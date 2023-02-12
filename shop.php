@@ -254,7 +254,7 @@ include 'session.php';
                             <div class="d-flex align-items-center justify-content-between mb-4">
 
                                 <div class="input-group">
-                                    <input type="text" class="form-control" name="search" class="form-control" id="search" placeholder="Search by name">
+                                    <input type="text" class="form-control" name="search" class="form-control" id="search-input" placeholder="Search by name">
                                     <div class="input-group-append">
                                         <span class="input-group-text bg-transparent text-primary">
                                             <i class="fa fa-search"></i>
@@ -319,6 +319,7 @@ include 'session.php';
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="js/keyup.js"></script>
     <!-- JavaScript Bundle with Popper -->
     <script src="js/bootstrap.min.js"></script>
 
