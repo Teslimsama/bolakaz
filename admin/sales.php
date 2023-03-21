@@ -22,6 +22,28 @@
 
       <!-- Main content -->
       <section class="content">
+        <?php
+        if (isset($_SESSION['error'])) {
+          echo "
+            <div class='alert alert-danger alert-dismissible'>
+              <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+              <h4><i class='icon fa fa-warning'></i> Error!</h4>
+              " . $_SESSION['error'] . "
+            </div>
+          ";
+          unset($_SESSION['error']);
+        }
+        if (isset($_SESSION['success'])) {
+          echo "
+            <div class='alert alert-success alert-dismissible'>
+              <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+              <h4><i class='icon fa fa-check'></i> Success!</h4>
+              " . $_SESSION['success'] . "
+            </div>
+          ";
+          unset($_SESSION['success']);
+        }
+        ?>
         <div class="row">
           <div class="col-xs-12">
             <div class="box">
@@ -64,13 +86,22 @@
                           $subtotal = $details['price'] * $details['quantity'];
                           $total += $subtotal;
                         }
+                        if ($row['Status'] === 'pending') {
+                          $status = '<span class="pull-right"><span class="label label-danger">'.$row['Status'].'</span><a href="#activate" class="status" data-toggle="modal" data-id="' . $row['salesid'] . '"><i class="fa fa-check-square-o"></i></a></span>';
+                        } elseif ($row['Status'] === 'success' || 'successful') {
+                          $status = '<span class="label label-success">' . $row['Status'] . '</span>';
+                        } elseif ($row['Status'] === 'failed') {
+                          # code...
+                          $status = '123';
+                        }
+
                         echo "
                           <tr>
                             <td class='hidden'></td>
                             <td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
                             <td>" . $row['firstname'] . ' ' . $row['lastname'] . "</td>
                             <td>" . $row['tx_ref'] . "</td>
-                            <td>" . $row['Status'] . "</td>
+                            <td> " . $status . " </td>
                             <td> ₦ " . number_format($total, 2) . "</td>
                             <td><button type='button' class='btn btn-info btn-sm btn-flat transact' data-id='" . $row['salesid'] . "'><i class='fa fa-search'></i> View</button></td>
                           </tr>
@@ -92,8 +123,8 @@
 
     </div>
     <?php include 'footer.php'; ?>
+    <?php include 'sales_modal.php'; ?>
     <?php include '../profile_modal.php'; ?>
-
   </div>
   <!-- ./wrapper -->
 
@@ -143,6 +174,33 @@
       )
 
     });
+  </script>
+  <script>
+    $(function() {
+
+
+
+      $(document).on('click', '.status', function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        getRow(id);
+      });
+
+    });
+
+    function getRow(id) {
+      $.ajax({
+        type: 'POST',
+        url: 'sales_row.php',
+        data: {
+          id: id
+        },
+        dataType: 'json',
+        success: function(response) {
+          $('.userid').val(response.id);
+        }
+      });
+    }
   </script>
   <script>
     $(function() {

@@ -7,9 +7,9 @@
 		$conn = $pdo->open();
 
 		try{
-			$stmt = $conn->prepare("UPDATE users SET status=:status WHERE id=:id");
-			$stmt->execute(['status'=>1, 'id'=>$id]);
-			$_SESSION['success'] = 'User activated successfully';
+			$stmt = $conn->prepare("UPDATE sales SET Status=:Status WHERE id=:id");
+			$stmt->execute(['Status'=>'success', 'id'=>$id]);
+			$_SESSION['success'] = 'Status Changed successfully';
 		}
 		catch(PDOException $e){
 			$_SESSION['error'] = $e->getMessage();
@@ -19,7 +19,7 @@
 
 	}
 	else{
-		$_SESSION['error'] = 'Select user to activate first';
+		$_SESSION['error'] = 'Select Sale to Change first';
 	}
 
-	header('location: users.php');
+	header('location: sales');
