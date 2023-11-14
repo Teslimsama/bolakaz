@@ -129,7 +129,6 @@
 
     </div>
     <?php include 'footer.php'; ?>
-    <?php include 'sales_modal.php'; ?>
     <?php include '../profile_modal.php'; ?>
   </div>
   <!-- ./wrapper -->
