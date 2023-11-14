@@ -79,33 +79,39 @@
                       $stmt = $conn->prepare("SELECT *, sales.id AS salesid FROM sales LEFT JOIN users ON users.id=sales.user_id ORDER BY sales_date DESC");
                       $stmt->execute();
                       foreach ($stmt as $row) {
-                        $stmt = $conn->prepare("SELECT * FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
-                        $stmt->execute(['id' => $row['salesid']]);
+                        $detailsStmt = $conn->prepare("SELECT * FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
+                        $detailsStmt->execute(['id' => $row['salesid']]);
                         $total = 0;
-                        foreach ($stmt as $details) {
+
+                        foreach ($detailsStmt as $details) {
                           $subtotal = $details['price'] * $details['quantity'];
                           $total += $subtotal;
                         }
+
+                        $status = '';
+
                         if ($row['Status'] === 'pending') {
-                          $status = '<span class="pull-right"><span class="label label-warning">'.$row['Status'].'</span><a href="#activate" class="status" data-toggle="modal" data-id="' . $row['salesid'] . '"><i class="fa fa-check-square-o"></i></a></span>';
-                        } elseif ($row['Status'] === 'success' || 'successful') {
-                          $status = '<span class="label label-success">' . $row['Status'] . '</span>';
+                          $status = '<span data-id="' . $row['salesid'] . '" class="updateButton label label-warning">' . $row['Status'] . '</span>';
+                        } elseif ($row['Status'] === 'success' || $row['Status'] === 'successful') {
+                          $status = '<span  data-id="' . $row['salesid'] . '" class="updateButton label label-success">' . $row['Status'] . '</span>';
                         } elseif ($row['Status'] === 'failed') {
-                          # code...
-                          $status = '123';
+                          $status = '<span  data-id="' . $row['salesid'] . '" class="updateButton label label-danger">' . $row['Status'] . '</span>'; // Replace with your actual logic for failed status
+                        } else {
+                          // Handle other cases or set a default value
+                          $status = 'Unknown Status';
                         }
 
                         echo "
-                          <tr>
-                            <td class='hidden'></td>
-                            <td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
-                            <td>" . $row['firstname'] . ' ' . $row['lastname'] . "</td>
-                            <td>" . $row['tx_ref'] . "</td>
-                            <td> " . $status . " </td>
-                            <td> ₦ " . number_format($total, 2) . "</td>
-                            <td><button type='button' class='btn btn-info btn-sm btn-flat transact' data-id='" . $row['salesid'] . "'><i class='fa fa-search'></i> View</button></td>
-                          </tr>
-                        ";
+        <tr>
+          <td class='hidden'></td>
+          <td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
+          <td>" . $row['firstname'] . ' ' . $row['lastname'] . "</td>
+          <td>" . $row['tx_ref'] . "</td>
+          <td> " . $status . " </td>
+          <td> ₦ " . number_format($total, 2) . "</td>
+          <td><button type='button' class='btn btn-info btn-sm btn-flat transact' data-id='" . $row['salesid'] . "'><i class='fa fa-search'></i> View</button></td>
+        </tr>
+      ";
                       }
                     } catch (PDOException $e) {
                       echo $e->getMessage();
@@ -176,31 +182,37 @@
     });
   </script>
   <script>
-    $(function() {
+    $(document).ready(function() {
+      // Attach a click event to the button with id 'updateButton'
+      $(".updateButton").on("click", function() {
+        // Get the id from the data attribute
+        var id = $(this).data("id");
 
+        // Perform Ajax request
+        $.ajax({
+          type: "POST",
+          url: "status_update.php",
+          data: {
+            id: id // Pass the id to the server
+          },
+          dataType: "json",
 
+          success: function(response) {
+            // Handle the success response from the server
+            // console.log(response);
+            // alert(response)
+            location.reload();
+            // You can update your UI or perform additional actions here
+          },
 
-      $(document).on('click', '.status', function(e) {
-        e.preventDefault();
-        var id = $(this).data('id');
-        getRow(id);
+          // error: function(error) {
+          //   // Handle the error response from the server
+          //   console.error("Ajax request failed:", error);
+          //   alert("Ajax request failed:", error);
+          // }
+        });
       });
-
     });
-
-    function getRow(id) {
-      $.ajax({
-        type: 'POST',
-        url: 'sales_row.php',
-        data: {
-          id: id
-        },
-        dataType: 'json',
-        success: function(response) {
-          $('.userid').val(response.id);
-        }
-      });
-    }
   </script>
   <script>
     $(function() {

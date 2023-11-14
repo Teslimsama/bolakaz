@@ -58,7 +58,9 @@ if (isset($_POST['imgSubmit'])) {
             if (!empty($fileImages)) {
                 foreach ($fileImages as $key => $val) {
                     // File upload path 
-                    $fileName = $galleryID . '_' . basename($fileImages[$key]);
+                    $fileExtension = pathinfo($_FILES["images"]["name"][$key], PATHINFO_EXTENSION);
+                    $newFileName = $id . '_' . time() . '_' . uniqid() . '.' . $fileExtension;
+
                     $targetFilePath = $uploadDir . $fileName;
 
                     // Check whether file type is valid 
