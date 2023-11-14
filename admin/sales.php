@@ -87,7 +87,7 @@
                           $total += $subtotal;
                         }
                         if ($row['Status'] === 'pending') {
-                          $status = '<span class="pull-right"><span class="label label-danger">'.$row['Status'].'</span><a href="#activate" class="status" data-toggle="modal" data-id="' . $row['salesid'] . '"><i class="fa fa-check-square-o"></i></a></span>';
+                          $status = '<span class="pull-right"><span class="label label-warning">'.$row['Status'].'</span><a href="#activate" class="status" data-toggle="modal" data-id="' . $row['salesid'] . '"><i class="fa fa-check-square-o"></i></a></span>';
                         } elseif ($row['Status'] === 'success' || 'successful') {
                           $status = '<span class="label label-success">' . $row['Status'] . '</span>';
                         } elseif ($row['Status'] === 'failed') {

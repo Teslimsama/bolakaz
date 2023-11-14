@@ -115,7 +115,7 @@ if (isset($_GET['category'])) {
                             <td>" . $row['name'] . "</td>
                             <td>
                               <img src='" . $image . "' height='30px' width='30px'>
-                              <span class='pull-right'><a href='#edit_photo' class='photo' data-toggle='modal' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i></a></span>
+                              <span class='pull-right'><a href='#image_edit' class='photo image' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i></a></span>
                             </td>
                             <td><a href='#description' data-toggle='modal' class='btn btn-info btn-sm btn-flat desc' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</a></td>
                             <td>₦" . number_format($row['price'], 2) . "</td>
@@ -175,6 +175,12 @@ if (isset($_GET['category'])) {
         e.preventDefault();
         var id = $(this).data('id');
         getRow(id);
+      });
+      $(document).on('click', '.image', function(e) {
+        e.preventDefault();
+        $('#image_edit').modal('show');
+        var id = $(this).data('id');
+        getImages(id);
       });
 
       $(document).on('click', '.desc', function(e) {
@@ -243,6 +249,41 @@ if (isset($_GET['category'])) {
           $('#edit_category').append(response);
         }
       });
+    }
+
+    function getImages(id) {
+      $.ajax({
+        type: 'POST',
+        url: 'image_modal.php',
+        data: {
+          id: id
+        },
+        dataType: 'json',
+        success: function(response) {
+          $('#image_show').html(response);
+          // $('#edit_category').append(response);
+        }
+      });
+    }
+  </script>
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
+  <script>
+    function deleteImage(id) {
+      var result = confirm("Are you sure to delete?");
+      if (result) {
+        $.post("image_actions.php", {
+          action_type: "img_delete",
+          id: id
+        }, function(resp) {
+          if (resp == 'ok') {
+            console.log(resp);
+            $('#imgb_' + id).remove();
+            alert('The image has been removed from the gallery');
+          } else {
+            alert('Some problem occurred, please try again.');
+          }
+        });
+      }
     }
   </script>
 </body>

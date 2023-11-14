@@ -23,7 +23,38 @@
     </div>
   </div>
 </div>
+<!-- image_edit -->
+<div class="modal fade" id="image_edit">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><b><span class="name"></span></b></h4>
+      </div>
+      <div class="modal-body">
+        <div class="container">
 
+
+          <div class="row">
+            <div class="col-md-6">
+              <form method="post" action="image_actions.php" enctype="multipart/form-data">
+                <!-- <div class="form-group">
+                  <label>Images:</label>
+                  <input type="file" name="images[]" class="form-control" multiple>
+                </div> -->
+                <div class="image_show" id="image_show"></div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal"><i class="fa fa-close"></i> Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Edit -->
 <div class="modal fade" id="edit">
   <div class="modal-dialog modal-lg">

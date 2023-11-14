@@ -224,7 +224,7 @@
                             <button onclick="payWithPaystack()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
                         </div>
                         <div style="display: none;" id="flutterwave" class="card-footer border-secondary bg-transparent">
-                            <button onclick="payNow()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
+                        <button onclick="payNow()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
                         </div>
                         <div style="display: none;" id="bank_transfer" class="card-footer border-secondary bg-transparent">
                             <button type="button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Place Order</button>
