@@ -38,11 +38,7 @@
 
           <div class="row">
             <div class="col-md-6">
-              <form method="post" action="image_actions.php" enctype="multipart/form-data">
-                <!-- <div class="form-group">
-                  <label>Images:</label>
-                  <input type="file" name="images[]" class="form-control" multiple>
-                </div> -->
+              
                 <div class="image_show" id="image_show"></div>
 
             </div>

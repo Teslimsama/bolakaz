@@ -39,6 +39,7 @@ if (isset($_POST['imgSubmit'])) {
         $errorMsg = '';
         if (idExists($id)) {
             // Update data 
+            print_r($galData);
             $update = update($galData, array('id' => $id));
             $galleryID = $id;
         } else {
@@ -61,7 +62,7 @@ if (isset($_POST['imgSubmit'])) {
                     $fileExtension = pathinfo($_FILES["images"]["name"][$key], PATHINFO_EXTENSION);
                     $newFileName = $id . '_' . time() . '_' . uniqid() . '.' . $fileExtension;
 
-                    $targetFilePath = $uploadDir . $fileName;
+                    $targetFilePath = $uploadDir . $newFileName;
 
                     // Check whether file type is valid 
                     $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
@@ -72,7 +73,7 @@ if (isset($_POST['imgSubmit'])) {
                             $imgData = array(
                                 'gallery_id' => $galleryID,
                                 'product_id' => $id,
-                                'file_name' => $fileName
+                                'file_name' => $newFileName
                             );
                             $insert = insertImage($imgData);
                         } else {

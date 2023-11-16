@@ -8,7 +8,7 @@ function getRows($conditions = array())
 {
     global $conn, $imgTbl, $galleryTbl;
 
-    $sql = 'SELECT *, (SELECT file_name FROM ' . $imgTbl . ' WHERE gallery_id = ' . $galleryTbl . '.product_id ORDER BY id DESC LIMIT 1) as default_image';
+    $sql = 'SELECT *, (SELECT file_name FROM ' . $imgTbl . ' WHERE product_id = ' . $galleryTbl . '.product_id ORDER BY id DESC LIMIT 1) as default_image';
     $sql .= ' FROM ' . $galleryTbl;
 
     if (array_key_exists("where", $conditions)) {
@@ -44,7 +44,7 @@ function getRows($conditions = array())
 
     if (array_key_exists("return_type", $conditions) && $conditions['return_type'] === 'single') {
         foreach ($data as &$row) {
-            $imgSql = 'SELECT * FROM ' . $imgTbl . ' WHERE gallery_id = ' . $row['id'];
+            $imgSql = 'SELECT * FROM ' . $imgTbl . ' WHERE product_id = ' . $row['id'];
             $imgStmt = $conn->query($imgSql);
             $images = $imgStmt->fetchAll(PDO::FETCH_ASSOC);
             $row['images'] = $images;
@@ -61,9 +61,9 @@ function getImgRow($id)
 {
     global $conn, $imgTbl;
 
-    $sql = 'SELECT * FROM ' . $imgTbl . ' WHERE product_id = :id';
+    $sql = 'SELECT * FROM ' . $imgTbl . ' WHERE id = :id';
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':product_id', $id);
+    $stmt->bindParam(':id', $id);
     $stmt->execute();
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -106,6 +106,7 @@ function insert($data)
         print_r($data);
         // Set the product_id based on the ID in the $data array
         $bindings[':product_id'] = $data['product_id']; // Replace 'id' with the actual reference for the product ID
+        print_r($bindings);
 
         // Prepare the SQL query
         $sql = "INSERT INTO $galleryTbl ($columns) VALUES ($values)";
@@ -147,6 +148,7 @@ function insertImage($data)
         // $values .= ', :product_id';
         // Set the product_id based on the ID you wish
         $bindings[':product_id'] = $data['product_id']; // Replace 'id' with the actual reference for the product ID
+        // print_r($bindings);
         $sql = "INSERT INTO $imgTbl ($columns) VALUES ($values)";
         $stmt = $conn->prepare($sql);
         $success = $stmt->execute($bindings);
@@ -198,6 +200,7 @@ function update($data, $conditions)
         // Ensure the product_id is set based on the id
         $colvalSet .= ', product_id = :product_id';
         $params[':product_id'] = $conditions['id']; // Assuming 'id' in $conditions refers to the ID you want to set as the product_id
+        // print_r($params);
 
         $query = "UPDATE $galleryTbl SET $colvalSet $whereSql";
         $stmt = $conn->prepare($query);
@@ -214,7 +217,7 @@ function idExists($id)
 {
     global $conn, $galleryTbl;
 
-    $query = "SELECT COUNT(*) as count FROM $galleryTbl WHERE id = :product_id";
+    $query = "SELECT COUNT(*) as count FROM $galleryTbl WHERE product_id = :product_id";
     $stmt = $conn->prepare($query);
     $stmt->bindValue(':product_id', $id);
     $stmt->execute();

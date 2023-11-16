@@ -197,18 +197,10 @@
           dataType: "json",
 
           success: function(response) {
-            // Handle the success response from the server
-            // console.log(response);
-            // alert(response)
             location.reload();
             // You can update your UI or perform additional actions here
           },
 
-          // error: function(error) {
-          //   // Handle the error response from the server
-          //   console.error("Ajax request failed:", error);
-          //   alert("Ajax request failed:", error);
-          // }
         });
       });
     });
