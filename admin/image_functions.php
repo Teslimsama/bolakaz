@@ -44,7 +44,7 @@ function getRows($conditions = array())
 
     if (array_key_exists("return_type", $conditions) && $conditions['return_type'] === 'single') {
         foreach ($data as &$row) {
-            $imgSql = 'SELECT * FROM ' . $imgTbl . ' WHERE product_id = ' . $row['id'];
+            $imgSql = 'SELECT * FROM ' . $imgTbl . ' WHERE gallery_id = ' . $row['id'];
             $imgStmt = $conn->query($imgSql);
             $images = $imgStmt->fetchAll(PDO::FETCH_ASSOC);
             $row['images'] = $images;

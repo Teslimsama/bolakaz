@@ -27,6 +27,55 @@ if ($product['date_view'] == $now) {
     $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
 }
 
+// // Assuming you have a database connection here
+// global $conn, $galleryTbl;
+
+// // Sample product ID
+// $productID = $product['prodid'];
+
+// // Define conditions for the query
+// $conditions = [
+//     'where' => ['product_id' => $productID],
+//     'return_type' => 'single'
+// ];
+// // echo $productID;
+
+// // Base SQL query
+// $sql = 'SELECT *, (SELECT file_name FROM gallery_images WHERE product_id = gallery.product_id ORDER BY id DESC LIMIT 1) as default_image FROM gallery';
+
+// // Add WHERE clause if conditions are provided
+// if (!empty($conditions['where'])) {
+//     $whereConditions = implode(' AND ', array_map(fn ($key) => "$key = :$key", array_keys($conditions['where'])));
+//     $sql .= " WHERE $whereConditions";
+// }
+
+// // Add ORDER BY clause if specified
+// $sql .= isset($conditions['order_by']) ? " ORDER BY {$conditions['order_by']}" : ' ORDER BY id DESC';
+
+// // Add LIMIT clause if specified
+// $sql .= isset($conditions['start'], $conditions['limit']) ? " LIMIT {$conditions['start']}, {$conditions['limit']}" : '';
+
+// // Prepare and execute the query
+// $stmt = $conn->prepare($sql);
+// $stmt->execute($conditions['where'] ?? []);
+
+// // Fetch data based on return type
+// // print_r($conditions['return_type'] === 'single');
+// $data = ($conditions['return_type'] === 'single') ? $stmt->fetch(PDO::FETCH_ASSOC) : $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// // Fetch additional data if return type is 'single'
+// // echo $data;
+// if ($conditions['return_type'] === 'single' && !empty($data)) {
+//     $imgSql = 'SELECT * FROM gallery_images WHERE product_id = ' . $data['id'];
+//     $imgStmt = $conn->query($imgSql);
+//     $images = $imgStmt->fetchAll(PDO::FETCH_ASSOC);
+//     $data['images'] = $images;
+// }
+
+// // Print or use the retrieved data as needed
+// print_r($data);
+// // var_dump($data);
+
 ?>
 <?php
 $itemRating = $rating->getItemRating($product['prodid']);
@@ -123,7 +172,68 @@ if ($ratingNumber && $count) {
             <div class="col-lg-5 pb-5">
                 <div id="product-carousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner border">
-                        <div class="carousel-item active">
+                        <?php
+                        // Sample product ID
+                        $productID = $product['prodid'];
+echo $productID;
+                        // Define conditions for the query
+                        $conditions = [
+                            'where' => ['product_id' => $productID],
+                            'return_type' => 'single'
+                        ];
+
+                        // Base SQL query
+                        $sql = 'SELECT *, (SELECT file_name FROM gallery_images WHERE product_id = gallery.product_id ORDER BY id DESC LIMIT 1) as default_image FROM gallery';
+
+                        // Add WHERE clause if conditions are provided
+                        if (!empty($conditions['where'])) {
+                            $whereConditions = implode(' AND ', array_map(function ($key) {
+                                return "$key = :$key";
+                            }, array_keys($conditions['where'])));
+
+                            $sql .= " WHERE $whereConditions";
+                        }
+
+                        // Add ORDER BY clause if specified
+                        $sql .= isset($conditions['order_by']) ? " ORDER BY {$conditions['order_by']}" : ' ORDER BY id DESC';
+
+                        // Add LIMIT clause if specified
+                        $sql .= isset($conditions['start'], $conditions['limit']) ? " LIMIT {$conditions['start']}, {$conditions['limit']}" : '';
+
+                        // Prepare and execute the query
+                        $stmt = $conn->prepare($sql);
+                        $stmt->execute($conditions['where'] ?? '');
+
+                        // Fetch data based on return type
+                        $data = ($conditions['return_type'] === 'single') ? $stmt->fetch(PDO::FETCH_ASSOC) : $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                        // Fetch additional data if return type is 'single'
+                        if ($conditions['return_type'] === 'single' && !empty($data)) {
+                            $imgSql = 'SELECT * FROM gallery_images WHERE gallery_id = ' . $data['id'];
+                            $imgStmt = $conn->query($imgSql);
+                            $images = $imgStmt->fetchAll(PDO::FETCH_ASSOC);
+                            $data['images'] = $images;
+                        }
+
+                        // Display the images in a carousel
+                        if (!empty($data['images'])) {
+                            
+                            foreach ($data['images'] as $key => $image) {
+                                $activeClass = ($key === 0) ? 'active' : ''; // Add 'active' class to the first image
+                                echo '<div class="carousel-item ' . $activeClass . '">';
+                                echo '<img class="d-block w-100" src="images/' . $image['file_name'] . '" alt="Image">';
+                                echo '</div>';
+                            }
+                           
+                        } else {
+                            echo '<div class="carousel-item active">
+                            <img class="w-100 h-100" src="images/noimage.jpg" alt="Image">
+                        </div>';
+                        }
+                        ?>
+
+
+                        <!-- <div class="carousel-item">
                             <img class="w-100 h-100" src="<?php echo (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg'; ?>" alt="Image">
                         </div>
                         <div class="carousel-item">
@@ -131,10 +241,7 @@ if ($ratingNumber && $count) {
                         </div>
                         <div class="carousel-item">
                             <img class="w-100 h-100" src="<?php echo (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg'; ?>" alt="Image">
-                        </div>
-                        <div class="carousel-item">
-                            <img class="w-100 h-100" src="<?php echo (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg'; ?>" alt="Image">
-                        </div>
+                        </div> -->
                     </div>
                     <a class="carousel-control-prev" href="#product-carousel" data-slide="prev">
                         <i class="fa fa-2x fa-angle-left text-dark"></i>
