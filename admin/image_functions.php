@@ -274,3 +274,71 @@ function deleteImage($conditions)
     $delete = $conn->query($query);
     return $delete ? true : false;
 }
+function compressImage($source, $destination, $quality)
+{
+    // Get image info
+    $imgInfo = getimagesize($source);
+    $mime = $imgInfo['mime'];
+
+    // Create a new image from file
+    switch ($mime) {
+        case 'image/jpeg':
+            $image = imagecreatefromjpeg($source);
+            break;
+        case 'image/png':
+            $image = imagecreatefrompng($source);
+            break;
+        case 'image/gif':
+            $image = imagecreatefromgif($source);
+            break;
+        default:
+            $image = imagecreatefromjpeg($source);
+    }
+
+    // Correct image orientation
+    $image = correctImageOrientation($image, $source, $mime);
+
+    // Save image
+    imagejpeg($image, $destination, $quality);
+
+    // Free up memory
+    imagedestroy($image);
+
+    // Return compressed image path
+    return $destination;
+}
+
+function correctImageOrientation($image, $filename, $mime)
+{
+    if ($mime == 'image/jpeg') {
+        if (!is_resource($image)) {
+            $image = imagecreatefromjpeg($filename);
+        }
+
+        $exif = exif_read_data($filename);
+        if (!empty($exif['Orientation'])) {
+            switch ($exif['Orientation']) {
+                case 3:
+                    $image = imagerotate($image, 180, 0);
+                    break;
+                case 6:
+                    $image = imagerotate($image, -90, 0);
+                    break;
+                case 8:
+                    $image = imagerotate($image, 90, 0);
+                    break;
+            }
+
+            return $image;
+        }
+    }
+    return false;
+}
+
+
+function convert_filesize($bytes, $decimals = 2)
+{
+    $size = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+    $factor = floor((strlen($bytes) - 1) / 3);
+    return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
+}
