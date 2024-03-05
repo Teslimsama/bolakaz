@@ -22,7 +22,7 @@ if (!empty($_POST['id'])) {
 
             if (!empty($row['images'])) {
                 foreach ($row['images'] as $image) {
-                    $output .= '<div id="imgb_'.$image['id'].'"><img style="width: 25%; height:25%" src="../images/' . $image['file_name'] . '" alt="2"><a href="javascript:void(0);" class="badge badge-danger" onclick="deleteImage(' . $image['id'] . ')">delete</a></div>';
+                    $output .= '<div class="col-md-6"><div id="imgb_'.$image['id']. '"><img style="width: 33.33333333333333%;" src="../images/' . $image['file_name'] . '" alt="2"><a href="javascript:void(0);" class="badge badge-danger" onclick="deleteImage(' . $image['id'] . ')">delete</a></div></div>';
                 }
             }
 

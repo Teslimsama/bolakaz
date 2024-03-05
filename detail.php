@@ -331,7 +331,7 @@ echo $productID;
                             </button>
                         </div>
                     </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
-                    <?php echo (!empty($user['id'])) ? '<button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart 1</button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>'; ?>
+                    <?php echo (!empty($user['id'])) ? '<button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart </button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>'; ?>
 
 
                 </div>

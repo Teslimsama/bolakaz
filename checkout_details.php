@@ -36,7 +36,7 @@ if (isset($_SESSION['user'])) {
 			<p>" . $row['name'] . "</p>
 			<p>Size(" . $row['size'] . ")</p>
 			<p>Color(" . $row['color'] . ")</p>
-			<p> $" . number_format($row['price'], 2) . "</p>
+			<p> ₦" . number_format($row['price'], 2) . "</p>
 		</div>
         
                         ";
@@ -81,7 +81,7 @@ if (isset($_SESSION['user'])) {
 			$output .= "
 							 <div class='d-flex justify-content-between'>
      <p>" . $row['name'] . "</p>
-     <p>$ " . number_format($row['price'], 2) . "</p>
+     <p>₦ " . number_format($row['price'], 2) . "</p>
  </div>
         
                         ";
@@ -91,7 +91,7 @@ if (isset($_SESSION['user'])) {
  <hr class='mt-0'>
  <div class='d-flex justify-content-between mb-3 pt-1'>
      <h6 class='font-weight-medium'>Subtotal</h6>
-     <h6 class='font-weight-medium'>$ " . number_format($total, 2) . "</h6>
+     <h6 class='font-weight-medium'>₦ " . number_format($total, 2) . "</h6>
  </div>
  <div class='d-flex justify-content-between'>
      <h6 class='font-weight-medium'>Shipping</h6>

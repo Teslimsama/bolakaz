@@ -32,7 +32,7 @@ if ($ref == "") {
     if ($err) {
       echo "cURL Error #:" . $err;
     } else {
-      echo $response;
+      // echo $response;
       $result = json_decode($response);
     }
     if ($result->data->status == 'success') {
@@ -90,6 +90,6 @@ if ($ref == "") {
       $pdo->close();
     } else {
       header("location:checkout#payment");
-      echo $result;
+      // echo $result;  
     }
     ?>
