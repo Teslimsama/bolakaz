@@ -7,7 +7,7 @@
                 <a href="index" class="text-decoration-none">
                     <h1 class="mb-4 font-weight-semi-bold"><span class="text-primary font-weight-bold border border-white px-3 mr-1">B</span>Bolakaz.Enterprise</h1>
                 </a>
-                <p>Dolore erat dolor sit lorem vero amet. Sed sit lorem magna, ipsum no sit erat lorem et magna ipsum dolore amet erat.</p>
+                <p>If you have any questions or concerns, please don't hesitate to reach out to us. You can contact us by phone or by email. We're here to help!</p>
                 <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>katampe road, Kubwa, Abuja, Nigeria</p>
                 <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>bolajimotunrayo20@gmail.com</p>
                 <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+234 8077747898</p>

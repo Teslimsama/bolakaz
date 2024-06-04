@@ -13,7 +13,6 @@
 		$category_name = $go['cat_slug'];
 		
 		}
-		
 		$price = $_POST['price'];
 		$description = $_POST['description'];
 		$size =$_POST['size'];

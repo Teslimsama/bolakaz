@@ -1,5 +1,10 @@
 <?php include 'session.php';
-
+// Fetch shipping options from the database
+$conn = $pdo->open();
+$stmt = $conn->prepare("SELECT * FROM shippings");
+$stmt->execute();
+$shipping_options = $stmt->fetchAll();
+$pdo->close();
 ?>
 
 <!DOCTYPE html>
@@ -62,6 +67,27 @@
 
     <form id="payForm">
         <!-- Checkout Start -->
+        <?php
+        if (isset($_SESSION['error'])) {
+            echo "
+                        <div class='alert alert-danger alert-dismissible'>
+                            <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+                            " . $_SESSION['error'] . "
+                        </div>
+                    ";
+            unset($_SESSION['error']);
+        }
+        if (isset($_SESSION['success'])) {
+            echo "
+                        <div class='alert alert-success alert-dismissible'>
+                            <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+                            " . $_SESSION['success'] . "
+                        </div>
+                    ";
+            unset($_SESSION['success']);
+        }
+        ?>
+        <div class="message" id="message" ></div>
         <div class="container-fluid pt-5">
             <div class="row px-xl-5">
                 <div class="col-lg-8">
@@ -75,22 +101,23 @@
                             <div class="col-md-6 form-group">
                                 <label>Last Name</label>
                                 <input class="form-control" id="last-name" type="text" value="<?php echo $user['lastname'] ?>">
+                                <input class="form-control" id="id" type="hidden" value="<?php echo $user['id'] ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>E-mail</label>
-                                <input class="form-control" id="email-address" type="text" value="<?php echo $user['email'] ?>">
+                                <input class="form-control" id="email-address" name="email-address" type="text" value="<?php echo $user['email'] ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Mobile No</label>
-                                <input class="form-control" type="text" id="phone" value="<?php echo (!empty($user['phone'])) ?  $user['phone'] : 'Moblie No'; ?>">
+                                <input class="form-control" type="text" name="phone" id="phone" value="<?php echo (!empty($user['phone'])) ?  $user['phone'] : 'Moblie No'; ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Address Line 1</label>
-                                <input class="form-control" type="text" value="<?php echo (!empty($user['address'])) ?  $user['address'] : '123 Street'; ?>">
+                                <input class="form-control" type="text" name="address1" id="address1" value="<?php echo (!empty($user['address'])) ?  $user['address'] : '123 Street'; ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Address Line 2</label>
-                                <input class="form-control" type="text" value="123 Street">
+                                <input class="form-control" type="text" id="address2" name="address2">
                             </div>
                             <!-- <div class="col-md-6 form-group">
                             <label>Country</label>
@@ -107,29 +134,32 @@
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>State</label>
-                                <input class="form-control" type="text" value="New York">
+                                <select id="shipping" name="shipping" class="form-control" required>
+                                    <option value="">Select Shipping Option</option>
+                                    <?php foreach ($shipping_options as $option) : ?>
+                                        <option value="<?php echo $option['id']; ?>"><?php echo $option['type']; ?></option>
+
+                                    <?php endforeach; ?>
+
+                                </select>
+
                             </div>
-                            <div class="col-md-12 form-group">
+                            <!-- <div class="col-md-12 form-group">
                                 <label>ZIP Code</label>
                                 <input class="form-control" type="text" value="123">
-                            </div>
+                            </div> -->
                             <div class="col-md-12 form-group">
                                 <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" onclick="redirect()" id="newaccount">
+                                    <input type="checkbox" class="custom-control-input" id="newaccount" onclick="redirect()">
                                     <label class="custom-control-label" for="newaccount">Create an account</label>
-                                    <script>
-                                        function redirect() {
-                                            window.location.href = "http://localhost/bolakaz/signup";
-                                        }
-                                    </script>
                                 </div>
                             </div>
-                            <div class="col-md-12 form-group">
+                            <!-- <div class="col-md-12 form-group">
                                 <div class="custom-control custom-checkbox">
                                     <input type="checkbox" class="custom-control-input" id="shipto">
                                     <label class="custom-control-label" for="shipto" data-toggle="collapse" data-target="#shipping-address">Ship to different address</label>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                     <div class="collapse mb-4" id="shipping-address">
@@ -209,7 +239,7 @@
                             </div>
                             <div class="form-group">
                                 <div class="custom-control custom-radio">
-                                    <input type="radio" class="custom-control-input" name="payment" onclick="flutterwave()" id="directcheck">
+                                    <input type="radio" class="custom-control-input" name="payment" onclick="flutterwave()" id="directcheck" did>
                                     <label class="custom-control-label" for="directcheck">Flutterwave</label>
                                 </div>
                             </div>
@@ -224,7 +254,7 @@
                             <button onclick="payWithPaystack()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
                         </div>
                         <div style="display: none;" id="flutterwave" class="card-footer border-secondary bg-transparent">
-                        <button onclick="payNow()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
+                            <button onclick="payNow()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
                         </div>
                         <div style="display: none;" id="bank_transfer" class="card-footer border-secondary bg-transparent">
                             <button type="button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Place Order</button>
@@ -276,9 +306,58 @@
             div.style.display = 'none';
 
         }
+
+        function redirect() {
+            window.location.href = "https://bolakaz.unibooks.com.ng/signup";
+        }
     </script>
 
     <script>
+        $(document).ready(function() {
+            $('#shipping').change(function() {
+                var shippingId = $(this).val();
+                $.ajax({
+                    type: 'POST',
+                    url: 'shipping.php',
+                    data: {
+                        shipping_id: shippingId
+                    },
+                    success: function(response) {
+                        // Optionally handle the response
+                        alert('Shipping option updated!');
+                        // window.location.reload();
+                        getDetails()
+                    }
+                });
+            });
+        });
+        $(document).ready(function() {
+            $('#submitFormButton').click(function() {
+                // Collect the form data
+                var formData = $('#payForm').serialize();
+
+                // Send the form data to the server using AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: 'bank_transfer.php',
+                    data: formData,
+                    success: function(response) {
+                        var data = JSON.parse(response);
+                        if (data.success) {
+                            window.location.href = 'profile#trans';
+                        } else {
+                            $('#message').html('<p style="color: red;">' + data.message + '</p>');
+                        }
+                    },
+                    error: function() {
+                        $('#message').html('<p style="color: red;">An error occurred. Please try again later.</p>');
+                    }
+                });
+
+                // Close the modal
+                $('#bankTransferModal').modal('hide');
+            });
+        });
         var total = 0;
         $(function() {
             $(document).on('click', '.cart_delete', function(e) {

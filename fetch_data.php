@@ -93,7 +93,7 @@ if(isset($_POST["action"]))
                             <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
                                 <h6 class="text-truncate mb-3">' .$row['name']. '</h6>
                                 <div class="d-flex justify-content-center">
-                                    <h6>$' . $row['price'] . '</h6><h6 class="text-muted ml-2"><del>$' . $row['price'] . '</del></h6>
+                                    <h6>₦' . $row['price'] . '</h6>
                                 </div>
                             </div>
                             <div class="card-footer d-flex justify-content-center bg-light border">

@@ -77,7 +77,7 @@ include 'session.php';
                                                                     } else {
                                                                         echo "0";
                                                                     } ?>">
-                            <p id="price_show"> ₦1000 - ₦65000</p>
+                            <p id="price_show">₦1000 - ₦65000</p>
                             <div id="price_range"></div>
                         </div>
                     </div>
@@ -97,7 +97,7 @@ include 'session.php';
                         ?>
                             <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
                                 <input type="checkbox" class="custom-control-input common_selector category" value="<?php echo $row['category_name']; ?>" id="<?php echo 'cat-' . $n ?>">
-                                <label class=" custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo ucwords($row['category_name']); ?></label>
+                                <label class=" custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo ucwords(str_replace("_", " ", $row['category_name']));?></label>
                                 <span class="text-dark badge border font-weight-normal">
                                     <?php $name = $row['category_name'];
                                     $sql = "SELECT * FROM products WHERE category_name='$name'";
@@ -254,7 +254,7 @@ include 'session.php';
                             <div class="d-flex align-items-center justify-content-between mb-4">
 
                                 <div class="input-group">
-                                    <input type="text" class="form-control" name="search" class="form-control" id="search-input" placeholder="Search by name">
+                                    <input type="text" class="form-control" name="search" class="form-control" id="search" placeholder="Search by name">
                                     <div class="input-group-append">
                                         <span class="input-group-text bg-transparent text-primary">
                                             <i class="fa fa-search"></i>
@@ -319,7 +319,6 @@ include 'session.php';
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="js/keyup.js"></script>
     <!-- JavaScript Bundle with Popper -->
     <script src="js/bootstrap.min.js"></script>
 

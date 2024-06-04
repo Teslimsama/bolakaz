@@ -392,10 +392,10 @@ template {
 	display: none !important;
 }
 .wrapper {
-	/* position: absolute; */
+	position: absolute;
 	bottom: 30px;
 	left: 30px;
-	width: 80vw;
+	max-width: 365px;
 	background: #fff;
 	padding: 25px 25px 30px 25px;
 	border-radius: 15px;
@@ -10007,3 +10007,10 @@ a.text-dark:focus {
 		transform: translateY(-15px);
 	}
 }
+
+ .g-recaptcha {
+                                    transform: scale(0.77);
+                                    -webkit-transform: scale(0.77);
+                                    transform-origin: 0 0;
+                                    -webkit-transform-origin: 0 0;
+                                }

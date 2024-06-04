@@ -1,7 +1,14 @@
-
 <?php
 include 'session.php';
+// include '../CreateDb.php';
 
+// 	$conn = $pdo->open();
+
+// 	$stmt = $conn->prepare("SELECT * FROM users WHERE id=:id");
+// 	$stmt->execute(['id'=>$_SESSION['admin']]);
+// 	$admin = $stmt->fetch();
+
+// 	$pdo->close();
 if (isset($_POST['add'])) {
 	$name = $_POST['name'];
 	$slug = $_POST['slug'];
@@ -28,7 +35,7 @@ if (isset($_POST['add'])) {
 } else {
 	$_SESSION['error'] = 'Fill up category form first';
 }
-
 header('location: category.php');
+
 
 ?>

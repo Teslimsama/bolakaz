@@ -2,8 +2,8 @@
 class Rating{
 	private $host  = 'localhost';
     private $user  = 'root';
-    private $password   = "";
-    private $database  = "bolakaz";    
+    private $password   = '';
+    private $database  = 'bolakaz';    
 	private $itemUsersTable = 'users';
 	private $itemTable = 'products';	
     private $itemRatingTable = 'item_rating';
@@ -50,7 +50,7 @@ class Rating{
 	}
 	public function getItemRating($itemId){
 		$sqlQuery = "
-			SELECT r.ratingId, r.itemId, r.userId, u.firstname,u.lastname, u.photo, r.ratingNumber, r.title, r.comments, r.created, r.modified
+			SELECT r.ratingId, r.itemId, r.userId, u.firstname, u.lastname, u.photo, r.ratingNumber, r.title, r.comments, r.created, r.modified
 			FROM ".$this->itemRatingTable." as r
 			LEFT JOIN ".$this->itemUsersTable." as u ON (r.userid = u.id)
 			WHERE r.itemId = '".$itemId."'";

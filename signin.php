@@ -29,7 +29,7 @@ if (isset($_SESSION['user'])) {
 	<div class="container mt-3">
 		<nav class="navbar navbar-expand-lg ftco_navbar ftco-navbar-light" id="ftco-navbar">
 			<div class="container">
-				<a class="navbar-brand" href="index.html">Bolakaz.Enterprise</a>
+				<a class="navbar-brand" href="index">Bolakaz.Enterprise</a>
 				<div class="social-media order-lg-last">
 					<p class="mb-0 d-flex">
 						<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-facebook"><i class="sr-only">Facebook</i></span></a>

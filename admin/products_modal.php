@@ -58,10 +58,15 @@
           </div>
           <div class="form-group 1">
             <label for="material" class="col-sm-1 control-label">Material</label>
+<?php
+$stmt = $conn->prepare("SELECT *, COUNT(*) AS numrows FROM products WHERE slug=:slug");
+		$stmt->execute(['slug'=>$slug]);
+		$row = $stmt->fetch();
 
+?>
             <div class="col-sm-5">
               <input type="text" class="form-control" id="material_1" name="material" required>
-            </div>
+            </div><?php echo $row['numrows']?>
 
             <label for="quantity" class="col-sm-1 control-label">Quantity</label>
 

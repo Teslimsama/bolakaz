@@ -50,7 +50,7 @@ if (isset($_SESSION['captcha'])) {
         <div class="container">
             <nav class="navbar navbar-expand-lg ftco_navbar ftco-navbar-light" id="ftco-navbar">
                 <div class="container">
-                    <a class="navbar-brand" href="index.html">bolakaz.enterprise</a>
+                    <a class="navbar-brand" href="index">bolakaz.enterprise</a>
                     <div class="social-media order-lg-last">
                         <p class="mb-0 d-flex">
                             <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-facebook"><i class="sr-only">Facebook</i></span></a>
@@ -64,7 +64,7 @@ if (isset($_SESSION['captcha'])) {
                     </button>
                     <div class="collapse navbar-collapse" id="ftco-nav">
                         <ul class="navbar-nav ml-auto mr-md-3">
-                            <li class="nav-item active"><a href="#" class="nav-link">Home</a></li>
+                            <li class="nav-item active"><a href="index" class="nav-link">Home</a></li>
                             <li class="nav-item"><a href="#" class="nav-link">About</a></li>
                             <li class="nav-item"><a href="signin" class="nav-link">Login</a></li>
                             <li class="nav-item"><a href="contact" class="nav-link">Contact</a></li>
@@ -193,19 +193,11 @@ if (isset($_SESSION['captcha'])) {
                                     <div class="select-dropdown"></div>
                                 </div>
                             </div>
-                            <style>
-                                .g-recaptcha {
-                                    transform: scale(0.77);
-                                    -webkit-transform: scale(0.77);
-                                    transform-origin: 0 0;
-                                    -webkit-transform-origin: 0 0;
-                                }
-                            </style>
                             <?php
                             if (!isset($_SESSION['captcha'])) {
                                 echo '
                                                 <div class="form-group">
-                                                            <div class="g-recaptcha " data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+                                                            <div class="g-recaptcha" data-sitekey="6LczMBskAAAAAKCnR8H_Gs00S35fOjAgygobs2tl"></div>
                                                         </div>
                                             ';
                             }

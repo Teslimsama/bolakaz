@@ -8,7 +8,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Bank Transfer</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -16,29 +16,27 @@
                     <div class="invoice-col right">
                         <strong>Pay To</strong>
                         <address class="small-text">
-                            Netlight Systems Ventures<br />
+                            Bolakaz Enterprise<br />
                             <br />
-                            Account Name: Netlight Systems Ventures<br />
-                            Account No/Bank: 0209399885 (GTBank)<br />
-                            Account No/Bank: 2126267639 (UBA)
+                            Account Name: Bolaji Motunrayo Bilikisu<br />
+                            Account No/Bank: 0025463335 (GTBank)<br />
+                            <!--Account No/Bank: 2126267639 (UBA)-->
                         </address>
                     </div>
                     <div class="invoice-col">
                         <strong>Invoiced To</strong>
                         <address class="small-text">
-                            TESLIM BOLAJI<br />
-                            information quarters phase 4 Kubwa , Abuja, Nigeria., <br />
-                            fct, Abuja, 900901<br />
-                            Nigeria
+                            <?php echo $user['firstname'] . " " . $user['lastname'] ?><br />
+                            <?php echo $user['address'] ?> <br />
+
                         </address>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                
-                    <a href="bank_transfer.php?status=sent" class="btn btn-primary">Understood</a>
-                
+                <button type="button" class="btn btn-primary" id="submitFormButton">Confirm Bank Transfer</button>
+                <!-- <a href="bank_transfer.php?status=sent" class="btn btn-primary">I have sent it</a> -->
             </div>
         </div>
     </div>

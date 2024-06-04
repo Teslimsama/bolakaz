@@ -6,3 +6,4 @@ $email=$_POST['email'];
 
 $stmt = $conn->prepare("INSERT INTO newsletter (email, name) VALUES (:email, :name )");
 $stmt->execute(['email'=>$email, 'name'=>$name]);
+header("location:".$_SERVER['HTTP_REFERER']);

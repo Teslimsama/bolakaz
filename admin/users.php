@@ -57,7 +57,6 @@
                     <th>Email</th>
                     <th>Name</th>
                     <th>Status</th>
-                    <th>Type</th>
                     <th>Date Added</th>
                     <th>Tools</th>
                   </thead>
@@ -66,13 +65,12 @@
                     $conn = $pdo->open();
 
                     try {
-                      $stmt = $conn->prepare("SELECT * FROM users");
-                      $stmt->execute();
+                      $stmt = $conn->prepare("SELECT * FROM users WHERE type=:type");
+                      $stmt->execute(['type' => 0]);
                       foreach ($stmt as $row) {
                         $image = (!empty($row['photo'])) ? '../images/' . $row['photo'] : '../images/profile.jpg';
                         $status = ($row['status']) ? '<span class="label label-success">active</span>' : '<span class="label label-danger">not verified</span>';
                         $active = (!$row['status']) ? '<span class="pull-right"><a href="#activate" class="status" data-toggle="modal" data-id="' . $row['id'] . '"><i class="fa fa-check-square-o"></i></a></span>' : '';
-                        $type = ($row['type']) ? "<span class='updateButton' data-id='" . $row['id'] . "'>Admin</span>" : "<span class='updateButton' data-id='" . $row['id'] . "'>Customer</span>";
                         echo "
                           <tr>
                             <td>
@@ -85,7 +83,6 @@
                               " . $status . "
                               " . $active . "
                             </td>
-                            <td>" . $type . "</td>
                             <td>" . date('M d, Y', strtotime($row['created_on'])) . "</td>
                             <td>
                               <a href='cart.php?user=" . $row['id'] . "' class='btn btn-info btn-sm btn-flat'><i class='fa fa-search'></i> Cart</a>
@@ -118,29 +115,6 @@
 
   <?php include 'scripts.php'; ?>
   <script>
-    $(document).ready(function() {
-      // Attach a click event to the button with id 'updateButton'
-      $(".updateButton").on("click", function() {
-        // Get the id from the data attribute
-        var id = $(this).data("id");
-
-        // Perform Ajax request
-        $.ajax({
-          type: "POST",
-          url: "type_update.php",
-          data: {
-            id: id // Pass the id to the server
-          },
-          dataType: "json",
-
-          success: function(response) {
-            location.reload();
-            // You can update your UI or perform additional actions here
-          },
-
-        });
-      });
-    });
     $(function() {
 
       $(document).on('click', '.edit', function(e) {
