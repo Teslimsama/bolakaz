@@ -1,5 +1,7 @@
-<?php include 'includes/session.php'; ?>
+<?php
+include 'session.php';
 
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -15,7 +17,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="favicomatic/site.webmanifest">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -33,13 +35,14 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/jquery-ui.css" rel="stylesheet">
 </head>
 
 <body>
 
     <?php
-    include "includes/header.php"; ?>
-    <?php include 'includes/navbar.php'; ?>
+    include "header.php"; ?>
+    <?php include 'navbar.php'; ?>
 
 
     <input type="hidden" value="">
@@ -59,255 +62,247 @@
 
     <!-- Shop Start -->
     <div class="container-fluid pt-5">
-        <div class="row px-xl-5">
-            <!-- Shop Sidebar Start -->
-            <div class="col-lg-3 col-md-12">
-                <!-- Price Start -->
-                <div class="border-bottom mb-4 pb-4">
-                    <h5 class="font-weight-semi-bold mb-4">Filter by price</h5>
-                    <form>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" checked id="price-all">
-                            <label class="custom-control-label" for="price-all">All Price</label>
-                            <span class="badge border font-weight-normal">1000</span>
+        <form method="post" id="search_form">
+            <div class="row px-xl-5">
+                <!-- Shop Sidebar Start -->
+                <div class="col-lg-3 col-md-12">
+                    <!-- Price Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by price</h5>
+                        <div class="custom-control custom-checkbox justify-content-between mb-3">
+                            <input type="hidden" id="hidden_minimum_price" value="0" />
+                            <input type="hidden" id="hidden_maximum_price" value="65000" />
+                            <input type="hidden" id="cat" value="<?php if (isset($_GET['category'])) {
+                                                                        echo $_GET['category'];
+                                                                    } else {
+                                                                        echo "0";
+                                                                    } ?>">
+                            <p id="price_show">₦1000 - ₦65000</p>
+                            <div id="price_range"></div>
                         </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="price-1">
-                            <label class="custom-control-label" for="price-1">$0 - $100</label>
-                            <span class="badge border font-weight-normal">150</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="price-2">
-                            <label class="custom-control-label" for="price-2">$100 - $200</label>
-                            <span class="badge border font-weight-normal">295</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="price-3">
-                            <label class="custom-control-label" for="price-3">$200 - $300</label>
-                            <span class="badge border font-weight-normal">246</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="price-4">
-                            <label class="custom-control-label" for="price-4">$300 - $400</label>
-                            <span class="badge border font-weight-normal">145</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between">
-                            <input type="checkbox" class="custom-control-input" id="price-5">
-                            <label class="custom-control-label" for="price-5">$400 - $500</label>
-                            <span class="badge border font-weight-normal">168</span>
-                        </div>
-                    </form>
+                    </div>
+                    <!-- Price End -->
+
+                    <!--Category Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by category</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(category_name) FROM products GROUP BY category_name DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector category" value="<?php echo $row['category_name']; ?>" id="<?php echo 'cat-' . $n ?>">
+                                <label class=" custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo ucwords(str_replace("_", " ", $row['category_name']));?></label>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['category_name'];
+                                    $sql = "SELECT * FROM products WHERE category_name='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+
+                        ?>
+                    </div>
+                    <!-- Category End -->
+
+                    <!--Brand Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by brand</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(brand) FROM products GROUP BY brand DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector brand" value="<?php echo $row['brand']; ?>" id="<?php echo 'brand-' . $n ?>">
+                                <label class=" custom-control-label" for="<?php echo 'brand-' . $n ?>"><?php echo ucwords($row['brand']); ?></label>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['brand'];
+                                    $sql = "SELECT * FROM products WHERE brand='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+
+                        ?>
+                    </div>
+                    <!-- Brand End -->
+
+                    <!--Material Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by material</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(material) FROM products GROUP BY material DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector material" value="<?php echo $row['material']; ?>" id="<?php echo 'mat-' . $n ?>">
+                                <label class=" custom-control-label" for="<?php echo 'mat-' . $n ?>"><?php echo ucwords($row['material']); ?></label>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['material'];
+                                    $sql = "SELECT * FROM products WHERE material='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+
+                        ?>
+                    </div>
+                    <!-- Material End -->
+
+                    <!--Color Start -->
+                    <div class="border-bottom mb-4 pb-4">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by color</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(color) FROM products GROUP BY color DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector color" value="<?php echo $row['color']; ?>" id="<?php echo 'col-' . $n ?>">
+                                <label class=" custom-control-label" for="<?php echo 'col-' . $n ?>"><?php echo ucwords($row['color']); ?></label>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['color'];
+                                    $sql = "SELECT * FROM products WHERE color='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+
+                        ?>
+                    </div>
+                    <!-- Color End -->
+
+                    <!-- Size Start -->
+                    <div class="mb-5">
+                        <h5 class="font-weight-semi-bold mb-4">Filter by size</h5>
+                        <?php
+                        $n = 1;
+                        $query = "SELECT DISTINCT(size) FROM products GROUP BY size DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
+                                <input type="checkbox" class="custom-control-input common_selector size" value="<?php echo $row['size']; ?>" id="<?php echo 'size-' . $n ?>">
+                                <label class="custom-control-label" for="<?php echo 'size-' . $n ?>"><?php echo $row['size']; ?> </label>
+                                <span class="text-dark badge border font-weight-normal">
+                                    <?php $name = $row['size'];
+                                    $sql = "SELECT * FROM products WHERE size='$name'";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    echo $stmt->rowCount();
+                                    ?>
+                                </span>
+                            </div>
+                        <?php
+                            $n++;
+                        }
+                        ?>
+                    </div>
+                    <!-- Size End -->
+
                 </div>
-                <!-- Price End -->
-
-                <!-- Color Start -->
-                <div class="border-bottom mb-4 pb-4">
-                    <h5 class="font-weight-semi-bold mb-4">Filter by color</h5>
-                    <form>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" checked id="color-all">
-                            <label class="custom-control-label" for="price-all">All Color</label>
-                            <span class="badge border font-weight-normal">1000</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="color-1">
-                            <label class="custom-control-label" for="color-1">Black</label>
-                            <span class="badge border font-weight-normal">150</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="color-2">
-                            <label class="custom-control-label" for="color-2">White</label>
-                            <span class="badge border font-weight-normal">295</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="color-3">
-                            <label class="custom-control-label" for="color-3">Red</label>
-                            <span class="badge border font-weight-normal">246</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="color-4">
-                            <label class="custom-control-label" for="color-4">Blue</label>
-                            <span class="badge border font-weight-normal">145</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between">
-                            <input type="checkbox" class="custom-control-input" id="color-5">
-                            <label class="custom-control-label" for="color-5">Green</label>
-                            <span class="badge border font-weight-normal">168</span>
-                        </div>
-                    </form>
-                </div>
-                <!-- Color End -->
-
-                <!-- Size Start -->
-                <div class="mb-5">
-                    <h5 class="font-weight-semi-bold mb-4">Filter by size</h5>
-                    <form>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" checked id="size-all">
-                            <label class="custom-control-label" for="size-all">All Size</label>
-                            <span class="badge border font-weight-normal">1000</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="size-1">
-                            <label class="custom-control-label" for="size-1">XS</label>
-                            <span class="badge border font-weight-normal">150</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="size-2">
-                            <label class="custom-control-label" for="size-2">S</label>
-                            <span class="badge border font-weight-normal">295</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="size-3">
-                            <label class="custom-control-label" for="size-3">M</label>
-                            <span class="badge border font-weight-normal">246</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
-                            <input type="checkbox" class="custom-control-input" id="size-4">
-                            <label class="custom-control-label" for="size-4">L</label>
-                            <span class="badge border font-weight-normal">145</span>
-                        </div>
-                        <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between">
-                            <input type="checkbox" class="custom-control-input" id="size-5">
-                            <label class="custom-control-label" for="size-5">XL</label>
-                            <span class="badge border font-weight-normal">168</span>
-                        </div>
-                    </form>
-                </div>
-                <!-- Size End -->
-            </div>
-            <!-- Shop Sidebar End -->
+                <!-- Shop Sidebar End -->
 
 
-            <!-- Shop Product Start -->
-            <div class="col-lg-9 col-md-12">
-                <div class="row pb-3">
-                    <div class="col-12 pb-1">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
+                <!-- Shop Product Start -->
+                <div class="col-lg-9 col-md-12">
+                    <div class="row pb-3">
+                        <div class="col-12 pb-1">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
 
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" class="form-control" id="search" onkeyup="load_data(this.value);" placeholder="Search by name">
-                                <div class="input-group-append">
-                                    <span class="input-group-text bg-transparent text-primary">
-                                        <i class="fa fa-search"></i>
-                                    </span>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="search" class="form-control" id="search" placeholder="Search by name">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-transparent text-primary">
+                                            <i class="fa fa-search"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="dropdown ml-4">
+                                    <button class="btn border dropdown-toggle" type="button" id="triggerId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Sort by
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
+                                        <label class="dropdown-item"><input type="radio" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'newest' || $_POST['sorting'] == '')) {
+                                                                                                echo "checked";
+                                                                                            } ?> name="sorting" class="custom-control-input common_selector sorting" value="newest">Latest</label>
+
+                                        <label class="dropdown-item"><input type="radio" <?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'most_viewed' || $_POST['sorting'] == '')) {
+                                                                                                echo "checked";
+                                                                                            } ?> name="sorting" class="custom-control-input common_selector sorting" value="most_viewed">
+                                            Popularity</label>
+
+                                        <!-- <label class="dropdown-item"><input type="radio"<?php if (isset($_POST['sorting']) && ($_POST['sorting'] == 'best' || $_POST['sorting'] == '')) {
+                                                                                                    echo "checked";
+                                                                                                } ?>  name="sorting" class="custom-control-input common_selector"value="high">
+                                            Best Rating</label> -->
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="dropdown ml-4">
-                                <button class="btn border dropdown-toggle" type="button" id="triggerId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Sort by
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
-                                    <a class="dropdown-item" href="#">Latest</a><span id="total_data"></span>
-                                    <a class="dropdown-item" href="#">Popularity</a>
-                                    <a class="dropdown-item" href="#">Best Rating</a>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                    <div id="post_data">
+                        <div class=" row filter_data">
 
-                    </div>
-
+                        </div>
 
 
 
-
-                    <div id="pagination_link" class="col-12 pb-1">
-
-                    </div>
-                </div>
-            </div>
-            <!-- Shop Product End -->
-        </div>
+        </form>
+    </div>
+    </div>
+    <!-- Shop Product End -->
+    </div>
     </div>
     <!-- Shop End -->
-    <script>
-        load_data();
-
-        function load_data(query = '', page_number = 1, catid = '') {
-            var form_data = new FormData();
-            const cat = window.location.search;
-            const o = cat.split('?')[1];
-            const getcat = new URLSearchParams(o);
-            for (let pair of getcat.entries()) {
-                const element = pair[1];
-                form_data.append('category', element);
-            }
-            form_data.append('query', query);
-
-            form_data.append('page', page_number);
-
-
-            var ajax_request = new XMLHttpRequest();
-
-            ajax_request.open('POST', 'process_data.php');
-
-            ajax_request.send(form_data);
-
-            ajax_request.onreadystatechange = function() {
-                if (ajax_request.readyState == 4 && ajax_request.status == 200) {
-                    var response = JSON.parse(ajax_request.responseText);
-
-                    var html = '';
-
-                    var serial_no = 1;
-
-                    if (response.data.length > 0) {
-                        for (var count = 0; count < response.data.length; count++) {
-                            html += ` 
-                            <div  class='col-lg-4 col-md-6 col-sm-12 pb-1'>
-                            <form method="get" id="productForm">
-                                    <div class="card product-item border-0 mb-4">
-                                        <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-                                            <img class="img-fluid w-100" src="./images/` + response.data[count].photo + `" alt="image">
-                                        </div>`;
-
-                            html += `
-                            <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
-                                    <h6 class="text-truncate mb-3"><a href="detail.php?product=` + response.data[count].slug + `"> ` + response.data[count].name + `</a></h6>
-                                <div class="d-flex justify-content-center"> 
-                                <h6 class="text-truncate mb-3">&#36; ` + response.data[count].price + `</h6>
-                                    <h6 class="text-muted ml-2"><del>&#36;` + response.data[count].price + `</del></h6>
-                                </div>`;
-                            html += ` 
-                            </div>
-                            <div class="card-footer d-flex justify-content-center bg-light border">
-                                <a href="detail.php?product=` + response.data[count].slug + `">
-                                 <i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
-                               
-                            `;
-                            html += `  
-                            </div>
-                             </div>
-                             </form>
-                             </div>
-                             
-                             `;
-
-                            serial_no++;
-                        }
-                    } else {
-                        html += '<h1 colspan="3" class="text-center">No Data Found</h1>';
-                    }
-
-                    document.getElementById('post_data').innerHTML = html;
-
-                    document.getElementById('total_data').innerHTML = response.total_data;
-
-                    document.getElementById('pagination_link').innerHTML = response.pagination;
-
-                }
-
-            }
-        }
-    </script>
 
     <!-- Footer Start -->
 
+
     <?php
-    include "includes/footer.php"
+    include "footer.php"
     ?>
     <!-- Footer End -->
 
@@ -318,11 +313,14 @@
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src="js/jquery-ui.js"></script>
+    <script src="js/filter.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <script src="js/bootstrap.min.js"></script>
 
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>

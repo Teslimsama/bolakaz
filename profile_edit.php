@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	$conn = $pdo->open();
 
@@ -50,5 +50,3 @@
 	$pdo->close();
 
 	header('location: profile');
-
-?>

@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 <?php
 if (!isset($_SESSION['user'])) {
     header('location: index.php');
@@ -24,7 +24,7 @@ if (!isset($_SESSION['user'])) {
     <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="favicomatic/site.webmanifest">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
@@ -42,8 +42,8 @@ if (!isset($_SESSION['user'])) {
 <body>
 
     <?php
-    include "includes/header.php"; ?>
-    <?php include 'includes/navbar.php'; ?>
+    include "header.php"; ?>
+    <?php include 'navbar.php'; ?>
     <!-- Page Header Start -->
     <div class="container-fluid bg-secondary mb-5">
         <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
@@ -82,7 +82,7 @@ if (!isset($_SESSION['user'])) {
                 </div>
             </div>
         </div>
-        <div class="box box-solid shadow-sm mt-4 card">
+        <div id="trans" class="box box-solid shadow-sm mt-4 card">
             <div class="box-header with-border card-header">
                 <h4 class="box-title"><i class="fa fa-calendar"></i> <b>Transaction History</b></h4>
             </div>
@@ -92,6 +92,7 @@ if (!isset($_SESSION['user'])) {
                         <th class="hidden"></th>
                         <th>Date</th>
                         <th>Transaction#</th>
+                        <th>Status</th>
                         <th>Amount</th>
                         <th>Full Details</th>
                     </thead>
@@ -100,7 +101,7 @@ if (!isset($_SESSION['user'])) {
                         $conn = $pdo->open();
 
                         try {
-                            $stmt = $conn->prepare("SELECT * FROM sales WHERE user_id=:user_id ORDER BY sales_date DESC");
+                            $stmt = $conn->prepare("SELECT * FROM sales WHERE user_id=:user_id ORDER BY id DESC");
                             $stmt->execute(['user_id' => $user['id']]);
                             foreach ($stmt as $row) {
                                 $stmt2 = $conn->prepare("SELECT * FROM details LEFT JOIN products ON products.id=details.product_id WHERE sales_id=:id");
@@ -114,8 +115,9 @@ if (!isset($_SESSION['user'])) {
 	        									<tr>
 	        										<td class='hidden'></td>
 	        										<td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
-	        										<td>" . $row['pay_id'] . "</td>
-	        										<td>&#36;" . number_format($total, 2) . "</td>
+	        										<td>" . $row['tx_ref'] . "</td>
+	        										<td>" . $row['Status'] . "</td>
+	        										<td>₦" . number_format($total, 2) . "</td>
 	        										<td><button class='btn btn-sm btn-flat btn-primary transact' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</button></td>
 	        									</tr>
 	        								";
@@ -135,8 +137,8 @@ if (!isset($_SESSION['user'])) {
     <!-- Footer Start -->
 
     <?php
-    include "includes/footer.php"; ?>
-    <?php include 'includes/profile_modal.php'; ?>
+    include "footer.php"; ?>
+    <?php include 'profile_modal.php'; ?>
 
     <!-- Footer End -->
     <script>

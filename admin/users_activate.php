@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_POST['activate'])){
 		$id = $_POST['id'];
@@ -23,4 +23,3 @@
 	}
 
 	header('location: users.php');
-?>

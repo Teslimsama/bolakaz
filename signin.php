@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 <?php
 if (isset($_SESSION['user'])) {
 	header('location: cart.php');
@@ -21,7 +21,7 @@ if (isset($_SESSION['user'])) {
 	<link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-	<link rel="manifest" href="/site.webmanifest">
+	<link rel="manifest" href="favicomatic/site.webmanifest">
 
 </head>
 
@@ -29,7 +29,7 @@ if (isset($_SESSION['user'])) {
 	<div class="container mt-3">
 		<nav class="navbar navbar-expand-lg ftco_navbar ftco-navbar-light" id="ftco-navbar">
 			<div class="container">
-				<a class="navbar-brand" href="index.html">Bolakaz.Enterprise</a>
+				<a class="navbar-brand" href="index">Bolakaz.Enterprise</a>
 				<div class="social-media order-lg-last">
 					<p class="mb-0 d-flex">
 						<a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-facebook"><i class="sr-only">Facebook</i></span></a>
@@ -93,11 +93,7 @@ if (isset($_SESSION['user'])) {
 					</div>
 					<div class="input">
 						<input type="password" class="input-field" id="myInput" name="password" placeholder="Password" required />
-						<span class="eye" onclick="myFunction()">
-
-							<i id="hide1" class="fa fa-eye"></i>
-							<i id="hide2" class="fa fa-eye-slash"></i>
-						</span>
+						
 						<label class="input-label">Password</label>
 					</div>
 

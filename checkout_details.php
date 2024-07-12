@@ -1,5 +1,5 @@
 <?php
-include 'includes/session.php';
+include 'session.php';
 $conn = $pdo->open();
 
 $output = '';
@@ -7,7 +7,7 @@ $output = '';
 if (isset($_SESSION['user'])) {
 	if (isset($_SESSION['cart'])) {
 		foreach ($_SESSION['cart'] as $row) {
-			$stmt = $conn->prepare("SELECT *, COUNT(*) AS numrows FROM cart WHERE user_id=:user_id AND product_id=:product_id");
+			$stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM cart WHERE user_id=:user_id AND product_id=:product_id");
 			$stmt->execute(['user_id' => $user['id'], 'product_id' => $row['productid']]);
 			$crow = $stmt->fetch();
 			if ($crow['numrows'] < 1) {
@@ -23,44 +23,49 @@ if (isset($_SESSION['user'])) {
 
 	try {
 		$total = 0;
-		$stmt = $conn->prepare("SELECT *, cart.id AS cartid FROM cart LEFT JOIN products ON products.id=cart.product_id WHERE user_id=:user");
-		$stmt->execute(['user' => $user['id']]);
+		$stmt = $conn->prepare("SELECT *, cart.id AS cartid FROM cart LEFT JOIN products ON products.id=cart.product_id WHERE user_id=:user_id");
+		$stmt->execute(['user_id' => $user['id']]);
 		foreach ($stmt as $row) {
-			$image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
+			$image = !empty($row['photo']) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
 			$subtotal = $row['price'] * $row['quantity'];
 			$total += $subtotal;
-			$output .= "					  <div class='d-flex justify-content-between'>
-     <p>" . $row['name'] . "</p>
-     <p> $" . number_format($row['price'], 2) . "</p>
- </div>
-        
-                        ";
+            $discount = isset($_SESSION['coupon']) ? $_SESSION['coupon']['value'] : 0;
+            $shipping = isset($_SESSION['shipping']['shipping_price']) ? $_SESSION['shipping']['shipping_price'] : 0;
+            $total_c = $total - $discount + $shipping;
+			$output .= "
+                <div class='d-flex justify-content-between'>
+                    <p>{$row['quantity']} &times;</p>
+                    <p>{$row['name']}</p>
+                    <p>₦" . number_format($row['price'], 2) . "</p>
+                </div>
+            ";
 		}
 		$output .= "
-				
-
- <hr class='mt-0'>
- <div class='d-flex justify-content-between mb-3 pt-1'>
-     <h6 class='font-weight-medium'>Subtotal</h6>
-     <h6 class='font-weight-medium'>$ " . number_format($total, 2) . "</h6>
- </div>
- <div class='d-flex justify-content-between'>
-     <h6 class='font-weight-medium'>Shipping</h6>
-     <h6 class='font-weight-medium'>$10</h6>
- </div>
-			";
-
-		$output .= "</div>
-<div class='card-footer border-secondary bg-transparent'>
-    <div class='d-flex justify-content-between mt-2'>
-        <h5 class='font-weight-bold'>Total</h5>
-        <h5 class='font-weight-bold'> $" . number_format($total, 2) . "</h5>
-    </div>
-</div>
-</div>";
- 
+            <hr class='mt-0'>
+            <div class='d-flex justify-content-between mb-3 pt-1'>
+                <h6 class='font-weight-medium'>Subtotal</h6>
+                <h6 class='font-weight-medium'>₦" . number_format($total, 2) . "</h6>
+            </div>
+            <div class='d-flex justify-content-between'>
+                <h6 class='font-weight-medium'>Shipping</h6>
+                <h6 class='font-weight-medium'>₦" . number_format($shipping, 2) . "</h6>
+            </div>
+			<div class='d-flex justify-content-between'>
+                <h6 class='font-weight-medium'>Discount</h6>
+                <h6 class='font-weight-medium'>- ₦" . number_format($discount, 2) . "</h6>
+            </div>
+        ";
+		$output .= "
+            <div class='card-footer border-secondary bg-transparent'>
+                <div class='d-flex justify-content-between mt-2'>
+                    <h5 class='font-weight-bold'>Total</h5>
+                    <input type='hidden' value='" . $total_c . "' id='amount'>
+                    <h5 class='font-weight-bold'>₦" . number_format($total_c, 2) . "</h5>
+                </div>
+            </div>
+        ";
 	} catch (PDOException $e) {
-		$output .= $e->getMessage();
+		$output .= "<p>Error: " . $e->getMessage() . "</p>";
 	}
 } else {
 	if (count($_SESSION['cart']) != 0) {
@@ -69,48 +74,51 @@ if (isset($_SESSION['user'])) {
 			$stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname FROM products LEFT JOIN category ON category.id=products.category_id WHERE products.id=:id");
 			$stmt->execute(['id' => $row['productid']]);
 			$product = $stmt->fetch();
-			$image = (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg';
+			$image = !empty($product['photo']) ? 'images/' . $product['photo'] : 'images/noimage.jpg';
 			$subtotal = $product['price'] * $row['quantity'];
 			$total += $subtotal;
+            $discount = isset($_SESSION['coupon']) ? $_SESSION['coupon']['value'] : 0;
+            $shipping = isset($_SESSION['shipping']['shipping_price']) ? $_SESSION['shipping']['shipping_price'] : 0;
+            $total_c = $total - $discount + $shipping;
 			$output .= "
-							 <div class='d-flex justify-content-between'>
-     <p>". $row['name'] . "</p>
-     <p>$ " . number_format($row['price'], 2) . "</p>
- </div>
-        
-                        ";
+                <div class='d-flex justify-content-between'>
+                    <p>{$product['prodname']}</p>
+                    <p>₦" . number_format($product['price'], 2) . "</p>
+                </div>
+            ";
 		}
 		$output .= "
-				 
- <hr class='mt-0'>
- <div class='d-flex justify-content-between mb-3 pt-1'>
-     <h6 class='font-weight-medium'>Subtotal</h6>
-     <h6 class='font-weight-medium'>$ " . number_format($total, 2) . "</h6>
- </div>
- <div class='d-flex justify-content-between'>
-     <h6 class='font-weight-medium'>Shipping</h6>
-     <h6 class='font-weight-medium'>$10</h6>
- </div>
-			";
-		$output .= "</div>
-<div class='card-footer border-secondary bg-transparent'>
-    <div class='d-flex justify-content-between mt-2'>
-        <h5 class='font-weight-bold'>Total</h5>
-        <h5 class='font-weight-bold'> $" . number_format($total, 2) . "</h5>
-    </div>
-</div>
-</div>";
-
+            <hr class='mt-0'>
+            <div class='d-flex justify-content-between mb-3 pt-1'>
+                <h6 class='font-weight-medium'>Subtotal</h6>
+                <h6 class='font-weight-medium'>₦" . number_format($total, 2) . "</h6>
+            </div>
+            <div class='d-flex justify-content-between'>
+                <h6 class='font-weight-medium'>Shipping</h6>
+                <h6 class='font-weight-medium'>₦" . number_format($shipping, 2) . "</h6>
+            </div>
+			<div class='d-flex justify-content-between'>
+                <h6 class='font-weight-medium'>Discount</h6>
+                <h6 class='font-weight-medium'>- ₦" . number_format($discount, 2) . "</h6>
+            </div>
+        ";
+		$output .= "
+            <div class='card-footer border-secondary bg-transparent'>
+                <div class='d-flex justify-content-between mt-2'>
+                    <h5 class='font-weight-bold'>Total</h5>
+                    <input type='hidden' value='" . $total_c . "' id='amount'>
+                    <h5 class='font-weight-bold'>₦" . number_format($total_c, 2) . "</h5>
+                </div>
+            </div>
+        ";
 	} else {
 		$output .= "
-				<tr>
-					<td colspan='6' align='center'>Shopping cart empty</td>
-				<tr>
-			";
+            <tr>
+                <td colspan='6' align='center'>Shopping cart empty</td>
+            </tr>
+        ";
 	}
 }
 
 $pdo->close();
 echo json_encode($output);
-// echo $output;
-// 	

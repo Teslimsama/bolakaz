@@ -1,30 +1,62 @@
 <?php
-include 'includes/session.php';
-?><?php
-    $conn = $pdo->open();
+include 'session.php';
+include 'Rating.php';
+$rating = new Rating();
+?>
+<?php
+$conn = $pdo->open();
 
-    $slug = $_GET['product'];
+$slug = $_GET['product'];
 
-    try {
+try {
 
-        $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id WHERE slug = :slug");
-        $stmt->execute(['slug' => $slug]);
-        $product = $stmt->fetch();
-    } catch (PDOException $e) {
-        echo "There is some problem in connection: " . $e->getMessage();
+    $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id WHERE slug = :slug");
+    $stmt->execute(['slug' => $slug]);
+    $product = $stmt->fetch();
+} catch (PDOException $e) {
+    echo "There is some problem in connection: " . $e->getMessage();
+}
+
+//page view
+$now = date('Y-m-d');
+if ($product['date_view'] == $now) {
+    $stmt = $conn->prepare("UPDATE products SET counter=counter+1 WHERE id=:id");
+    $stmt->execute(['id' => $product['prodid']]);
+} else {
+    $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
+    $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
+}
+
+?>
+<?php
+$itemRating = $rating->getItemRating($product['prodid']);
+$ratingNumber = 0;
+$count = 0;
+$fiveStarRating = 0;
+$fourStarRating = 0;
+$threeStarRating = 0;
+$twoStarRating = 0;
+$oneStarRating = 0;
+foreach ($itemRating as $rate) {
+    $ratingNumber += $rate['ratingNumber'];
+    $count += 1;
+    if ($rate['ratingNumber'] == 5) {
+        $fiveStarRating += 1;
+    } else if ($rate['ratingNumber'] == 4) {
+        $fourStarRating += 1;
+    } else if ($rate['ratingNumber'] == 3) {
+        $threeStarRating += 1;
+    } else if ($rate['ratingNumber'] == 2) {
+        $twoStarRating += 1;
+    } else if ($rate['ratingNumber'] == 1) {
+        $oneStarRating += 1;
     }
-
-    //page view
-    $now = date('Y-m-d');
-    if ($product['date_view'] == $now) {
-        $stmt = $conn->prepare("UPDATE products SET counter=counter+1 WHERE id=:id");
-        $stmt->execute(['id' => $product['prodid']]);
-    } else {
-        $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
-        $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
-    }
-
-    ?>
+}
+$average = 0;
+if ($ratingNumber && $count) {
+    $average = $ratingNumber / $count;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -40,7 +72,7 @@ include 'includes/session.php';
     <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="favicomatic/site.webmanifest">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -61,9 +93,9 @@ include 'includes/session.php';
 
 <body>
     <!-- Topbar Start -->
-    <?php include 'includes/header.php'; ?>
+    <?php include 'header.php'; ?>
 
-    <?php include 'includes/navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
     <!-- Navbar End -->
 
 
@@ -83,6 +115,10 @@ include 'includes/session.php';
 
     <!-- Shop Detail Start -->
     <div class="container-fluid py-5">
+        <div class="alert" id="callout" style="display:none">
+            <button type="button" class="close"><span aria-hidden="true">&times;</span></button>
+            <span class="message"></span>
+        </div>
         <div class="row px-xl-5">
             <div class="col-lg-5 pb-5">
                 <div id="product-carousel" class="carousel slide" data-ride="carousel">
@@ -108,108 +144,102 @@ include 'includes/session.php';
                     </a>
                 </div>
             </div>
-            <!-- <div class="callout" id="callout" style="display:none">
-                <button type="button" class="close"><span aria-hidden="true">&times;</span></button>
-                <span class="message"></span>
-            </div> -->
+
             <div class="col-lg-7 pb-5">
                 <h3 class="font-weight-semi-bold"><?php echo $product['prodname']; ?></h3>
                 <div class="d-flex mb-3">
-                    <div class="text-primary mr-2">
-                        <small class="fas fa-star main_star"></small>
-                        <small class="fas fa-star main_star"></small>
-                        <small class="fas fa-star main_star"></small>
-                        <small class="fas fa-star main_star"></small>
-                        <small class="far fa-star main_star"></small>
+                    <div class="mr-2">
+                        <?php
+                        $averageRating = round($average, 0);
+                        for ($i = 1; $i <= 5; $i++) {
+                            $ratingClass = "btn-default btn-grey";
+                            if ($i <= $averageRating) {
+                                $ratingClass = "text-primary";
+                            }
+                        ?>
+                            <small class="fas fa-star <?php echo $ratingClass; ?> "></small>
+
+                        <?php } ?>
+                        <?php printf('%.1f', $average); ?>
                     </div>
-                    <small class="pt-1">(<span id="total_review">50</span> Reviews)</small>
                 </div>
-                <h3 class="font-weight-semi-bold mb-4">$<?php echo number_format($product['price'], 2); ?></h3>
+                <h3 class="font-weight-semi-bold mb-4">₦<?php echo number_format($product['price'], 2); ?></h3>
                 <p class="mb-4"><?php echo $product['description']; ?></p>
                 <div class="d-flex mb-3">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
-                    <form>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="size-1" name="size">
-                            <label class="custom-control-label" for="size-1">XS</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="size-2" name="size">
-                            <label class="custom-control-label" for="size-2">S</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="size-3" name="size">
-                            <label class="custom-control-label" for="size-3">M</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="size-4" name="size">
-                            <label class="custom-control-label" for="size-4">L</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="size-5" name="size">
-                            <label class="custom-control-label" for="size-5">XL</label>
-                        </div>
-                    </form>
+                    <form id="productForm">
+                        <?php
+                        $n = 1;
+                        $proname = $product['prodname'];
+                        $query = "SELECT DISTINCT(size) FROM products WHERE name='$proname' GROUP BY size DESC";
+                        $statement = $conn->prepare($query);
+                        $statement->execute();
+                        $result = $statement->fetchAll();
+                        foreach ($result as $row) {
+                        ?>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" class="custom-control-input" value="<?php echo $row['size']; ?>" id="<?php echo 'size-' . $n ?>" name="size">
+                                <label class="custom-control-label" for="<?php echo 'size-' . $n ?>"><?php echo $row['size']; ?></label>
+                            </div>
+                        <?php
+                            $n++;
+                        } ?>
+
                 </div>
                 <div class="d-flex mb-4">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
-                    <form>
+                    <?php
+                    $n = 1;
+                    $proname = $product['prodname'];
+                    $query = "SELECT DISTINCT(color) FROM products WHERE name='$proname' GROUP BY color DESC";
+                    $statement = $conn->prepare($query);
+                    $statement->execute();
+                    $result = $statement->fetchAll();
+                    foreach ($result as $row) {
+                    ?>
                         <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-1" name="color">
-                            <label class="custom-control-label" for="color-1">Black</label>
+                            <input type="radio" class="custom-control-input" value="<?php echo $row['color']; ?>" id="<?php echo 'color-' . $n ?>" name="color">
+                            <label class="custom-control-label" for="<?php echo 'color-' . $n ?>"><?php echo $row['color']; ?></label>
                         </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-2" name="color">
-                            <label class="custom-control-label" for="color-2">White</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-3" name="color">
-                            <label class="custom-control-label" for="color-3">Red</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-4" name="color">
-                            <label class="custom-control-label" for="color-4">Blue</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" id="color-5" name="color">
-                            <label class="custom-control-label" for="color-5">Green</label>
-                        </div>
-                    </form>
+                    <?php
+                        $n++;
+                    } ?>
+
                 </div>
-                <form id="productForm">
 
 
-                    <div class="d-flex align-items-center mb-4 pt-2">
-                        <div class="input-group quantity mr-3" style="width: 130px;">
-                            <div class="input-group-btn">
-                                <button id="minus" type="button" class="btn btn-primary btn-minus">
-                                    <i class="fa fa-minus"></i>
-                                </button>
-                            </div>
-                            <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
 
-                            <div class="input-group-btn">
-                                <button id="add" type="button" class="btn btn-primary btn-plus">
-                                    <i class="fa fa-plus"></i>
-                                </button>
-                            </div>
-                        </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
-                        <button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</button>
-                    </div>
+                <div class="d-flex align-items-center mb-4 pt-2">
+                    <div class="input-group quantity mr-3" style="width: 130px;">
+                        <div class="input-group-btn">
+                            <button id="minus" type="button" class="btn btn-primary btn-minus">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                        <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
+
+                        <div class="input-group-btn">
+                            <button id="add" type="button" class="btn btn-primary btn-plus">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
+                    <?php echo (!empty($user['id'])) ? '<button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart </button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>'; ?>
+                </div>
                 </form>
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
                     <div class="d-inline-flex">
-                        <a class="text-dark px-2" href="">
+                        <a class="text-dark px-2" href="https://www.facebook.com/sharer/sharer.php?u=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a class="text-dark px-2" href="">
+                        <a class="text-dark px-2" href="https://twitter.com/intent/tweet?url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&text=">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a class="text-dark px-2" href="">
+                        <a class="text-dark px-2" href="https://www.linkedin.com/shareArticle?mini=true&url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
-                        <a class="text-dark px-2" href="">
+                        <a class="text-dark px-2" href="https://pinterest.com/pin/create/button/?url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&media=&description=">
                             <i class="fab fa-pinterest"></i>
                         </a>
                     </div>
@@ -268,37 +298,85 @@ include 'includes/session.php';
                     </div>
                     <div class="tab-pane fade" id="tab-pane-3">
                         <div class="row">
-
-                            <div class="col-md-6" id="review_content"></div>
                             <div class="col-md-6">
-                                <h4 class="mb-4">Leave a review</h4>
-                                <small>Your email address will not be published. Required fields are marked *</small>
-                                <div class="d-flex my-3">
-                                    <p class="mb-0 mr-2">Your Rating * :</p>
-                                    <div class="text-primary">
-                                        <i class="far fa-star star-light submit_star" id="submit_star_1" data-rating="1"></i>
-                                        <i class="far fa-star star-light submit_star" id="submit_star_2" data-rating="2"></i>
-                                        <i class="far fa-star star-light submit_star" id="submit_star_3" data-rating="3"></i>
-                                        <i class="far fa-star star-light submit_star" id="submit_star_4" data-rating="4"></i>
-                                        <i class="far fa-star star-light submit_star" id="submit_star_5" data-rating="5"></i>
+                                <h4 class="mb-4">Reviews for "<?php echo $product['prodname']; ?> "</h4>
+                                <?php
+                                $itemRating = $rating->getItemRating($product['prodid']);
+                                foreach ($itemRating as $rating) {
+                                    $date = date_create($rating['created']);
+                                    $reviewDate = date_format($date, "M d, Y");
+                                    $profilePic = "profile.png";
+                                    if ($rating['photo']) {
+                                        $profilePic = $rating['photo'];
+                                    }
+                                ?>
+                                    <div class="media mb-4">
+                                        <img src="<?php echo (!empty($rating['photo'])) ? 'images/' . $rating['photo'] : 'images/noimage.jpg'; ?>" alt="Image" class="img-fluid rounded mr-3 mt-1" style="width: 45px;">
+                                        <div class="media-body">
+                                            <h6><?php echo ucwords($rating['firstname'] . " " . $rating['lastname']); ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
+                                            <div class="mb-2">
+                                                <?php
+                                                for ($i = 1; $i <= 5; $i++) {
+                                                    $ratingClass = "btn-default btn-grey";
+                                                    if ($i <= $rating['ratingNumber']) {
+                                                        $ratingClass = "text-primary";
+                                                    }
+                                                ?>
+                                                    <i class="fas fa-star <?php echo $ratingClass; ?>"></i>
+                                                <?php } ?>
+                                            </div>
+                                            <p><?php echo $rating['comments']; ?></p>
+                                        </div>
                                     </div>
-                                </div>
-                                <form>
+                                <?php } ?>
+                            </div>
+                            <div class="col-md-6">
+                                <form id="ratingForm" method="POST">
+                                    <h4 class="mb-4">Leave a review</h4>
+                                    <small>Your email address will not be published. Required fields are marked *</small>
+                                    <div class="d-flex my-3">
+                                        <p class="mb-0 mr-2">Your Rating * :</p>
+                                        <div class="text-primary">
+                                            <button type="button" class="btn btn-primary btn-sm rateButton" aria-label="Left Align">
+                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                            </button>
+                                            <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="Left Align">
+                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                            </button>
+                                            <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="Left Align">
+                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                            </button>
+                                            <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="Left Align">
+                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                            </button>
+                                            <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="Left Align">
+                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                            </button>
+
+                                        </div>
+                                    </div>
+
                                     <div class="form-group">
                                         <label for="message">Your Review *</label>
-                                        <textarea id="user_review" name="user_review" cols="30" rows="5" class="form-control"></textarea>
+                                        <textarea id="comment" name="comment" cols="30" rows="5" class="form-control" required></textarea>
                                     </div>
+
+                                    <input type="hidden" value="<?php echo $product['prodid']; ?>" id="itemid" name="itemid">
+                                    <input type="hidden" class="form-control" id="rating" name="rating" value="1">
+
+                                    <input type="hidden" name="action" value="saveRating">
                                     <div class="form-group">
-                                        <label for="name">Your Name *</label>
-                                        <input type="text" class="form-control" name="user_name" id="user_name">
+                                        <label for="name">Title *</label>
+                                        <input type="text" class="form-control" name="title" id="title" required>
                                     </div>
                                     <!-- use for later -->
-                                    <!-- <div class="form-group">
+                                    <div class="form-group">
                                         <label for="email">Your Email *</label>
-                                        <input type="email" class="form-control" id="email">
-                                    </div> -->
+                                        <input type="email" class="form-control" id="email" required>
+                                    </div>
                                     <div class="form-group mb-0">
-                                        <input type="button" value="Leave Your Review" id="save_review" class="btn btn-primary px-3">
+                                        <?php echo (!empty($user['id'])) ? '<button type="submit" id="saveReview" class="btn btn-primary px-3">Leave Your Review</button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="Leave Your Review</a>'; ?>
+                                        
                                     </div>
                                 </form>
                             </div>
@@ -312,7 +390,7 @@ include 'includes/session.php';
 
 
     <!-- Products Start -->
-    <div class="container-fluid py-5">
+    <!-- <div class="container-fluid py-5">
         <div class="text-center mb-4">
             <h2 class="section-title px-5"><span class="px-2">You May Also Like</span></h2>
         </div>
@@ -402,13 +480,15 @@ include 'includes/session.php';
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     <!-- Products End -->
 
 
     <!-- Footer Start -->
-    <?php $pdo->close(); ?>
-    <?php include 'includes/footer.php'; ?>
+
+    <?php
+    include 'footer.php';
+    ?>
     <!-- Footer End -->
 
 
@@ -426,7 +506,8 @@ include 'includes/session.php';
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>
     <script src="mail/contact.js"></script>
-    <?php include 'includes/scripts.php'; ?>
+    <script src="js/rating.js"></script>
+
     <script>
         $(function() {
             $('#add').click(function(e) {
@@ -447,180 +528,9 @@ include 'includes/session.php';
         });
     </script>
 
-    <script>
-        $(document).ready(function() {
 
-            var rating_data = 0;
-
-            $('#add_review').click(function() {
-
-                $('#review_modal').modal('show');
-
-            });
-
-            $(document).on('mouseenter', '.submit_star', function() {
-
-                var rating = $(this).data('rating');
-
-                reset_background();
-
-                for (var count = 1; count <= rating; count++) {
-
-                    $('#submit_star_' + count).addClass('text-warning');
-
-                }
-
-            });
-
-            function reset_background() {
-                for (var count = 1; count <= 5; count++) {
-
-                    $('#submit_star_' + count).addClass('star-light');
-
-                    $('#submit_star_' + count).removeClass('text-warning');
-
-                }
-            }
-
-            $(document).on('mouseleave', '.submit_star', function() {
-
-                reset_background();
-
-                for (var count = 1; count <= rating_data; count++) {
-
-                    $('#submit_star_' + count).removeClass('star-light');
-
-                    $('#submit_star_' + count).addClass('text-warning');
-                }
-
-            });
-
-            $(document).on('click', '.submit_star', function() {
-
-                rating_data = $(this).data('rating');
-
-            });
-
-            $('#save_review').click(function() {
-
-                var user_name = $('#user_name').val();
-
-                var user_review = $('#user_review').val();
-
-                if (user_name == '' || user_review == '') {
-                    alert("Please Fill Both Field");
-                    return false;
-                } else {
-                    $.ajax({
-                        url: "submit_rating.php",
-                        method: "POST",
-                        data: {
-                            rating_data: rating_data,
-                            user_name: user_name,
-                            user_review: user_review
-                        },
-                        success: function(data) {
-                            $('#review_modal').modal('hide');
-
-                            load_rating_data();
-
-                            alert(data);
-                        }
-                    })
-                }
-
-            });
-
-            load_rating_data();
-
-            function load_rating_data() {
-                $.ajax({
-                    url: "submit_rating.php",
-                    method: "POST",
-                    data: {
-                        action: 'load_data'
-                    },
-                    dataType: "JSON",
-                    success: function(data) {
-                        $('#average_rating').text(data.average_rating);
-                        $('#total_review').text(data.total_review);
-
-                        var count_star = 0;
-
-                        $('.main_star').each(function() {
-                            count_star++;
-                            if (Math.ceil(data.average_rating) >= count_star) {
-                                $(this).addClass('text-primary');
-                                $(this).addClass('star-light');
-                            }
-                        });
-
-                        $('#total_five_star_review').text(data.five_star_review);
-
-                        $('#total_four_star_review').text(data.four_star_review);
-
-                        $('#total_three_star_review').text(data.three_star_review);
-
-                        $('#total_two_star_review').text(data.two_star_review);
-
-                        $('#total_one_star_review').text(data.one_star_review);
-
-                        $('#five_star_progress').css('width', (data.five_star_review / data.total_review) * 100 + '%');
-
-                        $('#four_star_progress').css('width', (data.four_star_review / data.total_review) * 100 + '%');
-
-                        $('#three_star_progress').css('width', (data.three_star_review / data.total_review) * 100 + '%');
-
-                        $('#two_star_progress').css('width', (data.two_star_review / data.total_review) * 100 + '%');
-
-                        $('#one_star_progress').css('width', (data.one_star_review / data.total_review) * 100 + '%');
-
-                        if (data.review_data.length > 0) {
-                            var html = '';
-
-                            for (var count = 0; count < data.review_data.length; count++) {
-                                // html += ' <div class="col-md-6">';
-                                html += '<div class="media mb-4">';
-
-                                html += '<img src="img/user.jpg" alt="Image" class="img-fluid mr-3 mt-1" style="width: 45px;"><div class="media-body"><h6>' + data.review_data[count].user_name + '<small> - <i>' + data.review_data[count].datetime + '</i></small></h6><div class="mb-2">'
-                                for (var star = 1; star <= 5; star++) {
-                                    var class_name = '';
-
-                                    if (data.review_data[count].rating >= star) {
-                                        class_name = 'text-primary';
-                                    } else {
-                                        class_name = 'star-light';
-                                    }
-
-                                    html += '<i class="fas fa-star ' + class_name + ' "></i>';
-                                }
-                                '</div>';
-
-
-
-                                html += '<p>' + data.review_data[count].user_review + '</p>';
-
-
-
-                                html += '</div>';
-
-                                html += '</div>';
-                                html += '</div>';
-
-
-
-                            }
-
-                            $('#review_content').html(html);
-                        }
-                    }
-                })
-            }
-
-        });
-    </script>
     <!-- Template Javascript -->
-    <script src="js/main.js"></script>
+    <!-- <script src="js/main.js"></script> -->
 </body>
 
 </html>

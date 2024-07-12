@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_POST['add'])){
 		$firstname = $_POST['firstname'];
@@ -43,5 +43,3 @@
 	}
 
 	header('location: users.php');
-
-?>

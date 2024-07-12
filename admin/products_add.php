@@ -1,14 +1,21 @@
 <?php
-	include 'includes/session.php';
-	include 'includes/slugify.php';
+	include 'session.php';
+	include 'slugify.php';
 
 	if(isset($_POST['add'])){
 		$name = $_POST['name'];
 		$slug = slugify($name);
 		$category = $_POST['category'];
+		$category_name = $_POST['category_name'];
 		$price = $_POST['price'];
 		$description = $_POST['description'];
 		$filename = $_FILES['photo']['name'];
+		$size =$_POST['size'];
+		$material= $_POST['material'];
+		$color= $_POST['color'];
+		$brand= $_POST['brand'];
+		$qty= $_POST['quantity'];
+		$product_status = 1;
 
 		$conn = $pdo->open();
 
@@ -16,10 +23,7 @@
 		$stmt->execute(['slug'=>$slug]);
 		$row = $stmt->fetch();
 
-		if($row['numrows'] > 0){
-			$_SESSION['error'] = 'Product already exist';
-		}
-		else{
+		if($row['numrows'] < 1){
 			if(!empty($filename)){
 				$ext = pathinfo($filename, PATHINFO_EXTENSION);
 				$new_filename = $slug.'.'.$ext;
@@ -30,14 +34,18 @@
 			}
 
 			try{
-				$stmt = $conn->prepare("INSERT INTO products (category_id, name, description, slug, price, photo) VALUES (:category, :name, :description, :slug, :price, :photo)");
-				$stmt->execute(['category'=>$category, 'name'=>$name, 'description'=>$description, 'slug'=>$slug, 'price'=>$price, 'photo'=>$new_filename]);
+				$stmt = $conn->prepare("INSERT INTO products (category_id, category_name, name, description, slug, price, color, size, brand, material, qty, photo, product_status) VALUES (:category, :category_name, :name, :description, :slug, :price, :color, :size, :brand, :material, :qty, :photo, :product_status)");
+				$stmt->execute(['category'=>$category, 'category_name'=>$category_name,'name'=>$name, 'description'=>$description, 'slug'=>$slug, 'price'=>$price, 'color'=>$color, 'size'=>$size, 'brand'=>$brand, 'material'=>$material, 'qty'=>$qty, 'photo'=>$new_filename,'product_status'=>$product_status]);
 				$_SESSION['success'] = 'User added successfully';
 
 			}
 			catch(PDOException $e){
 				$_SESSION['error'] = $e->getMessage();
 			}
+		}
+		else{
+			
+			$_SESSION['error'] = 'Product already exist';
 		}
 
 		$pdo->close();
@@ -46,6 +54,4 @@
 		$_SESSION['error'] = 'Fill up product form first';
 	}
 
-	header('location: products.php');
-
-?>
+	header('location: products');

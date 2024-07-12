@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="favicomatic/site.webmanifest">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -38,9 +38,9 @@
 <body>
 
     <?php
-    include "includes/header.php"
+    include "header.php"
     ?>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
 
 
 
@@ -83,86 +83,102 @@
                 </table>
             </div>
             <div class="col-lg-4">
-                <form class="mb-5" action="">
+                <?php
+                if (isset($_SESSION['error'])) {
+                    echo "
+                        <div class='alert alert-danger alert-dismissible'>
+                            <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+                            " . $_SESSION['error'] . "
+                        </div>
+                    ";
+                    unset($_SESSION['error']);
+                }
+                if (isset($_SESSION['success'])) {
+                    echo "
+                        <div class='alert alert-success alert-dismissible'>
+                            <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+                            " . $_SESSION['success'] . "
+                        </div>
+                    ";
+                    unset($_SESSION['success']);
+                }
+                ?>
+                <form class="mb-5" method="POST" action="coupon.php">
                     <div class="input-group">
-                        <input type="text" class="form-control p-4" placeholder="Coupon Code">
+                        <input type="text" class="form-control p-4" name="coupon_code" placeholder="Coupon Code" required>
+                        <!-- <input type="hidden" class="form-control p-4" name="user_id" value="<?php echo $user['id'] ?>" placeholder="Coupon Code" required> -->
                         <div class="input-group-append">
-                            <button class="btn btn-primary">Apply Coupon</button>
+                            <button type="submit" class="btn btn-primary">Apply Coupon</button>
                         </div>
                     </div>
                 </form>
-                <form action="checkout" method="post">
+                <form action="checkout.php" method="post">
                     <div id="checkout" class="card border-secondary mb-5">
                         <div class="card-header bg-secondary border-0">
                             <h4 class="font-weight-semi-bold m-0">Cart Summary</h4>
-
-
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-3 pt-1">
                                 <h6 class="font-weight-medium">Subtotal</h6>
-                                <h6 class="font-weight-medium">&#36;
-                                    <?php
-                                    if (isset($_SESSION['user'])) {
-                                        $conn = $pdo->open();
+                                <h6 class="font-weight-medium">
+                                    ₦ <?php
+                                        if (isset($_SESSION['user'])) {
+                                            $conn = $pdo->open();
+                                            $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
+                                            $stmt->execute(['user_id' => $user['id']]);
 
-                                        $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
-                                        $stmt->execute(['user_id' => $user['id']]);
-
-                                        $total = 0;
-                                        foreach ($stmt as $row) {
-                                            $subtotal = $row['price'] * $row['quantity'];
-                                            $total += $subtotal;
-                                        }
-
-                                        $pdo->close();
-
-                                        echo $total;
-                                    }
-                                    ?></h6>
-
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <h6 class="font-weight-medium">Shipping</h6>
-                                <h6 class="font-weight-medium">$10 each</h6>
-                            </div>
-                        </div>
-                        <div class="card-footer border-secondary bg-transparent">
-                            <div class="d-flex justify-content-between mt-2">
-                                <h5 class="font-weight-bold">Total</h5>
-                                <h5 class="font-weight-bold">&#36;
-                                    <?php
-                                    if (isset($_SESSION['user'])) {
-                                        $conn = $pdo->open();
-
-                                        $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
-                                        $stmt->execute(['user_id' => $user['id']]);
-
-                                        if ($stmt->execute(['user_id' => $user['id']]) > 1) {
                                             $total = 0;
-                                            # code...
                                             foreach ($stmt as $row) {
-                                                $subtotal = $row['price'] * $row['quantity'] + 10;
+                                                $subtotal = $row['price'] * $row['quantity'];
                                                 $total += $subtotal;
                                             }
-                                            echo $total;
-                                        } else {
 
-                                            $total += 10;
+                                            $pdo->close();
                                             echo $total;
                                         }
-                                        //to 
-                                        $pdo->close();
-                                    }
-                                    ?></h5>
+                                        ?>
+                                </h6>
                             </div>
-                            <a href="checkout" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>
+                            <div class='d-flex justify-content-between'>
+                                <h6 class='font-weight-medium'>Discount</h6>
+                                <h6 class='font-weight-medium'>
+                                     ₦ <?php echo  isset($_SESSION['coupon']) ? $_SESSION['coupon']['value'] : 0 ?>
+                                </h6>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <h5 class="font-weight-bold">Total</h5>
+                                <h5 class="font-weight-bold">
+                                    ₦ <?php
+                                        if (isset($_SESSION['user'])) {
+                                            $conn = $pdo->open();
+                                            $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
+                                            $stmt->execute(['user_id' => $user['id']]);
+
+                                            $total = 0;
+                                            foreach ($stmt as $row) {
+                                                $subtotal = $row['price'] * $row['quantity'];
+                                                $total += $subtotal;
+                                            }
+
+                                            $discount = isset($_SESSION['coupon']) ? $_SESSION['coupon']['value'] : 0;
+                                            $total -= $discount;
+
+                                            $pdo->close();
+                                            echo $total;
+                                        }
+                                        ?>
+                                </h5>
+                            </div>
+                            <?php
+                            echo (!empty($user['id'])) ?
+                                '<a href="checkout.php" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>' :
+                                '<a href="signin.php" class="btn btn-primary px-3">Proceed To Checkout</a>';
+                            ?>
                         </div>
                     </div>
+                </form>
+
             </div>
-
-
-            </form>
         </div>
     </div>
     <!-- Cart End -->
@@ -171,7 +187,7 @@
     <!-- Footer Start -->
 
     <?php
-    include "includes/footer.php";
+    include "footer.php";
     ?>
     <!-- Footer End -->
 
@@ -224,6 +240,7 @@
                             getDetails();
                             getCart();
                             getTotal();
+                            window.location.reload();
                         }
                     }
                 });
@@ -248,6 +265,7 @@
                             getDetails();
                             getCart();
                             getTotal();
+                            window.location.reload();
                         }
                     }
                 });

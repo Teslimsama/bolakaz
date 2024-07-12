@@ -1,4 +1,4 @@
-<?php include 'includes/session.php'; ?>
+<?php include 'session.php'; ?>
 <?php
 $where = '';
 if (isset($_GET['category'])) {
@@ -7,13 +7,13 @@ if (isset($_GET['category'])) {
 }
 
 ?>
-<?php include 'includes/header.php'; ?>
+<?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="wrapper">
 
-    <?php include 'includes/navbar.php'; ?>
-    <?php include 'includes/menubar.php'; ?>
+    <?php include 'navbar.php'; ?>
+    <?php include 'menubar.php'; ?>
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
@@ -93,6 +93,11 @@ if (isset($_GET['category'])) {
                     <th>Price</th>
                     <th>Views Today</th>
                     <th>Tools</th>
+                    <th>Color</th>
+                    <th>Brand</th>
+                    <th>Size</th>
+                    <th>Material</th>
+                    <th>Quantity</th>
                   </thead>
                   <tbody>
                     <?php
@@ -113,12 +118,17 @@ if (isset($_GET['category'])) {
                               <span class='pull-right'><a href='#edit_photo' class='photo' data-toggle='modal' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i></a></span>
                             </td>
                             <td><a href='#description' data-toggle='modal' class='btn btn-info btn-sm btn-flat desc' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</a></td>
-                            <td>&#36; " . number_format($row['price'], 2) . "</td>
+                            <td>₦" . number_format($row['price'], 2) . "</td>
                             <td>" . $counter . "</td>
                             <td>
                               <button class='btn btn-success btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
                               <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
+                            <td>" . $row['color'] . "</td>
+                            <td>" . $row['brand'] . "</td>
+                            <td>" . $row['size'] . "</td>
+                            <td>" . $row['material'] . "</td>
+                            <td>" . $row['qty'] . "</td>
                           </tr>
                         ";
                       }
@@ -137,14 +147,14 @@ if (isset($_GET['category'])) {
       </section>
 
     </div>
-    <?php include 'includes/footer.php'; ?>
-    <?php include 'includes/products_modal.php'; ?>
-    <?php include 'includes/products_modal2.php'; ?>
+    <?php include 'footer.php'; ?>
+    <?php include 'products_modal.php'; ?>
+    <?php include 'products_modal2.php'; ?>
 
   </div>
   <!-- ./wrapper -->
 
-  <?php include 'includes/scripts.php'; ?>
+  <?php include 'scripts.php'; ?>
   <script>
     $(function() {
       $(document).on('click', '.edit', function(e) {
@@ -212,6 +222,11 @@ if (isset($_GET['category'])) {
           $('#edit_name').val(response.prodname);
           $('#catselected').val(response.category_id).html(response.catname);
           $('#edit_price').val(response.price);
+          $('#edit_material').val(response.material);
+          $('#edit_color').val(response.color);
+          $('#edit_quantity').val(response.qty);
+          $('#edit_brand').val(response.brand);
+          $('#edit_size').val(response.size);
           CKEDITOR.instances["editor2"].setData(response.description);
           getCategory();
         }

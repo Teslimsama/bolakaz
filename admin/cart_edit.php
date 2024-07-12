@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_POST['edit'])){
 		$userid = $_POST['userid'];
@@ -22,5 +22,3 @@
 
 		header('location: cart.php?user='.$userid);
 	}
-
-?>

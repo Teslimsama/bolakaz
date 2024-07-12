@@ -1,5 +1,5 @@
 <?php
-include 'includes/session.php';
+include 'session.php';
 $conn = $pdo->open();
 
 $output = array('list' => '', 'count' => 0);
@@ -69,5 +69,3 @@ if (isset($_SESSION['user'])) {
 $pdo->close();
 // print_r($output) ;
 echo json_encode($output);
-
-?>

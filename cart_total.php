@@ -1,5 +1,5 @@
 <?php
-	include 'includes/session.php';
+	include 'session.php';
 
 	if(isset($_SESSION['user'])){
 		$conn = $pdo->open();
@@ -17,4 +17,3 @@
 
 		echo json_encode($total);
 	}
-?>

@@ -1,11 +1,11 @@
-<?php include 'includes/session.php'; ?>
-<?php include 'includes/header.php'; ?>
+<?php include 'session.php'; ?>
+<?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="wrapper">
 
-    <?php include 'includes/navbar.php'; ?>
-    <?php include 'includes/menubar.php'; ?>
+    <?php include 'navbar.php'; ?>
+    <?php include 'menubar.php'; ?>
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
@@ -90,13 +90,13 @@
       </section>
 
     </div>
-    <?php include 'includes/footer.php'; ?>
-    <?php include 'includes/category_modal.php'; ?>
+    <?php include 'footer.php'; ?>
+    <?php include 'category_modal.php'; ?>
 
   </div>
   <!-- ./wrapper -->
 
-  <?php include 'includes/scripts.php'; ?>
+  <?php include 'scripts.php'; ?>
   <script>
     $(function() {
       $(document).on('click', '.edit', function(e) {

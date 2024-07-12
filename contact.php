@@ -1,6 +1,4 @@
-<?php include 'includes/session.php'; ?>
-
-<?php
+<?php include 'session.php';
 
 ?>
 <!DOCTYPE html>
@@ -18,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="favicomatic/site.webmanifest">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -41,9 +39,9 @@
     <!-- Topbar Start -->
 
     <?php
-    include "includes/header.php"
+    include "header.php"
     ?>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
 
     <!-- Navbar End -->
 
@@ -97,7 +95,7 @@
             </div>
             <div class="col-lg-5 mb-5">
                 <h5 class="font-weight-semi-bold mb-3">Get In Touch</h5>
-                <p>Justo sed diam ut sed amet duo amet lorem amet stet sea ipsum, sed duo amet et. Est elitr dolor elitr erat sit sit. Dolor diam et erat clita ipsum justo sed.</p>
+                <p>If you have any questions or concerns, please don't hesitate to reach out to us. You can contact us by phone or by email. We're here to help!</p>
                 <div class="d-flex flex-column mb-3">
                     <h5 class="font-weight-semi-bold mb-3">Store </h5>
                     <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>Katampe road, Kubwa, Abuja, Nigeria.</p>
@@ -117,29 +115,40 @@
 
 
     <!-- Footer Start -->
-
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9952650109664010"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="fluid"
+     data-ad-layout-key="+c+s1+1d-4w+3k"
+     data-ad-client="ca-pub-9952650109664010"
+     data-ad-slot="3616769627"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
     <?php
-    include "includes/footer.php"
+    // include "footer.php";
+    // include "mail/contact_mail.php";
     ?>
     <!-- Footer End -->
-
 
 
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
 
-
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-
     <!-- Contact Javascript File -->
     <script src="mail/jqBootstrapValidation.min.js"></script>
     <script src="mail/contact.js"></script>
-    <!-- <script src="mail/contact.js"></script> -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+
+
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+
+
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
     <!-- Template Javascript -->
