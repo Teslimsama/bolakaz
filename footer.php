@@ -9,7 +9,7 @@
                 </a>
                 <p>If you have any questions or concerns, please don't hesitate to reach out to us. You can contact us by phone or by email. We're here to help!</p>
                 <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i> <a class="text-dark" href="https://maps.app.goo.gl/wH8jTwV21exQd4HMA" target="_blank"> Bolakaz Enterprise , Dogo Daji Street, Beside Bentex Guest House
-                        , Katampe, Kubwa Village, Abuja, Nigeria</a></p>
+                        , Katampe, Kubwa Village, Abuja, Nigeria.</a></p>
                 <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i> <a class="text-dark" href="mailto:info@unibooks.com">info@unibooks.com</a></p>
                 <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i><a class="text-dark" href="tel:+234 8077747898">+234 8077747898</a></p>
             </div>

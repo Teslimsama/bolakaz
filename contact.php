@@ -98,9 +98,10 @@
                 <p>If you have any questions or concerns, please don't hesitate to reach out to us. You can contact us by phone or by email. We're here to help!</p>
                 <div class="d-flex flex-column mb-3">
                     <h5 class="font-weight-semi-bold mb-3">Store </h5>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>Katampe road, Kubwa, Abuja, Nigeria.</p>
-                    <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>bolajimotunrayo20@gmail.com</p>
-                    <p class="mb-2"><i class="fa fa-phone-alt text-primary mr-3"></i>+234 8077747898</p>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i><a class="text-dark" href="https://maps.app.goo.gl/wH8jTwV21exQd4HMA" target="_blank"> Bolakaz Enterprise , Dogo Daji Street, Beside Bentex Guest House
+                            , Katampe, Kubwa Village, Abuja, Nigeria.</a></p>
+                    <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i> <a class="text-dark" href="mailto:info@unibooks.com">info@unibooks.com</a></p>
+                    <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i><a class="text-dark" href="tel:+234 8077747898">+234 8077747898</a></p>
                 </div>
                 <!-- <div class="d-flex flex-column">
                     <h5 class="font-weight-semi-bold mb-3">Store 2</h5>
@@ -115,17 +116,17 @@
 
 
     <!-- Footer Start -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9952650109664010"
-     crossorigin="anonymous"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-format="fluid"
-     data-ad-layout-key="+c+s1+1d-4w+3k"
-     data-ad-client="ca-pub-9952650109664010"
-     data-ad-slot="3616769627"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9952650109664010"
+        crossorigin="anonymous"></script>
+    <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-format="fluid"
+        data-ad-layout-key="+c+s1+1d-4w+3k"
+        data-ad-client="ca-pub-9952650109664010"
+        data-ad-slot="3616769627"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
     <?php
     // include "footer.php";
     // include "mail/contact_mail.php";
