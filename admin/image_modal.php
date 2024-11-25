@@ -7,7 +7,7 @@ if (!empty($_POST['id'])) {
     require_once 'image_functions.php';
 
     $conditions = [
-        'where' => ['product_id' => $_POST['id']],
+        'where' => ['id' => $_POST['id']],
         'return_type' => 'single'
     ];
     $data = getRows($conditions);
@@ -27,8 +27,7 @@ if (!empty($_POST['id'])) {
             }
 
             $output .= '<div class="form-group">
-        <label>Title:</label>
-        <input type="text" name="title" class="form-control" placeholder="Enter title" value="' . $row['title'] . '">
+        
     </div>
     <input type="hidden" name="id" value="' . $_POST['id'] . '">
     <input type="submit" name="imgSubmit" class="btn btn-success" value="SUBMIT">
@@ -41,8 +40,7 @@ if (!empty($_POST['id'])) {
         <input type="file" name="images[]" class="form-control" multiple>
     </div>
     <div class="form-group">
-        <label>Title:</label>
-        <input type="text" name="title" class="form-control" placeholder="Enter title">
+        
     </div>
     <input type="hidden" name="id" value="' . $_POST['id'] . '">
     <input type="submit" name="imgSubmit" class="btn btn-success" value="SUBMIT">

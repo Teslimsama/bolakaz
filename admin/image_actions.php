@@ -1,208 +1,109 @@
 <?php
-// echo "</br></br></br>";
-
-// Include and initialize DB class 
+// Include and initialize required classes
 require 'image_functions.php';
+// require '../vendor/autoload.php'; // Load Intervention Image
+define('BASE_PATH', dirname(__DIR__));
+require BASE_PATH . '/vendor/autoload.php';
 
-// File upload path 
+use Intervention\Image\ImageManagerStatic as Image;
+
+// File upload path
 $uploadDir = "../images/";
 
-// Allow file formats 
-$allowTypes = array('jpg', 'png', 'jpeg', 'gif');
+// Allow file formats
+$allowTypes = ['jpg', 'png', 'jpeg', 'gif'];
 
-// Set default redirect url 
-// $redirectURL = 'products';
-
+// Set default redirect URL
+$redirectURL = 'products';
+$errorUpload = '';
 
 if (isset($_POST['imgSubmit'])) {
+    // Get submitted data
+    $id = $_POST['id'];
 
-    // Set redirect url 
-    // $redirectURL = 'products';
+    // Check if updating or inserting
+    $galleryID = idExists($id) ? $id : null;
 
-    // Get submitted data 
-    $title    = $_POST['title'];
-    $id        = $_POST['id'];
+    // Handle file uploads
+    $fileImages = array_filter($_FILES['images']['name']);
+    if (!empty($galleryID) && !empty($fileImages)) {
+        foreach ($fileImages as $key => $val) {
+            $fileExtension = strtolower(pathinfo($_FILES["images"]["name"][$key], PATHINFO_EXTENSION));
+            $newFileName = $id . '_' . time() . '_' . uniqid() . '.' . $fileExtension;
+            $targetFilePath = $uploadDir . $newFileName;
 
+            if (in_array($fileExtension, $allowTypes)) {
+                if (move_uploaded_file($_FILES["images"]["tmp_name"][$key], $targetFilePath)) {
+                    try {
+                        // Use Intervention Image for processing
+                        $image = Image::make($targetFilePath);
 
-    // Submitted user data 
-    $galData = array(
-        'title'  => $title
-    );
+                        // Correct orientation
+                        $image->orientate();
 
+                        // Resize and compress
+                        $image->resize(800, null, function ($constraint) {
+                            $constraint->aspectRatio();
+                            $constraint->upsize();
+                        })->save($targetFilePath, 75);
 
-    // ID query string 
-    $idStr = !empty($id) ? '?id=' . $id : '';
-    if (empty($title)) {
-        $_SESSION['error'] = 'Enter the gallery title.';
-    } else {
-        $uploadSuccess = true; // Variable to track successful uploads
-        $errorMsg = '';
-        if (idExists($id)) {
-            // Update data 
-            print_r($galData);
-            $update = update($galData, array('id' => $id));
-            $galleryID = $id;
-        } else {
-            // Insert data 
-            print_r($galData);
-            $galData = array(
-                'title'  => $title,
-                'product_id' => $id
-            );
-            $insert = insert($galData);
-            $galleryID = $insert;
-        }
+                        // Insert image data into the database
+                        $imgData = [
+                            'gallery_id' => $galleryID,
+                            'product_id' => $id,
+                            'file_name' => $newFileName,
+                        ];
 
-        $fileImages = array_filter($_FILES['images']['name']);
-
-        if (!empty($galleryID) && !empty($fileImages)) {
-            foreach ($fileImages as $key => $val) {
-                // File upload path 
-                $fileExtension = pathinfo($_FILES["images"]["name"][$key], PATHINFO_EXTENSION);
-                $newFileName = $id . '_' . time() . '_' . uniqid() . '.' . $fileExtension;
-
-                $targetFilePath = $uploadDir . $newFileName;
-
-                // Check whether file type is valid 
-                $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
-
-                if (in_array($fileType, $allowTypes)) {
-                    // Upload file to server 
-                    if (move_uploaded_file($_FILES["images"]["tmp_name"][$key], $targetFilePath)) {
-                        // Perform image orientation correction
-                        $imgInfo = getimagesize($targetFilePath);
-                        $mime = $imgInfo['mime'];
-
-                        $image = correctImageOrientation($targetFilePath, $targetFilePath, $mime);
-
-                        // Additional check for successful orientation correction
-                        if ($image !== false) {
-                            // Perform image compression
-                            $compressedImage = compressImage($targetFilePath, $targetFilePath, 75);
-
-                            // Additional check for successful compression
-                            if ($compressedImage) {
-                                // Perform file size conversion
-                                $compressedImageSize = filesize($compressedImage);
-                                $compressedImageSize = convert_filesize($compressedImageSize);
-
-                                // Update targetFilePath to the compressed image path
-                                $targetFilePath = $compressedImage;
-
-                                // Image database insert 
-                                $imgData = array(
-                                    'gallery_id' => $galleryID,
-                                    'product_id' => $id,
-                                    'file_name' => $newFileName
-                                );
-
-                                $insert = insertImage($imgData);
-
-                                if (!$insert) {
-                                    $errorUpload .= $fileImages[$key] . ' | Database insertion failed. ';
-                                    $uploadSuccess = false;
-                                }
-                            } else {
-                                $errorUpload .= $fileImages[$key] . ' | Compression failed. ';
-                                $uploadSuccess = false;
-                            }
-                        } else {
-                            $errorUpload .= $fileImages[$key] . ' | Orientation correction failed. ';
-                            $uploadSuccess = false;
+                        if (!insertImage($imgData)) {
+                            $errorUpload .= "$val | Database insertion failed. ";
                         }
-                    } else {
-                        $errorUpload .= $fileImages[$key] . ' | Upload failed. ';
-                        $uploadSuccess = false;
+                    } catch (\Exception $e) {
+                        $errorUpload .= "$val | Image processing failed: " . $e->getMessage() . " ";
+                        @unlink($targetFilePath); // Remove invalid image
                     }
                 } else {
-                    $errorUploadType .= $fileImages[$key] . ' | Invalid file type. ';
-                    $uploadSuccess = false;
+                    $errorUpload .= "$val | Upload failed. ";
                 }
-            }
-
-            $errorUpload = !empty($errorUpload) ? 'Upload Error: ' . trim($errorUpload, ' | ') : '';
-            $errorUploadType = !empty($errorUploadType) ? 'File Type Error: ' . trim($errorUploadType, ' | ') : '';
-
-            if (!$uploadSuccess) {
-                $errorMsg = '<br/>' . ($errorUpload ? $errorUpload . '<br/>' : '') . $errorUploadType;
-                $_SESSION['error'] = 'There were some issues: ' . $errorMsg;
             } else {
-                $_SESSION['success'] = 'Gallery images have been uploaded successfully.';
+                $errorUpload .= "$val | Invalid file type. ";
             }
+        }
+
+        if (!empty($errorUpload)) {
+            $_SESSION['error'] = 'Some issues occurred: ' . $errorUpload;
         } else {
-            $_SESSION['error'] = 'Some problem occurred, please try again.';
-            // Set redirect URL 
-            // $redirectURL .= $idStr;
+            $_SESSION['success'] = 'Gallery images have been uploaded successfully.';
         }
     }
-} elseif (($_REQUEST['action_type'] == 'block') && !empty($_POST['id'])) {
-    // Update data 
-    $galData = array('status' => 0);
-    $condition = array('id' => $_POST['id']);
-    $update = update($galData, $condition);
-    if ($update) {
-        // $statusType = 'success';
-        $_SESSION['success'] =  'Gallery data has been blocked successfully.';
-    } else {
-        $_SESSION['error'] = 'Some problem occurred, please try again.';
-    }
-} elseif (($_REQUEST['action_type'] == 'unblock') && !empty($_POST['id'])) {
-    // Update data 
-    $galData = array('status' => 1);
-    $condition = array('id' => $_POST['id']);
-    $update = update($galData, $condition);
-    if ($update) {
-        $_SESSION['success'] = 'Gallery data has been activated successfully.';
-    } else {
-        $_SESSION['error'] = 'Some problem occurred, please try again.';
-    }
-} elseif (($_REQUEST['action_type'] == 'delete') && !empty($_POST['id'])) {
-    // Previous image files 
-    $conditions['where'] = array(
-        'id' => $_POST['id'],
-    );
-    $conditions['return_type'] = 'single';
-    $prevData = getRows($conditions);
+} elseif ($_REQUEST['action_type'] === 'delete' && !empty($_POST['id'])) {
+    // Get gallery data
+    $prevData = getRows(['where' => ['id' => $_POST['id']], 'return_type' => 'single']);
 
-    // Delete gallery data 
-    $condition = array('id' => $_POST['id']);
-    $delete = delete($condition);
-    if ($delete) {
-        // Delete images data 
-        $condition = array('gallery_id' => $_POST['id']);
-        $delete = deleteImage($condition);
-
-        // Remove files from server 
+    // Delete gallery and related images
+    if (deleteImage(['gallery_id' => $_POST['id']])) {
         if (!empty($prevData['images'])) {
             foreach ($prevData['images'] as $img) {
                 @unlink($uploadDir . $img['file_name']);
             }
         }
-
         $_SESSION['success'] = 'Gallery has been deleted successfully.';
     } else {
         $_SESSION['error'] = 'Some problem occurred, please try again.';
     }
-} elseif (($_POST['action_type'] == 'img_delete') && !empty($_POST['id'])) {
-    // Previous image data 
+} elseif ($_POST['action_type'] === 'img_delete' && !empty($_POST['id'])) {
+    // Get image data
     $prevData = getImgRow($_POST['id']);
 
-    // Delete gallery data 
-    $condition = array('id' => $_POST['id']);
-    $delete = deleteImage($condition);
-    if ($delete) {
+    // Delete image
+    if (deleteImage(['id' => $_POST['id']])) {
         @unlink($uploadDir . $prevData['file_name']);
-        $status = 'ok';
+        echo 'ok';
     } else {
-        $status  = 'err';
+        echo 'err';
     }
-    echo $status;
-    die;
+    exit();
 }
 
-// Store status into the session 
-// $_SESSION['sessData'] = $sessData;
-
-// Redirect the user 
-// header("Location: " . $redirectURL);
+// Redirect the user
+header("Location: " . $redirectURL);
 exit();
