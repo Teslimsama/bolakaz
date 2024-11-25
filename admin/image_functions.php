@@ -71,59 +71,6 @@ function getImgRow($id)
 }
 
 
-/* 
-     * Insert data into the database 
-     * @param string name of the table 
-     * @param array the data for inserting into the table 
-     */
-// function insert($data)
-// {
-//     global $conn, $imgTbl, $galleryTbl;
-
-//     if (!empty($data) && is_array($data)) {
-//         $columns = '';
-//         $values = '';
-//         $bindings = [];
-
-//         if (!array_key_exists('created', $data)) {
-//             $data['created'] = date("Y-m-d H:i:s");
-//         }
-
-//         if (!array_key_exists('modified', $data)) {
-//             $data['modified'] = date("Y-m-d H:i:s");
-//         }
-
-//         foreach ($data as $key => $val) {
-//             $pre = !empty($values) ? ', ' : '';
-//             $columns .= $pre . $key;
-//             $values .= $pre . ':' . $key;
-//             $bindings[':' . $key] = $val;
-//         }
-
-//         // Include id as one of the columns to insert
-//         // $columns .= ', id';
-//         // $values .= ', :id';
-//         print_r($data);
-//         // Set the id based on the ID in the $data array
-//         $bindings[':id'] = $data['id']; // Replace 'id' with the actual reference for the product ID
-//         print_r($bindings);
-
-//         // Prepare the SQL query
-//         $sql = "INSERT INTO $galleryTbl ($columns) VALUES ($values)";
-//         $stmt = $conn->prepare($sql);
-
-//         // Execute the prepared statement with the bindings
-//         $success = $stmt->execute($bindings);
-
-//         // Return the last inserted ID if successful, otherwise, return false
-//         return $success ? $conn->lastInsertId() : false;
-//     } else {
-//         return false;
-//     }
-// }
-
-
-
 function insertImage($data)
 {
     global $conn, $imgTbl, $galleryTbl;
@@ -147,7 +94,7 @@ function insertImage($data)
         // $columns .= ', id';
         // $values .= ', :id';
         // Set the id based on the ID you wish
-        $bindings[':id'] = $data['id']; // Replace 'id' with the actual reference for the product ID
+        $bindings[':product_id'] = $data['product_id']; // Replace 'id' with the actual reference for the product ID
         // print_r($bindings);
         $sql = "INSERT INTO $imgTbl ($columns) VALUES ($values)";
         $stmt = $conn->prepare($sql);
@@ -158,59 +105,6 @@ function insertImage($data)
         return false;
     }
 }
-
-
-
-/* 
-     * Update data into the database 
-     * @param string name of the table 
-     * @param array the data for updating into the table 
-     * @param array where condition on updating data 
-     */
-// function update($data, $conditions)
-// {
-//     global $conn, $galleryTbl;
-
-//     if (!empty($data) && is_array($data)) {
-//         $colvalSet = '';
-//         $params = [];
-
-//         if (!array_key_exists('modified', $data)) {
-//             $data['modified'] = date("Y-m-d H:i:s");
-//         }
-
-//         foreach ($data as $key => $val) {
-//             $pre = !empty($colvalSet) ? ', ' : '';
-//             $colvalSet .= $pre . $key . ' = :' . $key;
-//             $params[':' . $key] = $val;
-//         }
-
-//         $whereSql = '';
-//         if (!empty($conditions) && is_array($conditions)) {
-//             $i = 0;
-//             foreach ($conditions as $key => $value) {
-//                 $pre = ($i > 0) ? ' AND ' : '';
-//                 $whereSql .= $pre . $key . ' = :' . $key;
-//                 $params[':' . $key] = $value;
-//                 $i++;
-//             }
-//             $whereSql = ' WHERE ' . $whereSql;
-//         }
-
-//         // Ensure the id is set based on the id
-//         $colvalSet .= ', id = :id';
-//         $params[':id'] = $conditions['id']; // Assuming 'id' in $conditions refers to the ID you want to set as the id
-//         // print_r($params);
-
-//         $query = "UPDATE $galleryTbl SET $colvalSet $whereSql";
-//         $stmt = $conn->prepare($query);
-//         $success = $stmt->execute($params);
-
-//         return $success ? $stmt->rowCount() > 0 : false;
-//     } else {
-//         return false;
-//     }
-// }
 
 
 function idExists($id)
@@ -226,35 +120,6 @@ function idExists($id)
     return $result['count'] > 0; // If count is greater than 0, the ID exists
 }
 
-
-/* 
-     * Delete data from the database 
-     * @param string name of the table 
-     * @param array where condition on deleting data 
-     */
-
-// function delete($conditions)
-// {
-//     global $conn, $galleryTbl;
-
-//     $whereConditions = [];
-//     $params = [];
-
-//     if (!empty($conditions) && is_array($conditions)) {
-//         foreach ($conditions as $key => $value) {
-//             $whereConditions[] = $key . ' = :' . $key;
-//             $params[':' . $key] = $value;
-//         }
-//     }
-
-//     $whereSql = (!empty($whereConditions)) ? ' WHERE ' . implode(' AND ', $whereConditions) : '';
-
-//     $query = "DELETE FROM $galleryTbl $whereSql";
-//     $stmt = $conn->prepare($query);
-
-//     $success = $stmt->execute($params);
-//     return $success ? true : false;
-// }
 
 function deleteImage($conditions)
 {
@@ -274,67 +139,6 @@ function deleteImage($conditions)
     $delete = $conn->query($query);
     return $delete ? true : false;
 }
-// function compressImage($source, $destination, $quality)
-// {
-//     // Get image info
-//     $imgInfo = getimagesize($source);
-//     $mime = $imgInfo['mime'];
-
-//     // Create a new image from file
-//     switch ($mime) {
-//         case 'image/jpeg':
-//             $image = imagecreatefromjpeg($source);
-//             break;
-//         case 'image/png':
-//             $image = imagecreatefrompng($source);
-//             break;
-//         case 'image/gif':
-//             $image = imagecreatefromgif($source);
-//             break;
-//         default:
-//             $image = imagecreatefromjpeg($source);
-//     }
-
-//     // Correct image orientation
-//     $image = correctImageOrientation($image, $source, $mime);
-
-//     // Save image
-//     imagejpeg($image, $destination, $quality);
-
-//     // Free up memory
-//     imagedestroy($image);
-
-//     // Return compressed image path
-//     return $destination;
-// }
-
-// function correctImageOrientation($image, $filename, $mime)
-// {
-//     if ($mime == 'image/jpeg') {
-//         if (!is_resource($image)) {
-//             $image = imagecreatefromjpeg($filename);
-//         }
-
-//         $exif = exif_read_data($filename);
-//         if (!empty($exif['Orientation'])) {
-//             switch ($exif['Orientation']) {
-//                 case 3:
-//                     $image = imagerotate($image, 180, 0);
-//                     break;
-//                 case 6:
-//                     $image = imagerotate($image, -90, 0);
-//                     break;
-//                 case 8:
-//                     $image = imagerotate($image, 90, 0);
-//                     break;
-//             }
-
-//             return $image;
-//         }
-//     }
-//     return false;
-// }
-
 
 // function convert_filesize($bytes, $decimals = 2)
 // {

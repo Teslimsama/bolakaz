@@ -123,18 +123,32 @@ if ($ratingNumber && $count) {
             <div class="col-lg-5 pb-5">
                 <div id="product-carousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner border">
-                        <div class="carousel-item active">
-                            <img class="w-100 h-100" src="<?php echo (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg'; ?>" alt="Image">
-                        </div>
-                        <div class="carousel-item">
-                            <img class="w-100 h-100" src="<?php echo (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg'; ?>" alt="Image">
-                        </div>
-                        <div class="carousel-item">
-                            <img class="w-100 h-100" src="<?php echo (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg'; ?>" alt="Image">
-                        </div>
-                        <div class="carousel-item">
-                            <img class="w-100 h-100" src="<?php echo (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg'; ?>" alt="Image">
-                        </div>
+                        <?php
+                        // Fetch product images from the database
+                        $proid = $product['prodid'];
+                        $sql = 'SELECT * FROM gallery_images WHERE gallery_id = :gallery_id';
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bindParam(':gallery_id', $proid);
+                        $stmt->execute();
+                        $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                        // Check if images exist
+                        if (!empty($images)) {
+                            $activeClass = 'active'; // Add "active" class to the first image
+                            foreach ($images as $image) {
+                                $imagePath = !empty($image['file_name']) ? 'images/' . $image['file_name'] : 'images/noimage.jpg';
+                                echo '<div class="carousel-item ' . $activeClass . '">';
+                                echo '<img class="w-100 h-100" src="' . $imagePath . '" alt="Product Image">';
+                                echo '</div>';
+                                $activeClass = ''; // Remove "active" class for subsequent items
+                            }
+                        } else {
+                            // If no images are available, display a placeholder
+                            echo '<div class="carousel-item active">';
+                            echo '<img class="w-100 h-100" src="images/noimage.jpg" alt="No Image Available">';
+                            echo '</div>';
+                        }
+                        ?>
                     </div>
                     <a class="carousel-control-prev" href="#product-carousel" data-slide="prev">
                         <i class="fa fa-2x fa-angle-left text-dark"></i>
@@ -144,6 +158,7 @@ if ($ratingNumber && $count) {
                     </a>
                 </div>
             </div>
+
 
             <div class="col-lg-7 pb-5">
                 <h3 class="font-weight-semi-bold"><?php echo $product['prodname']; ?></h3>
@@ -376,7 +391,7 @@ if ($ratingNumber && $count) {
                                     </div>
                                     <div class="form-group mb-0">
                                         <?php echo (!empty($user['id'])) ? '<button type="submit" id="saveReview" class="btn btn-primary px-3">Leave Your Review</button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="Leave Your Review</a>'; ?>
-                                        
+
                                     </div>
                                 </form>
                             </div>
