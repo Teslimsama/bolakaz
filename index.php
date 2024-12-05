@@ -73,8 +73,9 @@ $pdo->close();
                             $stmt = $conn->prepare("SELECT * FROM category");
                             $stmt->execute();
                             foreach ($stmt as $row) {
+                                $caton = ucwords($row['name']);
                                 echo "
-                                    <a class='nav-item nav-link' href='shop.php?category=" . $row['cat_slug'] . "'>"  . htmlspecialchars_decode($row['name']) . "</a>
+                                    <a class='nav-item nav-link' href='shop.php?category=" . $row['cat_slug'] . "'>"  . htmlspecialchars_decode($caton) . "</a>
                                 ";
                             }
                         } catch (PDOException $e) {
@@ -99,13 +100,15 @@ $pdo->close();
                         <div class="navbar-nav mr-auto py-0">
                             <a href="index" class="nav-item nav-link active">Home</a>
                             <a href="shop" class="nav-item nav-link">Shop</a>
-                            <div class="nav-item dropdown">
+                            <!-- <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                                 <div class="dropdown-menu rounded-0 m-0">
                                     <a href="cart" class="dropdown-item">Shopping Cart</a>
                                     <a href="checkout" class="dropdown-item">Checkout</a>
                                 </div>
-                            </div>
+                            </div> -->
+                            <a href="cart" class="nav-item nav-link">Shopping Cart</a>
+                            <a href="checkout" class="nav-item nav-link">Checkout</a>
                             <a href="contact" class="nav-item nav-link">Contact</a>
                             <a href="profile" class="nav-item nav-link">Profile</a>
                         </div>
@@ -204,11 +207,11 @@ $pdo->close();
                     echo "
     <div class='col-lg-3 col-md-4 col-sm-6 pb-1'>
         <div class='cat-item d-flex flex-column border mb-4' style='padding: 30px;'>
-            <p class='text-right'>" . htmlspecialchars_decode($row['name']) . "</p>
+            <p class='text-right'>" . htmlspecialchars_decode(ucwords($row['name'])) . "</p>
             <a href='shop.php?category=" . $row['cat_slug'] . "' class='cat-img position-relative overflow-hidden mb-3'>
-                <img class='img-fluid category-image' src='images/" . $row['cat_image'] . "' alt='" . htmlspecialchars_decode($row['name']) . "'>
+                <img class='img-fluid category-image' src='images/" . $row['cat_image'] . "' alt='" . htmlspecialchars_decode(ucwords($row['name'])) . "'>
             </a>
-            <h5 class='font-weight-semi-bold m-0'> " . htmlspecialchars_decode($row['name']) . "</h5>
+            <h5 class='font-weight-semi-bold m-0'> " . htmlspecialchars_decode(ucwords($row['name'])) . "</h5>
         </div>
     </div>
 ";
@@ -274,7 +277,7 @@ $pdo->close();
                         <img src="images/<?php echo $offer['image_path']; ?>" alt="">
                         <div class="position-relative" style="z-index: 1;">
                             <h5 class="text-uppercase text-primary mb-3"><?php echo $offer['discount']; ?>% off the all order</h5>
-                            <h1 class="mb-4 font-weight-semi-bold"><?php echo $offer['collection']; ?></h1>
+                            <h1 class="mb-4 font-weight-semi-bold"><?php echo ucwords($offer['collection']); ?></h1>
                             <a href="shop.php?category=<?php echo $offer['link']; ?>" class="btn btn-outline-primary py-md-2 px-md-3">Shop Now</a>
                         </div>
                     </div>

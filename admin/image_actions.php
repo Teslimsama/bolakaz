@@ -4,7 +4,7 @@ require 'image_functions.php';
 // require '../vendor/autoload.php'; // Load Intervention Image
 define('BASE_PATH', dirname(__DIR__));
 require BASE_PATH . '/vendor/autoload.php';
-
+include 'slugify.php';
 use Intervention\Image\ImageManagerStatic as Image;
 
 // File upload path
@@ -20,7 +20,8 @@ $errorUpload = '';
 if (isset($_POST['imgSubmit'])) {
     // Get submitted data
     $id = $_POST['id'];
-
+    $name = $_POST['name'];
+    $slug = slugify($name);
     // Check if updating or inserting
     $galleryID = idExists($id) ? $id : null;
 
@@ -29,7 +30,7 @@ if (isset($_POST['imgSubmit'])) {
     if (!empty($galleryID) && !empty($fileImages)) {
         foreach ($fileImages as $key => $val) {
             $fileExtension = strtolower(pathinfo($_FILES["images"]["name"][$key], PATHINFO_EXTENSION));
-            $newFileName = $id . '_' . time() . '_' . uniqid() . '.' . $fileExtension;
+            $newFileName = $slug . '_' . $id . '_' . uniqid() . '.' . $fileExtension;
             $targetFilePath = $uploadDir . $newFileName;
 
             if (in_array($fileExtension, $allowTypes)) {

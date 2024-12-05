@@ -16,8 +16,10 @@
                                 $stmt->execute();
                                 foreach ($stmt as $row) {
                                     echo "
-                            <a class='nav-item nav-link' href='shop.php?category=" . $row['cat_slug'] . "'>" . $row['name'] . "</a>
-                            ";
+    <a class='nav-item nav-link' href='shop.php?category=" . urlencode($row['cat_slug']) . "'>" .
+                                        htmlspecialchars(ucwords($row['name'])) .
+                                        "</a>
+";
                                 }
                             } catch (PDOException $e) {
                                 echo "There is some problem in connection: " . $e->getMessage();
@@ -42,13 +44,15 @@
                           <div class="navbar-nav mr-auto py-0">
                               <a href="index" class="nav-item nav-link active">Home</a>
                               <a href="shop" class="nav-item nav-link active">Shop</a>
-                              <div class="nav-item dropdown">
+                              <!-- <div class="nav-item dropdown">
                                   <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
                                   <div class="dropdown-menu rounded-0 m-0">
                                       <a href="cart" class="dropdown-item">Shopping Cart</a>
                                       <a href="checkout" class="dropdown-item">Checkout</a>
-                                  </div>
-                              </div>
+                                    </div>
+                                </div> -->
+                              <a href="cart" class="nav-item nav-link">Shopping Cart</a>
+                              <a href="checkout" class="nav-item nav-link">Checkout</a>
                               <a href="contact" class="nav-item nav-link">Contact</a>
                               <a href="profile" class="nav-item nav-link">Profile</a>
                           </div>

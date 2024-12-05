@@ -14,7 +14,7 @@ if (isset($_POST['delete'])) {
 
 		if ($category) {
 			// Delete the image file from the server
-			$imagePath = 'images/' . $category['cat_image'];
+			$imagePath = '../images/' . $category['cat_image'];
 			if (file_exists($imagePath)) {
 				unlink($imagePath);
 			}

@@ -32,11 +32,11 @@
         </ul>
       </li>
       <li class="header">SETTINGS</li>
-      <li><a href="banner"><i class="fa fa-users"></i> <span>Banners</span></a></li>
-      <li><a href="web_details"><i class="fa fa-users"></i> <span>Web Details</span></a></li>
-      <li><a href="coupon"><i class="fa fa-users"></i> <span>Coupons</span></a></li>
-      <li><a href="shipping"><i class="fa fa-users"></i> <span>Shipping</span></a></li>
-      <li><a href="ads"><i class="fa fa-users"></i> <span>Ads</span></a></li>
+      <li><a href="banner"><i class="fa fa-film"></i> <span>Banners</span></a></li>
+      <li><a href="web_details"><i class="fa fa-sliders"></i> <span>Web Details</span></a></li>
+      <li><a href="coupon"><i class="fa fa-ticket"></i> <span>Coupons</span></a></li>
+      <li><a href="shipping"><i class="fa fa-truck-fast"></i> <span>Shipping</span></a></li>
+      <li><a href="ads"><i class="fa fa-rectangle-ad"></i><span>Ads</span></a></li>
 
     </ul>
   </section>

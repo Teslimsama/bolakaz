@@ -1,4 +1,13 @@
-<?php include 'session.php'; ?>
+<?php include 'session.php';
+// Query to fetch parent categories
+$sql = "SELECT * FROM category WHERE is_parent = 1 ORDER BY name ASC";
+$stmt = $conn->prepare($sql);
+$stmt->execute();
+
+// Fetch data into an array
+$parent_cats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+?>
 <?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -124,12 +133,44 @@
         },
         dataType: 'json',
         success: function(response) {
-          $('.catid').val(response.id);
-          $('#edit_name').val(response.name);
-          $('.catname').html(response.name);
+          $('.catid').val(response.category.id);
+          $('#edit_name').val(response.category.name);
+          $('.catname').html(response.category.name);
+
+          // Populate status dropdown
+          const statusSelect = $('#status');
+          statusSelect.empty();
+          response.status_options.forEach(function(status) {
+            const selected = status.value === response.category.status ? 'selected' : '';
+            statusSelect.append(
+              `<option value="${status.value}" ${selected}>${status.label}</option>`
+            );
+          });
+
         }
       });
     }
+
+    $('#is_parent').change(function() {
+      var is_checked = $('#is_parent').prop('checked');
+      // alert(is_checked);
+      if (is_checked) {
+        $('#parent_cat_div').addClass('d-none');
+        $('#parent_cat_div').val('');
+      } else {
+        $('#parent_cat_div').removeClass('d-none');
+      }
+    })
+    $('#is_parent_edit').change(function() {
+      var is_checked = $('#is_parent_edit').prop('checked');
+      // alert(is_checked);
+      if (is_checked) {
+        $('#parent_cat_div_edit').addClass('d-none');
+        $('#parent_cat_div_edit').val('');
+      } else {
+        $('#parent_cat_div_edit').removeClass('d-none');
+      }
+    })
   </script>
 </body>
 
