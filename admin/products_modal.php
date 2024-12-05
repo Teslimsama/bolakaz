@@ -46,7 +46,16 @@
               </select>
             </div>
           </div>
+          <!-- subcategory -->
 
+          <div class="form-group d-none" id="child_cat_div">
+            <label for="child_cat_id" class="col-sm-1 control-label">Sub Category</label>
+            <div class="col-sm-5">
+              <select name="child_cat_id" id="child_cat_id" class="form-control">
+                <option value="">--Select any category--</option>
+              </select>
+            </div>
+          </div>
           <!-- Price and Material -->
           <div class="form-group">
             <label for="price" class="col-sm-1 control-label">Price</label>
@@ -102,6 +111,7 @@
               <textarea id="editor1" name="description" rows="10" cols="80" required></textarea>
             </div>
           </div>
+
 
       </div>
 

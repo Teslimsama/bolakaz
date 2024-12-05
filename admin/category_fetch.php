@@ -5,7 +5,7 @@
 
 	$conn = $pdo->open();
 
-	$stmt = $conn->prepare("SELECT * FROM category");
+	$stmt = $conn->prepare("SELECT * FROM category WHERE is_parent = 1");
 	$stmt->execute();
 
 	foreach($stmt as $row){

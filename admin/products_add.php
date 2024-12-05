@@ -11,6 +11,7 @@ if (isset($_POST['add'])) {
     $name = $_POST['name'];
     $slug = slugify($name);
     $category = $_POST['category'];
+    $subcategory = $_POST['child_cat_id'];
     $category_name = $_POST['category_name'];
     $price = $_POST['price'];
     $description = $_POST['description'];
@@ -45,11 +46,12 @@ if (isset($_POST['add'])) {
         try {
             // Insert product data into the database
             $stmt = $conn->prepare(
-                "INSERT INTO products (category_id, category_name, name, description, slug, price, color, size, brand, material, qty, photo, product_status) 
-                 VALUES (:category, :category_name, :name, :description, :slug, :price, :color, :size, :brand, :material, :qty, :photo, :product_status)"
+				"INSERT INTO products (category_id, subcategory_id, category_name, name, description, slug, price, color, size, brand, material, qty, photo, product_status) 
+                 VALUES (:category, :subcategory, :category_name, :name, :description, :slug, :price, :color, :size, :brand, :material, :qty, :photo, :product_status)"
             );
             $stmt->execute([
                 'category' => $category,
+                'subcategory' => $subcategory,
                 'category_name' => $category_name,
                 'name' => $name,
                 'description' => $description,
@@ -73,7 +75,7 @@ if (isset($_POST['add'])) {
 				foreach ($fileImages as $key => $val) {
 					$productID = $conn->lastInsertId();
                     $fileExtension = strtolower(pathinfo($_FILES['images']['name'][$key], PATHINFO_EXTENSION));
-                    $newFileName = $slug . '_' $productID .  '_' . uniqid() . '.' . $fileExtension;
+                    $newFileName = $slug . '_' . $productID .  '_' . uniqid() . '.' . $fileExtension;
                     $targetFilePath = $uploadDir . $newFileName;
 
                     if (in_array($fileExtension, $allowTypes)) {

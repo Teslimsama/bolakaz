@@ -1,139 +1,160 @@
-<!-- Delete -->
+<!-- Delete Modal -->
 <div class="modal fade" id="delete">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span></button>
+          <span aria-hidden="true">&times;</span>
+        </button>
         <h4 class="modal-title"><b>Deleting...</b></h4>
       </div>
-      <div class="modal-body">
-        <form class="form-horizontal" method="POST" action="products_delete.php">
+      <form class="form-horizontal" method="POST" action="products_delete.php">
+        <div class="modal-body">
           <input type="hidden" class="prodid" name="id">
           <div class="text-center">
             <p>DELETE PRODUCT</p>
             <h2 class="bold name"></h2>
           </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal"><i class="fa fa-close"></i> Close</button>
-        <button type="submit" class="btn btn-danger btn-flat" name="delete"><i class="fa fa-trash"></i> Delete</button>
-        </form>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">
+            <i class="fa fa-close"></i> Close
+          </button>
+          <button type="submit" class="btn btn-danger btn-flat" name="delete">
+            <i class="fa fa-trash"></i> Delete
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
-<!-- image_edit -->
+
+<!-- Image Edit Modal -->
 <div class="modal fade" id="image_edit">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span></button>
+          <span aria-hidden="true">&times;</span>
+        </button>
         <h4 class="modal-title"><b><span class="name"></span></b></h4>
       </div>
       <div class="modal-body">
         <div class="container">
-
-
           <div class="row">
             <div class="col-md-6">
               <form method="post" action="image_actions.php" enctype="multipart/form-data">
-                <!-- <div class="form-group">
+                <!-- Uncomment below to enable file upload -->
+                <!--
+                <div class="form-group">
                   <label>Images:</label>
                   <input type="file" name="images[]" class="form-control" multiple>
-                </div> -->
+                </div>
+                -->
                 <div class="image_show" id="image_show"></div>
-
+              </form>
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal"><i class="fa fa-close"></i> Close</button>
+        <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">
+          <i class="fa fa-close"></i> Close
+        </button>
       </div>
     </div>
   </div>
 </div>
-<!-- Edit -->
+
+<!-- Edit Product Modal -->
 <div class="modal fade" id="edit">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span></button>
+          <span aria-hidden="true">&times;</span>
+        </button>
         <h4 class="modal-title"><b>Edit Product</b></h4>
       </div>
-      <div class="modal-body">
-        <form class="form-horizontal" method="POST" action="products_edit.php">
+      <form class="form-horizontal" method="POST" action="products_edit.php">
+        <div class="modal-body">
           <input type="hidden" class="prodid" name="id">
           <div class="form-group">
             <label for="edit_name" class="col-sm-1 control-label">Name</label>
-
             <div class="col-sm-5">
               <input type="text" class="form-control" id="edit_name" name="name">
             </div>
 
             <label for="edit_category" class="col-sm-1 control-label">Category</label>
-
             <div class="col-sm-5">
               <select class="form-control" id="edit_category" name="category">
                 <option selected id="catselected"></option>
               </select>
             </div>
           </div>
+
+          <div class="form-group d-none" id="edit_child_cat_div">
+            <label for="edit_child_cat_id" class="col-sm-1 control-label">Sub Category</label>
+            <div class="col-sm-5">
+              <select class="form-control" id="edit_child_cat_id" name="edit_child_cat_id">
+                <option value="">--Select any sub category--</option>
+              </select>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="edit_price" class="col-sm-1 control-label">Price</label>
-
             <div class="col-sm-5">
               <input type="text" class="form-control" id="edit_price" name="price">
             </div>
-            <label for="photo" class="col-sm-1 control-label">Color</label>
 
+            <label for="edit_color" class="col-sm-1 control-label">Color</label>
             <div class="col-sm-5">
-              <input type="text" id="edit_color" class="form-control" name="color">
+              <input type="text" class="form-control" id="edit_color" name="color">
             </div>
           </div>
-          <div class="form-group ">
-            <label for="material" class="col-sm-1 control-label">Material</label>
 
+          <div class="form-group">
+            <label for="edit_material" class="col-sm-1 control-label">Material</label>
             <div class="col-sm-5">
               <input type="text" class="form-control" id="edit_material" name="material" required>
             </div>
 
-            <label for="quantity" class="col-sm-1 control-label">Quantity</label>
-
+            <label for="edit_quantity" class="col-sm-1 control-label">Quantity</label>
             <div class="col-sm-5">
               <input type="text" class="form-control" id="edit_quantity" name="quantity">
             </div>
           </div>
-          <div class="form-group ">
-            <label for="brand" class="col-sm-1 control-label">Brand</label>
 
+          <div class="form-group">
+            <label for="edit_brand" class="col-sm-1 control-label">Brand</label>
             <div class="col-sm-5">
               <input type="text" class="form-control" id="edit_brand" name="brand" required>
             </div>
 
-            <label for="size" class="col-sm-1 control-label">Size</label>
-
+            <label for="edit_size" class="col-sm-1 control-label">Size</label>
             <div class="col-sm-5">
               <input type="text" class="form-control" id="edit_size" name="size">
             </div>
-
           </div>
+
           <p><b>Description</b></p>
           <div class="form-group">
             <div class="col-sm-12">
               <textarea id="editor2" name="description" rows="10" cols="80"></textarea>
             </div>
-
           </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal"><i class="fa fa-close"></i> Close</button>
-        <button type="submit" class="btn btn-success btn-flat" name="edit"><i class="fa fa-check-square-o"></i> Update</button>
-        </form>
-      </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">
+            <i class="fa fa-close"></i> Close
+          </button>
+          <button type="submit" class="btn btn-success btn-flat" name="edit">
+            <i class="fa fa-check-square-o"></i> Update
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
