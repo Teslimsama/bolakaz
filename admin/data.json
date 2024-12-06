@@ -1,0 +1,21 @@
+{
+  "attributes": {
+    "colors": [
+      "Black", "White", "Red", "Blue", "Green", "Yellow", "Brown", 
+      "Gray", "Beige", "Pink", "Purple", "Gold", "Silver", "Rose Gold", 
+      "Platinum", "White Gold"
+    ],
+    "sizes": [
+      "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", 
+      "One Size", "Adjustable", "6 US", "7 US", "8 US", 
+      "9 US", "10 US", "11 US", "12 US", "13 US", "7", "8", "9", "10"
+    ],
+    "materials": [
+      "Cotton", "Polyester", "Linen", "Wool", "Silk", 
+      "Nylon", "Rayon", "Spandex", "Leather", "Synthetic", 
+      "Rubber", "Canvas", "Suede", "Textile", "Gold", 
+      "Silver", "Platinum", "Stainless Steel", "Titanium", 
+      "Pearls", "Diamonds"
+    ]
+  }
+}

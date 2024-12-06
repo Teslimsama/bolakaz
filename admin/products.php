@@ -157,15 +157,10 @@ if (isset($_GET['category'])) {
   <!-- ./wrapper -->
 
   <?php include 'scripts.php'; ?>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
   <script>
     $(function() {
-      $(document).on('click', '.edit', function(e) {
-        e.preventDefault();
-        $('#edit').modal('show');
-        var id = $(this).data('id');
-        getRow(id);
-        getCategoryEdit();
-      });
+      
 
       $(document).on('click', '.delete', function(e) {
         e.preventDefault();
@@ -215,31 +210,6 @@ if (isset($_GET['category'])) {
 
     });
 
-    function getRow(id) {
-      $.ajax({
-        type: 'POST',
-        url: 'products_row.php',
-        data: {
-          id: id
-        },
-        dataType: 'json',
-        success: function(response) {
-          $('#desc').html(response.description);
-          $('.name').html(response.prodname);
-          $('.prodid').val(response.prodid);
-          $('#edit_name').val(response.prodname);
-          $('#catselected').val(response.category_id).html(response.catname);
-          $('#edit_price').val(response.price);
-          $('#edit_material').val(response.material);
-          $('#edit_color').val(response.color);
-          $('#edit_quantity').val(response.qty);
-          $('#edit_brand').val(response.brand);
-          $('#edit_size').val(response.size);
-          CKEDITOR.instances["editor2"].setData(response.description);
-          getCategory();
-        }
-      });
-    }
 
     function getCategory() {
       $.ajax({
@@ -350,9 +320,7 @@ if (isset($_GET['category'])) {
         }
       });
     }
-  </script>
-  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
-  <script>
+
     function deleteImage(id) {
       var result = confirm("Are you sure to delete?");
       if (result) {
@@ -404,7 +372,124 @@ if (isset($_GET['category'])) {
         $('#child_cat_id').html("<option value=''>--Select sub category--</option>");
       }
     });
+    $(document).ready(function() {
+      // Initialize the selectpicker
+      $('.selectpicker').selectpicker();
+      // Load data from JSON file
+      function loadData() {
+        $.getJSON('data.json', function(data) {
+          var attributes = data.attributes;
+          // Populate sizes
+          var sizeOptions = '';
+          attributes.sizes.forEach(function(size) {
+            sizeOptions += '<option value="' + size + '">' + size + '</option>';
+          });
+          $('#edit_size_1').append(sizeOptions);
+          $('.selectpicker').selectpicker('refresh');
+
+          // Populate colors
+          var colorOptions = '';
+          attributes.colors.forEach(function(color) {
+            colorOptions += '<option value="' + color + '">' + color + '</option>';
+          });
+          $('#edit_color_1').append(colorOptions);
+          $('.selectpicker').selectpicker('refresh');
+          // Populate colors
+          var materialOptions = '';
+          attributes.materials.forEach(function(material) {
+            materialOptions += '<option value="' + material + '">' + material + '</option>';
+          });
+          $('#edit_material_1').append(materialOptions);
+          $('.selectpicker').selectpicker('refresh');
+        });
+      }
+
+      // Call the function to load data
+      loadData();
+    });
+
+    // Event listener for the 'edit' button
+    $(document).on('click', '.edit', function(e) {
+      e.preventDefault();
+      $('#edit').modal('show');
+      var id = $(this).data('id'); // Get the ID from data attribute
+      getRow(id); // Fetch product row data
+      getCategoryEdit(); // Fetch category options for editing
+    });
+
+    // Function to fetch product details and prepopulate the form
+    function getRow(id) {
+      $.ajax({
+        type: 'POST',
+        url: 'products_row.php', // API endpoint
+        data: {
+          id: id
+        }, // Send ID as POST data
+        dataType: 'json', // Expect JSON response
+        success: function(response) {
+          // Populate modal fields with response data
+          $('#desc').html(response.description);
+          $('.name').html(response.prodname);
+          $('.prodid').val(response.prodid);
+          $('#edit_name').val(response.prodname);
+          $('#catselected').val(response.category_id).html(response.catname);
+          $('#edit_price').val(response.price);
+          $('#edit_quantity').val(response.qty);
+          $('#edit_brand').val(response.brand);
+          CKEDITOR.instances["editor2"].setData(response.description);
+
+          // Prepare pre-selected data for attributes
+          var preSelectedData = {
+            sizes: response.size || [], // Ensure default empty array
+            colors: response.color || [],
+            materials: response.material || []
+          };
+
+          // Call loadEditData with preSelectedData
+          loadEditData(preSelectedData);
+        },
+        error: function() {
+          alert('Failed to fetch product data. Please try again.');
+        }
+      });
+    }
+
+    // Function to populate the dropdowns with attributes and pre-select values
+    function loadEditData(preSelectedData) {
+      $.getJSON('data.json', function(data) {
+        var attributes = data.attributes;
+
+        // Populate sizes
+        var sizeOptions = '';
+        attributes.sizes.forEach(function(size) {
+          // Check if the current size is pre-selected
+          var isSelected = preSelectedData.sizes.includes(size) ? 'selected' : '';
+          sizeOptions += '<option value="' + size + '" ' + isSelected + '>' + size + '</option>';
+        });
+        $('#edit_size_1').html(sizeOptions); // Replace content
+        $('.selectpicker').selectpicker('refresh');
+
+        // Populate colors
+        var colorOptions = '';
+        attributes.colors.forEach(function(color) {
+          var isSelected = preSelectedData.colors.includes(color) ? 'selected' : '';
+          colorOptions += '<option value="' + color + '" ' + isSelected + '>' + color + '</option>';
+        });
+        $('#edit_color_1').html(colorOptions); // Replace content
+        $('.selectpicker').selectpicker('refresh');
+
+        // Populate materials
+        var materialOptions = '';
+        attributes.materials.forEach(function(material) {
+          var isSelected = preSelectedData.materials.includes(material) ? 'selected' : '';
+          materialOptions += '<option value="' + material + '" ' + isSelected + '>' + material + '</option>';
+        });
+        $('#edit_material_1').html(materialOptions); // Replace content
+        $('.selectpicker').selectpicker('refresh');
+      });
+    }
   </script>
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
 </body>
 
 </html>

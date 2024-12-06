@@ -110,14 +110,18 @@
 
             <label for="edit_color" class="col-sm-1 control-label">Color</label>
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="edit_color" name="color">
+              <select name="color[]" id="edit_color_1" class="form-control selectpicker" multiple data-live-search="true">
+                <option value="">--Select any color--</option>
+              </select>
             </div>
           </div>
 
           <div class="form-group">
             <label for="edit_material" class="col-sm-1 control-label">Material</label>
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="edit_material" name="material" required>
+              <select name="material[]" id="edit_material_1" class="form-control selectpicker" multiple data-live-search="true">
+                <option value="">--Select any material--</option>
+              </select>
             </div>
 
             <label for="edit_quantity" class="col-sm-1 control-label">Quantity</label>
@@ -134,7 +138,9 @@
 
             <label for="edit_size" class="col-sm-1 control-label">Size</label>
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="edit_size" name="size">
+              <select name="size[]" id="edit_size_1" class="form-control selectpicker" multiple data-live-search="true">
+                <option value="">--Select any size--</option>
+              </select>
             </div>
           </div>
 

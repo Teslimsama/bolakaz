@@ -64,7 +64,9 @@
             </div>
             <label for="material" class="col-sm-1 control-label">Material</label>
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="material_1" name="material" required>
+              <select name="material[]" id="material_1" class="form-control selectpicker" multiple data-live-search="true">
+                <option value="">--Select any color--</option>
+              </select>
             </div>
           </div>
 
@@ -96,11 +98,15 @@
           <div class="form-group">
             <label for="size" class="col-sm-1 control-label">Size</label>
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="size_1" name="size">
+              <select name="size[]" id="size_1" class="form-control selectpicker" multiple data-live-search="true">
+                <option value="">--Select any size--</option>
+              </select>
             </div>
             <label for="color" class="col-sm-1 control-label">Color</label>
             <div class="col-sm-5 mt-2">
-              <input type="text" class="form-control" id="color_1" name="color">
+              <select name="color[]" id="color_1" class="form-control selectpicker" multiple data-live-search="true">
+                <option value="">--Select any color--</option>
+              </select>
             </div>
           </div>
 

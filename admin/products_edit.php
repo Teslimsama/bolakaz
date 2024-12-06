@@ -9,9 +9,15 @@ if (isset($_POST['edit'])) {
 	$category = $_POST['category'];
 	$price = $_POST['price'];
 	$description = $_POST['description'];
-	$size = $_POST['size'];
-	$material = $_POST['material'];
-	$color = $_POST['color'];
+	$size = isset($_POST['size']) ? $_POST['size'] : [];
+	$size = !empty($size) ? implode(',', $size) : '';
+
+	$material = isset($_POST['material']) ? $_POST['material'] : [];
+	$material = !empty($material) ? implode(',', $material) : '';
+
+	$color = isset($_POST['color']) ? $_POST['color'] : [];
+	$color = !empty($color) ? implode(',', $color) : '';
+
 	$brand = $_POST['brand'];
 	$qty = $_POST['quantity'];
 
