@@ -180,67 +180,67 @@ if ($ratingNumber && $count) {
                 </div>
                 <h3 class="font-weight-semi-bold mb-4">₦<?php echo number_format($product['price'], 2); ?></h3>
                 <p class="mb-4"><?php echo $product['description']; ?></p>
-                <div class="d-flex mb-3">
-                    <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
-                    <form id="productForm">
-                        <?php
-                        $n = 1;
-                        $proname = $product['prodname'];
-                        $query = "SELECT DISTINCT(size) FROM products WHERE name='$proname' GROUP BY size DESC";
-                        $statement = $conn->prepare($query);
-                        $statement->execute();
-                        $result = $statement->fetchAll();
-                        foreach ($result as $row) {
-                        ?>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input" value="<?php echo $row['size']; ?>" id="<?php echo 'size-' . $n ?>" name="size">
-                                <label class="custom-control-label" for="<?php echo 'size-' . $n ?>"><?php echo $row['size']; ?></label>
+                <form id="productForm">
+                    <!-- Display Sizes -->
+                    <?php if (!empty($product['size'])) { ?>
+                        <div class="d-flex mb-3">
+                            <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
+                            <?php
+                            $n = 1;
+                            $sizes = explode(',', $product['size']);
+                            foreach ($sizes as $size) {
+                            ?>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" class="custom-control-input" value="<?php echo htmlspecialchars($size); ?>" id="<?php echo 'size-' . $n; ?>" name="size">
+                                    <label class="custom-control-label" for="<?php echo 'size-' . $n; ?>"><?php echo htmlspecialchars($size); ?></label>
+                                </div>
+                            <?php
+                                $n++;
+                            } // Close the foreach for sizes
+                            ?>
+                        </div>
+                    <?php } ?>
+
+                    <!-- Display Colors -->
+                    <?php if (!empty($product['color'])) { ?>
+                        <div class="d-flex mb-4">
+                            <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
+                            <?php
+                            $colors = explode(',', $product['color']);
+                            $n = 1;
+                            foreach ($colors as $color) {
+                            ?>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" class="custom-control-input" value="<?php echo htmlspecialchars($color); ?>" id="<?php echo 'color-' . $n; ?>" name="color">
+                                    <label class="custom-control-label" for="<?php echo 'color-' . $n; ?>"><?php echo htmlspecialchars($color); ?></label>
+                                </div>
+                            <?php
+                                $n++;
+                            } // Close the foreach for colors
+                            ?>
+                        </div>
+                    <?php } ?>
+
+
+
+
+                    <div class="d-flex align-items-center mb-4 pt-2">
+                        <div class="input-group quantity mr-3" style="width: 130px;">
+                            <div class="input-group-btn">
+                                <button id="minus" type="button" class="btn btn-primary btn-minus">
+                                    <i class="fa fa-minus"></i>
+                                </button>
                             </div>
-                        <?php
-                            $n++;
-                        } ?>
+                            <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
 
-                </div>
-                <div class="d-flex mb-4">
-                    <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
-                    <?php
-                    $n = 1;
-                    $proname = $product['prodname'];
-                    $query = "SELECT DISTINCT(color) FROM products WHERE name='$proname' GROUP BY color DESC";
-                    $statement = $conn->prepare($query);
-                    $statement->execute();
-                    $result = $statement->fetchAll();
-                    foreach ($result as $row) {
-                    ?>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" class="custom-control-input" value="<?php echo $row['color']; ?>" id="<?php echo 'color-' . $n ?>" name="color">
-                            <label class="custom-control-label" for="<?php echo 'color-' . $n ?>"><?php echo $row['color']; ?></label>
-                        </div>
-                    <?php
-                        $n++;
-                    } ?>
-
-                </div>
-
-
-
-                <div class="d-flex align-items-center mb-4 pt-2">
-                    <div class="input-group quantity mr-3" style="width: 130px;">
-                        <div class="input-group-btn">
-                            <button id="minus" type="button" class="btn btn-primary btn-minus">
-                                <i class="fa fa-minus"></i>
-                            </button>
-                        </div>
-                        <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
-
-                        <div class="input-group-btn">
-                            <button id="add" type="button" class="btn btn-primary btn-plus">
-                                <i class="fa fa-plus"></i>
-                            </button>
-                        </div>
-                    </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
-                    <?php echo (!empty($user['id'])) ? '<button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart </button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>'; ?>
-                </div>
+                            <div class="input-group-btn">
+                                <button id="add" type="button" class="btn btn-primary btn-plus">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </div>
+                        </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
+                        <?php echo (!empty($user['id'])) ? '<button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart </button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>'; ?>
+                    </div>
                 </form>
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
