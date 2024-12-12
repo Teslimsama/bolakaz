@@ -172,7 +172,7 @@ if (isset($_GET['category'])) {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
   <script>
     $(function() {
-      
+
 
       $(document).on('click', '.delete', function(e) {
         e.preventDefault();
@@ -221,7 +221,13 @@ if (isset($_GET['category'])) {
       });
 
     });
-
+    // Event listener for the 'edit' button
+    $(document).on('click', '.edit', function(e) {
+      e.preventDefault();
+      $('#edit').modal('show');
+      var id = $(this).data('id'); // Get the ID from data attribute
+      getRow(id); // Fetch product row data
+    });
 
     function getCategory() {
       $.ajax({
@@ -234,7 +240,7 @@ if (isset($_GET['category'])) {
       });
     }
 
-    function getCategoryEdit() {
+    function getCategoryEdit(selectedCategoryId, selectedSubcategoryId) {
       $.ajax({
         type: 'POST',
         url: 'category_fetch.php',
@@ -242,53 +248,17 @@ if (isset($_GET['category'])) {
         success: function(response) {
           $('#edit_category').append(response);
 
-          // Handle category change
-          $('#edit_category').change(function() {
-            var selectedCategoryId = $(this).val();
-            if (selectedCategoryId) {
-              // Fetch subcategories for the selected category
-              $.ajax({
-                url: 'subcategory_fetch.php',
-                type: 'POST',
-                data: {
-                  id: selectedCategoryId
-                },
-                dataType: 'json',
-                success: function(subResponse) {
-                  if (subResponse.status) {
-                    var subCategoryOptions = "<option value=''>--Select Subcategory--</option>";
-                    $.each(subResponse.data, function(index, subcategory) {
-                      subCategoryOptions +=
-                        "<option value='" + subcategory.id + "'>" + subcategory.name + "</option>";
-                    });
-                    $('#edit_child_cat_id').html(subCategoryOptions);
-                    $('#edit_child_cat_div').removeClass('d-none');
-                  } else {
-                    $('#edit_child_cat_id').html("");
-                    $('#edit_child_cat_div').addClass('d-none');
-                  }
-                },
-                error: function() {
-                  alert('Failed to fetch subcategories. Please try again.');
-                }
-              });
-            } else {
-              $('#edit_child_cat_id').html("");
-              $('#edit_child_cat_div').addClass('d-none');
-            }
-          });
-
           // Pre-select subcategory if already set
-          var childCatId = response.subcategory_id;
+          var childCatId = selectedSubcategoryId;
           if (childCatId) {
             $('#edit_child_cat_div').removeClass('d-none');
-
+            console.log(selectedCategoryId, selectedSubcategoryId)
             // Fetch and populate subcategories
             $.ajax({
               url: 'subcategory_fetch.php',
               type: 'POST',
               data: {
-                id: response.category_id
+                id: selectedCategoryId
               },
               dataType: 'json',
               success: function(subResponse) {
@@ -317,6 +287,45 @@ if (isset($_GET['category'])) {
       });
     }
 
+    // function EditCatgory() {
+      // Handle category change
+      $('#edit_category').change(function() {
+        var selectedCategoryId = $(this).val();
+        if (selectedCategoryId) {
+          // Fetch subcategories for the selected category
+          $.ajax({
+            url: 'subcategory_fetch.php',
+            type: 'POST',
+            data: {
+              id: selectedCategoryId
+            },
+            dataType: 'json',
+            success: function(subResponse) {
+              if (subResponse.status) {
+                var subCategoryOptions = "<option value=''>--Select Subcategory--</option>";
+                $.each(subResponse.data, function(index, subcategory) {
+                  subCategoryOptions +=
+                    "<option value='" + subcategory.id + "'>" + subcategory.name + "</option>";
+                });
+                $('#edit_child_cat_id').html(subCategoryOptions);
+                $('#edit_child_cat_div').removeClass('d-none');
+              } else {
+                $('#edit_child_cat_id').html("");
+                $('#edit_child_cat_div').addClass('d-none');
+              }
+            },
+            error: function() {
+              alert('Failed to fetch subcategories. Please try again.');
+            }
+          });
+        } else {
+          $('#edit_child_cat_id').html("");
+          $('#edit_child_cat_div').addClass('d-none');
+        }
+      });
+
+     
+    // }
 
     function getImages(id) {
       $.ajax({
@@ -420,14 +429,7 @@ if (isset($_GET['category'])) {
       loadData();
     });
 
-    // Event listener for the 'edit' button
-    $(document).on('click', '.edit', function(e) {
-      e.preventDefault();
-      $('#edit').modal('show');
-      var id = $(this).data('id'); // Get the ID from data attribute
-      getRow(id); // Fetch product row data
-      getCategoryEdit(); // Fetch category options for editing
-    });
+
 
     // Function to fetch product details and prepopulate the form
     function getRow(id) {
@@ -459,6 +461,8 @@ if (isset($_GET['category'])) {
 
           // Call loadEditData with preSelectedData
           loadEditData(preSelectedData);
+          getCategoryEdit(response.category_id, response.subcategory_id); // Fetch category options for editing
+
         },
         error: function() {
           alert('Failed to fetch product data. Please try again.');

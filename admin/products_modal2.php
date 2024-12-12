@@ -93,7 +93,7 @@
             </div>
           </div>
 
-          <div class="form-group d-none" id="edit_child_cat_div">
+          <div class="form-group" id="edit_child_cat_div">
             <label for="edit_child_cat_id" class="col-sm-1 control-label">Sub Category</label>
             <div class="col-sm-5">
               <select class="form-control" id="edit_child_cat_id" name="edit_child_cat_id">
