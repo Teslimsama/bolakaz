@@ -138,7 +138,7 @@ if ($ratingNumber && $count) {
                             foreach ($images as $image) {
                                 $imagePath = !empty($image['file_name']) ? 'images/' . $image['file_name'] : 'images/noimage.jpg';
                                 echo '<div class="carousel-item ' . $activeClass . '">';
-                                echo '<img class="w-100 h-100" src="' . $imagePath . '" alt="Product Image">';
+                                echo '<img loading="lazy" class="w-100 h-100" src="' . $imagePath . '" alt="Product Image">';
                                 echo '</div>';
                                 $activeClass = ''; // Remove "active" class for subsequent items
                             }
@@ -255,6 +255,9 @@ if ($ratingNumber && $count) {
                             <i class="fab fa-linkedin-in"></i>
                         </a>
                         <a class="text-dark px-2" href="https://pinterest.com/pin/create/button/?url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&media=&description=">
+                            <i class="fab fa-pinterest"></i>
+                        </a>
+                        <a class="text-dark px-2" href="https://wa.me/?text=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&media=&description=">
                             <i class="fab fa-pinterest"></i>
                         </a>
                     </div>

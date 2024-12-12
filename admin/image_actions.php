@@ -20,8 +20,7 @@ $errorUpload = '';
 if (isset($_POST['imgSubmit'])) {
     // Get submitted data
     $id = $_POST['id'];
-    $name = $_POST['name'];
-    $slug = slugify($name);
+    
     // Check if updating or inserting
     $galleryID = idExists($id) ? $id : null;
 
@@ -30,6 +29,8 @@ if (isset($_POST['imgSubmit'])) {
     if (!empty($galleryID) && !empty($fileImages)) {
         foreach ($fileImages as $key => $val) {
             $fileExtension = strtolower(pathinfo($_FILES["images"]["name"][$key], PATHINFO_EXTENSION));
+            $name = $_POST['name'];
+            $slug = slugify($name);
             $newFileName = $slug . '_' . $id . '_' . uniqid() . '.' . $fileExtension;
             $targetFilePath = $uploadDir . $newFileName;
 

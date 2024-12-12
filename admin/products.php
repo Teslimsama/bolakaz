@@ -115,9 +115,21 @@ if (isset($_GET['category'])) {
                           <tr>
                             <td>" . $row['name'] . "</td>
                             <td>
-                              <img src='" . $image . "' height='30px' width='30px'>
-                              <!--<span class='pull-right'><a href='#edit_photo' class='photo' data-toggle='modal' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i></a></span>--!>
-                              <span class='pull-right'><a href='#image_edit' class='photo image' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i></a></span>
+                                <!-- Image Thumbnail -->
+                                <img src='" . $image . " ' height='30px' width='30px' alt='Product Image' class='img-thumbnail'>
+                            
+                                <!-- Action Links -->
+                                <div class='action-links text-right'>
+                                    <!-- Single Edit Link -->
+                                    <a href='#edit_photo' class='photo btn btn-sm btn-link' data-toggle='modal' data-id='" . $row['id'] . "'>
+                                        Single <i class='fa fa-edit'></i>
+                                    </a>
+                            
+                                    <!-- Multiple Edit Link -->
+                                    <a href='#image_edit' class='photo image btn btn-sm btn-link' data-id='" . $row['id'] . "'>
+                                        Multiple <i class='fa fa-edit'></i>
+                                    </a>
+                                </div>
                             </td>
                             <td><a href='#description' data-toggle='modal' class='btn btn-info btn-sm btn-flat desc' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</a></td>
                             <td>₦" . number_format($row['price'], 2) . "</td>

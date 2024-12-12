@@ -30,6 +30,7 @@ if (!empty($_POST['id'])) {
         
     </div>
     <input type="hidden" name="id" value="' . $_POST['id'] . '">
+    <input type="hidden" name="name" value="' . $row['name'] . '">
     <input type="submit" name="imgSubmit" class="btn btn-success" value="SUBMIT">
 </form>';
         }
@@ -43,6 +44,7 @@ if (!empty($_POST['id'])) {
         
     </div>
     <input type="hidden" name="id" value="' . $_POST['id'] . '">
+    <input type="hidden" name="name" value="' . $row['name'] . '">
     <input type="submit" name="imgSubmit" class="btn btn-success" value="SUBMIT">
 </form>';
     }

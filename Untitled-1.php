@@ -17,3 +17,20 @@
         </div>
     </div>
 </div>
+<td>
+    <!-- Image Thumbnail -->
+    <img src='".$image." ' height='30px' width='30px' alt='Product Image' class='img-thumbnail'>
+
+    <!-- Action Links -->
+    <div class='action-links text-right'>
+        <!-- Single Edit Link -->
+        <a href='#edit_photo' class='photo btn btn-sm btn-link' data-toggle='modal' data-id='<?= $row['id'] ?>'>
+            Single <i class='fa fa-edit'></i>
+        </a>
+
+        <!-- Multiple Edit Link -->
+        <a href='#image_edit' class='photo image btn btn-sm btn-link' data-id='<?= $row['id'] ?>'>
+            Multiple <i class='fa fa-edit'></i>
+        </a>
+    </div>
+</td>

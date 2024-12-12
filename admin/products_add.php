@@ -99,11 +99,14 @@ if (isset($_POST['add'])) {
 
                                 // Insert image metadata into the database
                                 $stmt = $conn->prepare(
-                                    "INSERT INTO gallery_images (gallery_id, file_name) VALUES (:gallery_id, :file_name)"
+                                    "INSERT INTO gallery_images (gallery_id, product_id, file_name, uploaded_on) VALUES (:gallery_id, :product_id, :file_name, :uploaded_on)"
                                 );
+                                $date = date("Y-m-d H:i:s");
                                 $stmt->execute([
                                     'gallery_id' => $productID,
+                                    'product_id' => $productID,
                                     'file_name' => $newFileName,
+                                    'uploaded_on' => $date,
                                 ]);
                             } catch (\Exception $e) {
                                 $errorUpload .= "$val | Image processing failed: " . $e->getMessage() . " ";

@@ -149,7 +149,7 @@ include 'session.php';
                     <!-- Brand End -->
 
                     <!--Material Start -->
-                    <div class="border-bottom mb-4 pb-4">
+                    <!-- <div class="border-bottom mb-4 pb-4">
                         <h5 class="font-weight-semi-bold mb-4">Filter by material</h5>
                         <?php
                         $n = 1;
@@ -177,11 +177,11 @@ include 'session.php';
                         }
 
                         ?>
-                    </div>
+                    </div> -->
                     <!-- Material End -->
 
                     <!--Color Start -->
-                    <div class="border-bottom mb-4 pb-4">
+                    <!-- <div class="border-bottom mb-4 pb-4">
                         <h5 class="font-weight-semi-bold mb-4">Filter by color</h5>
                         <?php
                         $n = 1;
@@ -209,11 +209,11 @@ include 'session.php';
                         }
 
                         ?>
-                    </div>
+                    </div> -->
                     <!-- Color End -->
 
                     <!-- Size Start -->
-                    <div class="mb-5">
+                    <!-- <div class="mb-5">
                         <h5 class="font-weight-semi-bold mb-4">Filter by size</h5>
                         <?php
                         $n = 1;
@@ -240,7 +240,7 @@ include 'session.php';
                             $n++;
                         }
                         ?>
-                    </div>
+                    </div> -->
                     <!-- Size End -->
 
                 </div>

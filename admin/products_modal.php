@@ -74,11 +74,11 @@
           <div class="form-group">
             <label for="photo" class="col-sm-1 control-label">Main Photo</label>
             <div class="col-sm-5">
-              <input type="file" id="photo" name="photo" accept=".jpg, .jpeg, .png, .gif">
+              <input type="file" id="photo" name="photo" accept=".jpg, .jpeg, .png, .gif , .webp">
             </div>
             <label for="images" class="col-sm-1 control-label">Gallery Images (Multiple)</label>
             <div class="col-sm-5">
-              <input type="file" id="images" name="images[]" accept=".jpg, .jpeg, .png, .gif" multiple>
+              <input type="file" id="images" name="images[]" accept=".jpg, .jpeg, .png, .gif, .webp" multiple>
             </div>
           </div>
 
