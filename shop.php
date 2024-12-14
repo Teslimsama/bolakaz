@@ -97,7 +97,7 @@ include 'session.php';
                         ?>
                             <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
                                 <input type="checkbox" class="custom-control-input common_selector category" value="<?php echo $row['category_name']; ?>" id="<?php echo 'cat-' . $n ?>">
-                                <label class=" custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo ucwords(str_replace("_", " ", $row['category_name']));?></label>
+                                <label class=" custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo ucwords(str_replace("_", " ", $row['category_name'])); ?></label>
                                 <span class="text-dark badge border font-weight-normal">
                                     <?php $name = $row['category_name'];
                                     $sql = "SELECT * FROM products WHERE category_name='$name'";
@@ -312,6 +312,7 @@ include 'session.php';
 
 
     <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="js/jquery-1.10.2.min.js"></script>
     <script src="js/jquery-ui.js"></script>

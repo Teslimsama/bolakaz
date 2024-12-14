@@ -1,18 +1,23 @@
 $(document).ready(function () {
-	filter_data();
+	// Function to fetch and filter data
+	function filter_data(page = 1) {
+		$(".filter_data").html(
+			'<div id="loading" style="text-align:center;">Loading...</div>'
+		);
 
-	function filter_data() {
-		$(".filter_data").html('<div id="loading" style="" ></div>');
-		var action = "fetch_data";
+		// Prepare the filter parameters
+		var action = "filter_data";
 		var minimum_price = $("#hidden_minimum_price").val();
 		var maximum_price = $("#hidden_maximum_price").val();
 		var cat = $("#cat").val();
-		var brand = get_filter("brand"); 
-		var category = get_filter("category"); 
+		var brand = get_filter("brand");
+		var category = get_filter("category");
 		var material = get_filter("material");
 		var color = get_filter("color");
 		var size = get_filter("size");
-		var sorting = get_filter("sorting");
+		var sorting = $("#sorting").val(); // Assume sorting uses a dropdown
+
+		// Make AJAX call to fetch.php
 		$.ajax({
 			url: "fetch_data.php",
 			method: "POST",
@@ -26,14 +31,18 @@ $(document).ready(function () {
 				size: size,
 				color: color,
 				sorting: sorting,
-				material: material
+				material: material,
+				page: page, // Current page for pagination
 			},
-			success: function (data) {
-				$(".filter_data").html(data);
+			success: function (response) {
+				// response = JSON.parse(response);
+				$(".filter_data").html(response); // Display filtered products
+				// $(".pagination-container").html(response.pagination); // Update pagination
 			},
 		});
 	}
 
+	// Function to get selected filter values
 	function get_filter(class_name) {
 		var filter = [];
 		$("." + class_name + ":checked").each(function () {
@@ -42,16 +51,25 @@ $(document).ready(function () {
 		return filter;
 	}
 
-	$(".common_selector").click(function () {
+	// Pagination click handler
+	$(document).on("click", ".page-link", function (e) {
+		e.preventDefault();
+		var page = $(this).data("page"); // Get the clicked page number
+		filter_data(page); // Fetch data for the selected page
+	});
+	
+	// Trigger data fetch on filter change
+	$(".common_selector").on("change", function () {
 		filter_data();
 	});
 
+	// Handle price range slider
 	$("#price_range").slider({
 		range: true,
-		min: 1000,
+		min: 500,
 		max: 65000,
-		values: [1000, 65000],
-		step: 500,
+		values: [500, 65000],
+		step: 507,
 		stop: function (event, ui) {
 			$("#price_show").html(ui.values[0] + " - " + ui.values[1]);
 			$("#hidden_minimum_price").val(ui.values[0]);
@@ -59,15 +77,40 @@ $(document).ready(function () {
 			filter_data();
 		},
 	});
-	$("#search").keyup(function() {
-		var search = $(this).val();
+
+	// Handle search functionality
+	$(document).on("keyup", "#search", function () {
+		var search_query = $(this).val();
+		if (search_query.trim() !== "") {
+			fetchFilteredData(search_query, 1); // Fetch data for the first page
+		} else {
+			filter_data(); // Define this function to reload original data
+		}
+	});
+
+	$(document).on("click", ".keyup-page-link", function () {
+		var page = $(this).data("page");
+		var search_query = $("#search").val();
+		if (search_query.trim() !== "") {
+			fetchFilteredData(search_query, page);
+		}
+	});
+
+	function fetchFilteredData(query, page) {
 		$.ajax({
-			url: "action.php",
+			url: "keyup.php",
 			method: "POST",
-			data: { query: search },
-			success:function(response){
+			data: {
+				action: "search",
+				query: query,
+				page: page,
+			},
+			success: function (response) {
 				$(".filter_data").html(response);
-			}
-		})
-	})
+			},
+		});
+	}
+
+	// Initial fetch of data
+	filter_data();
 });

@@ -10,7 +10,8 @@ $slug = $_GET['product'];
 
 try {
 
-    $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id WHERE slug = :slug");
+    $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id LEFT JOIN 
+    category AS sub_category ON sub_category.id = products.subcategory_id  WHERE slug = :slug");
     $stmt->execute(['slug' => $slug]);
     $product = $stmt->fetch();
 } catch (PDOException $e) {
@@ -242,6 +243,14 @@ if ($ratingNumber && $count) {
                         <?php echo (!empty($user['id'])) ? '<button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart </button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>'; ?>
                     </div>
                 </form>
+                <div class="d-flex mb-3">
+                    <p class="text-dark font-weight-medium mb-0 mr-3">Caterory:</p>
+                    <?php echo ucwords($product['category_name']); ?>
+                </div>
+                <div class="d-flex mb-3">
+                    <p class="text-dark font-weight-medium mb-0 mr-3">Sub Caterory:</p>
+                    <?php echo ucwords($product['name']); ?>
+                </div>
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
                     <div class="d-inline-flex">
