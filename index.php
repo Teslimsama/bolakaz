@@ -295,12 +295,14 @@ $pdo->close();
         </div>
         <div class="row px-xl-5 pb-3">
             <?php
-            $now = date('Y-m-d');
+            $now = date('m');
             $conn = $pdo->open();
 
-            $stmt = $conn->prepare("SELECT * FROM products WHERE date_view=:now ORDER BY counter DESC LIMIT 10");
+            $stmt = $conn->prepare("SELECT * FROM products WHERE date_view=:now ORDER BY counter DESC LIMIT 12");
             $stmt->execute(['now' => $now]);
             foreach ($stmt as $row) {
+
+                $discount = $row['price'] * 15;
                 echo '
                 <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
                     <div class="card product-item border-0 mb-4">
@@ -310,7 +312,8 @@ $pdo->close();
                         <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
                             <h6 class="text-truncate mb-3">' . $row['name'] . '</h6>
                             <div class="d-flex justify-content-center">
-                                <h6>₦' . $row['price'] . '</h6>
+                            <h6>₦' . $row['price'] . '.00</h6>
+                            <h6 class="text-muted ml-2"><del>₦' . $discount . '.00</del></h6>
                             </div>
                         </div>
                         <div class="card-footer d-flex justify-content-center bg-light border">
@@ -358,10 +361,11 @@ $pdo->close();
         <div class="row px-xl-5 pb-3">
             <?php
             $conn = $pdo->open();
-            $stmt = $conn->prepare("SELECT * FROM products WHERE product_status = 1 ORDER BY id DESC LIMIT 8");
+            $stmt = $conn->prepare("SELECT * FROM products WHERE product_status = 1 ORDER BY id DESC LIMIT 12");
             $stmt->execute();
             $result = $stmt->fetchAll();
             foreach ($result as $row) {
+                $discount = $row['price'] * 15;
                 echo '
                 <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
                     <div class="card product-item border-0 mb-4">
@@ -371,7 +375,8 @@ $pdo->close();
                         <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
                             <h6 class="text-truncate mb-3">' . $row['name'] . '</h6>
                             <div class="d-flex justify-content-center">
-                                <h6>₦' . $row['price'] . '</h6>
+                                <h6>₦' . $row['price'] . '.00</h6>
+                            <h6 class="text-muted ml-2"><del>₦' . $discount . '.00</del></h6>
                             </div>
                         </div>
                         <div class="card-footer d-flex justify-content-center bg-light border">

@@ -1,25 +1,20 @@
 <?php
-	include 'session.php';
+include 'session.php';
 
-	if(isset($_POST['activate'])){
-		$id = $_POST['id'];
-		
-		$conn = $pdo->open();
+if (isset($_POST['id']) && isset($_POST['status'])) {
+	$id = $_POST['id'];
+	$status = $_POST['status'];
+	$conn = $pdo->open();
 
-		try{
-			$stmt = $conn->prepare("UPDATE sales SET Status=:Status WHERE id=:id");
-			$stmt->execute(['Status'=>'success', 'id'=>$id]);
-			$_SESSION['success'] = 'Status Changed successfully';
-		}
-		catch(PDOException $e){
-			$_SESSION['error'] = $e->getMessage();
-		}
-
-		$pdo->close();
-
-	}
-	else{
-		$_SESSION['error'] = 'Select Sale to Change first';
+	try {
+		$stmt = $conn->prepare("UPDATE sales SET Status=:Status WHERE id=:id");
+		$stmt->execute(['Status' => $status, 'id' => $id]);
+		echo json_encode(['success' => true, 'message' => 'Status updated successfully']);
+	} catch (PDOException $e) {
+		echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 	}
 
-	header('location: sales');
+	$pdo->close();
+} else {
+	echo json_encode(['success' => false, 'message' => 'Invalid request']);
+}

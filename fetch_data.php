@@ -7,7 +7,7 @@ if (isset($_POST["action"])) {
     $cat = $_POST["cat"];
     
     // Set default values for pagination
-    $limit = 6; // Number of items per page
+    $limit = 12; // Number of items per page
     $page = isset($_POST['page']) ? (int)$_POST['page'] : 1; // Current page number
     $start = ($page - 1) * $limit; // Offset for query
 
@@ -62,11 +62,11 @@ if (isset($_POST["action"])) {
     $statement = $conn->prepare($query);
     $statement->execute();
     $result = $statement->fetchAll();
-
     // Generate product output
     $output = '';
     if ($statement->rowCount() > 0) {
         foreach ($result as $row) {
+            $discount= $row['price'] * 15 ;
             $output .= '
             <div class="col-lg-4 col-md-6 col-sm-12 pb-1">
                 <div class="card product-item border-0 mb-4">
@@ -77,6 +77,7 @@ if (isset($_POST["action"])) {
                         <h6 class="text-truncate mb-3">' . $row['name'] . '</h6>
                         <div class="d-flex justify-content-center">
                             <h6>₦' . $row['price'] . '</h6>
+                            <h6 class="text-muted ml-2"><del>₦' . $discount . '</del></h6>
                         </div>
                     </div>
                     <div class="card-footer d-flex justify-content-center bg-light border">
@@ -96,9 +97,11 @@ if (isset($_POST["action"])) {
     // Add "Previous" button
     if ($page > 1) {
         $prev_page = $page - 1;
-        $pagination .= "<li class='page-item'><a class='page-link' href='#' data-page='$prev_page'>Previous</a></li>";
+        $pagination .= "<li class='page-item'><a class='page-link' href='#' data-page='$prev_page'><span aria-hidden='true'>&laquo;</span>
+                                <span class='sr-only'>Previous</span></a></li>";
     } else {
-        $pagination .= "<li class='page-item disabled'><a class='page-link' href='#'>Previous</a></li>";
+        $pagination .= "<li class='page-item disabled'><a class='page-link' href='#'><span aria-hidden='true'>&laquo;</span>
+                                <span class='sr-only'>Previous</span></a></li>";
     }
 
     // Add page numbers
@@ -110,9 +113,11 @@ if (isset($_POST["action"])) {
     // Add "Next" button
     if ($page < $total_pages) {
         $next_page = $page + 1;
-        $pagination .= "<li class='page-item'><a class='page-link' href='#' data-page='$next_page'>Next</a></li>";
+        $pagination .= "<li class='page-item'><a class='page-link' href='#' data-page='$next_page'><span aria-hidden='true'>&raquo;</span>
+                                <span class='sr-only'>Next</span></a></li>";
     } else {
-        $pagination .= "<li class='page-item disabled'><a class='page-link' href='#'>Next</a></li>";
+        $pagination .= "<li class='page-item disabled'><a class='page-link' href='#'><span aria-hidden='true'>&raquo;</span>
+                                <span class='sr-only'>Next</span></a></li>";
     }
 
     $pagination .= '</ul>';

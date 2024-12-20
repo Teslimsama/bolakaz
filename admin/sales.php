@@ -70,7 +70,12 @@
                             <td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
                             <td>" . $row['firstname'] . ' ' . $row['lastname'] . "</td>
                             <td>" . $row['tx_ref'] . "</td>
-                            <td>" . $row['Status'] . "</td>
+                            <td>
+                              <button class='status-toggle btn btn-sm' data-id='" . $row['salesid'] . "' data-status='" . $row['Status'] . "' style='background-color:" . ($row['Status'] == 'success' ? 'green' : ($row['Status'] == 'pending' ? 'orange' : 'red')) . "; color: white;'>
+                                " . ucfirst($row['Status']) . "
+                              </button>
+                            </td>
+
                             <td> ₦" . number_format($total, 2) . "</td>
                             <td><button type='button' class='btn btn-info btn-sm btn-flat transact' data-id='" . $row['salesid'] . "'><i class='fa fa-search'></i> View</button></td>
                           </tr>
@@ -171,6 +176,43 @@
       });
     });
   </script>
+  <script>
+    $(function() {
+      $(document).on('click', '.status-toggle', function() {
+        var button = $(this);
+        var id = button.data('id');
+        var currentStatus = button.data('status');
+
+        // Define the status cycle
+        var statuses = ['success', 'pending', 'failed'];
+        var nextStatus = statuses[(statuses.indexOf(currentStatus) + 1) % statuses.length];
+
+        $.ajax({
+          type: 'POST',
+          url: 'pending_change.php',
+          data: {
+            id: id,
+            status: nextStatus
+          },
+          dataType: 'json',
+          success: function(response) {
+            if (response.success) {
+              // Update the button to show the next status
+              button.data('status', nextStatus);
+              button.text(nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1));
+              button.css('background-color', nextStatus === 'success' ? 'green' : nextStatus === 'pending' ? 'orange' : 'red');
+            } else {
+              alert('Error: ' + response.message);
+            }
+          },
+          error: function() {
+            alert('An error occurred while updating the status.');
+          }
+        });
+      });
+    });
+  </script>
+
 </body>
 
 </html>
