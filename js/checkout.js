@@ -35,7 +35,7 @@ function payWithPaystack(event) {
 			alert(message);
 
 			window.location =
-				"http://localhost/online/bolakaz.com/transact_verify?reference=" +
+				"http://bolakaz.test/transact_verify?reference=" +
 				response.reference;
 		},
 	});
@@ -55,7 +55,7 @@ function payNow(event) {
 		amount: document.getElementById("amount").value,
 		currency: "NGN",
 		payment_options: "card, mobilemoney, ussd",
-		redirect_url: "http://localhost/online/bolakaz.com/sales",
+		redirect_url: "http://bolakaz.test/sales",
 
 		customer: {
 			email: document.getElementById("email-address").value,
@@ -77,7 +77,7 @@ function payNow(event) {
 				"Payment complete! Your Reference Number: " + reference + " Thank you!";
 			alert(message);
 
-			// window.location ="http://localhost/online/bolakaz.com/transact_verify?reference=" + reference;
+			// window.location ="http://bolakaz.test/transact_verify?reference=" + reference;
 		},
 	});
 }

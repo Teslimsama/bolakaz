@@ -37,7 +37,7 @@ if ($err) {
   if ($result->data->status == 'success') {
     $status = $result->data->status;
     $email = $result->data->customer->email;
-    $phone=$result->data->metadata->customer->phone;
+    $phone=$result->data->metadata->custom_fields[0]->phone;
     $payid = $result->data->reference;
     $amount = $result->data->amount;
     $address1 = $result->data->metadata->custom_fields[0]->address1;
