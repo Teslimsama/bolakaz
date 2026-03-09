@@ -1,0 +1,18 @@
+<?php
+	include 'session.php';
+
+	$output = '';
+
+	$conn = $pdo->open();
+
+	$stmt = $conn->prepare("SELECT * FROM category");
+	$stmt->execute();
+
+	foreach($stmt as $row){
+		$output .= "<input type='hidden'  name='category_name' value='" . e($row['name']) . "'>
+			<option value='". (int)$row['id']. "' class='append_items'>". e($row['name']) . "</option>
+		";
+	}
+
+	$pdo->close();
+	echo json_encode($output);

@@ -1,12 +1,7 @@
 <?php include 'session.php'; ?>
 <?php
-$catid = '';
-$where = '';
-if (isset($_GET['category'])) {
-  $catid = $_GET['category'];
-  $where = 'WHERE category_id =' . $catid;
-}
-
+$catid = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
+$catid = ($catid !== false && $catid !== null) ? $catid : null;
 ?>
 <?php include 'header.php'; ?>
 
@@ -38,7 +33,7 @@ if (isset($_GET['category'])) {
             <div class='alert alert-danger alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-warning'></i> Error!</h4>
-              " . $_SESSION['error'] . "
+              " . e($_SESSION['error']) . "
             </div>
           ";
           unset($_SESSION['error']);
@@ -48,7 +43,7 @@ if (isset($_GET['category'])) {
             <div class='alert alert-success alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-check'></i> Success!</h4>
-              " . $_SESSION['success'] . "
+              " . e($_SESSION['success']) . "
             </div>
           ";
           unset($_SESSION['success']);
@@ -72,9 +67,9 @@ if (isset($_GET['category'])) {
                         $stmt->execute();
 
                         foreach ($stmt as $crow) {
-                          $selected = ($crow['id'] == $catid) ? 'selected' : '';
+                          $selected = ((int)$crow['id'] === (int)$catid) ? 'selected' : '';
                           echo "
-                            <option value='" . $crow['id'] . "' " . $selected . ">" . $crow['name'] . "</option>
+                            <option value='" . (int)$crow['id'] . "' " . $selected . ">" . e($crow['name']) . "</option>
                           ";
                         }
 
@@ -106,48 +101,52 @@ if (isset($_GET['category'])) {
 
                     try {
                       $now = date('Y-m-d');
-                      $stmt = $conn->prepare("SELECT * FROM products $where");
-                      $stmt->execute();
+                      $sql = "SELECT * FROM products";
+                      if ($catid !== null) {
+                        $sql .= " WHERE category_id = :category_id";
+                      }
+                      $stmt = $conn->prepare($sql);
+                      $stmt->execute($catid !== null ? ['category_id' => $catid] : []);
                       foreach ($stmt as $row) {
                         $image = (!empty($row['photo'])) ? '../images/' . $row['photo'] : '../images/noimage.jpg';
                         $counter = ($row['date_view'] == $now) ? $row['counter'] : 0;
                         echo "
                           <tr>
-                            <td>" . $row['name'] . "</td>
+                            <td>" . e($row['name']) . "</td>
                             <td>
                                 <!-- Image Thumbnail -->
-                                <img src='" . $image . " ' height='30px' width='30px' alt='Product Image' class='img-thumbnail'>
+                                <img src='" . e($image) . " ' height='30px' width='30px' alt='Product Image' class='img-thumbnail'>
                             
                                 <!-- Action Links -->
                                 <div class='action-links text-right'>
                                     <!-- Single Edit Link -->
-                                    <a href='#edit_photo' class='photo btn btn-sm btn-link' data-toggle='modal' data-id='" . $row['id'] . "'>
+                                    <a href='#edit_photo' class='photo btn btn-sm btn-link' data-toggle='modal' data-id='" . (int)$row['id'] . "'>
                                         Single <i class='fa fa-edit'></i>
                                     </a>
                             
                                     <!-- Multiple Edit Link -->
-                                    <a href='#image_edit' class='photo image btn btn-sm btn-link' data-id='" . $row['id'] . "'>
+                                    <a href='#image_edit' class='photo image btn btn-sm btn-link' data-id='" . (int)$row['id'] . "'>
                                         Multiple <i class='fa fa-edit'></i>
                                     </a>
                                 </div>
                             </td>
-                            <td><a href='#description' data-toggle='modal' class='btn btn-info btn-sm btn-flat desc' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</a></td>
-                            <td>₦" . number_format($row['price'], 2) . "</td>
+                            <td><a href='#description' data-toggle='modal' class='btn btn-info btn-sm btn-flat desc' data-id='" . (int)$row['id'] . "'><i class='fa fa-search'></i> View</a></td>
+                            <td>₦" . number_format((float)$row['price'], 2) . "</td>
                             <td>" . $counter . "</td>
                             <td>
-                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
-                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
+                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
-                            <td>" . $row['color'] . "</td>
-                            <td>" . $row['brand'] . "</td>
-                            <td>" . $row['size'] . "</td>
-                            <td>" . $row['material'] . "</td>
-                            <td>" . $row['qty'] . "</td>
+                            <td>" . e($row['color']) . "</td>
+                            <td>" . e($row['brand']) . "</td>
+                            <td>" . e($row['size']) . "</td>
+                            <td>" . e($row['material']) . "</td>
+                            <td>" . (int)$row['qty'] . "</td>
                           </tr>
                         ";
                       }
                     } catch (PDOException $e) {
-                      echo $e->getMessage();
+                      echo 'Unable to load products.';
                     }
 
                     $pdo->close();
@@ -509,3 +508,4 @@ if (isset($_GET['category'])) {
 </body>
 
 </html>
+

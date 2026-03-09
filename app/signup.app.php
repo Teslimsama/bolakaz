@@ -22,13 +22,13 @@ if (isset($_POST['signup'])) {
 	$_SESSION['email'] = $email;
 
 	if (!isset($_SESSION['captcha'])) {
-		$secret = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+		$secret = $_ENV['RECAPTCHA_SECRET_KEY'] ?? getenv('RECAPTCHA_SECRET_KEY') ?? '';
 		$response = $_POST['g-recaptcha-response'];
 		$remoteip = $_SERVER['REMOTE_ADDR'];
 		$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
 		$data = file_get_contents($url);
 		$row = json_decode($data, true);
-		if ($row['success'] == "false") {
+		if (!empty($row['success']) && $row['success'] == true) {
 			$_SESSION['captcha'] = time() + (10 * 60);
 		} else {
 			$_SESSION['error'] = 'Please answer recaptcha correctly';
@@ -66,7 +66,6 @@ if (isset($_POST['signup'])) {
 						<h2>Thank you for Registering.</h2>
 						<p>Your Account:</p>
 						<p>Email: " . $email . "</p>
-						<p>Password: " . $_POST['password'] . "</p>
 						<p>Please click the link below to activate your account.</p>
 						<a href='http://localhost/bolakaz/activate.php?code=" . $code . "&user=" . $userid . "'>Activate Account</a>
 					";
@@ -78,10 +77,10 @@ if (isset($_POST['signup'])) {
 				try {
 					//Server settings
 					$mail->isSMTP();
-					$mail->Host = 'smtp.gmail.com';
+					$mail->Host = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.gmail.com';
 					$mail->SMTPAuth = true;
-					$mail->Username = 'bolajiteslim05@gmail.com';
-					$mail->Password = 'bioombteyxpcqxzb';
+					$mail->Username = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? '';
+					$mail->Password = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '';
 					$mail->SMTPOptions = array(
 						'ssl' => array(
 							'verify_peer' => false,
@@ -89,14 +88,14 @@ if (isset($_POST['signup'])) {
 							'allow_self_signed' => true
 						)
 					);
-					$mail->SMTPSecure = 'ssl';
-					$mail->Port = 465;
-
-					$mail->setFrom('bolajiteslim05@gmail.com');
+					$mail->SMTPSecure = $_ENV['SMTP_ENCRYPTION'] ?? getenv('SMTP_ENCRYPTION') ?? 'ssl';
+					$mail->Port = (int)($_ENV['SMTP_PORT'] ?? getenv('SMTP_PORT') ?? 465);
+					$fromEmail = $_ENV['MAIL_FROM'] ?? getenv('MAIL_FROM') ?? $mail->Username;
+					$mail->setFrom($fromEmail);
 
 					//Recipients
 					$mail->addAddress($email);
-					$mail->addReplyTo('bolajiteslim05@gmail.com');
+					$mail->addReplyTo($fromEmail);
 
 					//Content
 					$mail->isHTML(true);
@@ -112,7 +111,7 @@ if (isset($_POST['signup'])) {
 					$_SESSION['success'] = 'Account created. Check your email to activate.';
 					header('location: ../signup.php');
 				} catch (Exception $e) {
-					$_SESSION['error'] = 'Message could not be sent. Mailer Error: ' . $mail->ErrorInfo;
+					$_SESSION['error'] = 'Message could not be sent at this time.';
 					header('location: ../signup.php');
 				}
 			} catch (PDOException $e) {

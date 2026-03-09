@@ -1,6 +1,9 @@
 <?php
 	include ('CreateDb.php');
-	session_start();
+	include_once 'security.php';
+	app_start_session();
+	app_get_csrf_token();
+	app_require_csrf_for_mutations();
 
 
 	if(isset($_SESSION['admin'])){

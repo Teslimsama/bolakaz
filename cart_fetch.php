@@ -10,19 +10,19 @@ if (isset($_SESSION['user'])) {
 		$stmt->execute(['user_id' => $user['id']]);
 		foreach ($stmt as $row) {
 			$output['count']++;
-			$image = (!empty($row['photo'])) ? 'images/' . $row['photo'] : 'images/noimage.jpg';
+			$image = app_image_url($row['photo'] ?? '');
 			$productname = (strlen($row['prodname']) > 30) ? substr_replace($row['prodname'], '...', 27) : $row['prodname'];
 			$output['list'] .= "
 					<li>
-						<a href='detail.php?product=" . $row['slug'] . "'>
+						<a href='detail.php?product=" . e($row['slug']) . "'>
 							<div class='pull-left'>
-								<img src='" . $image . "' class='thumbnail' alt='User Image'>
+								<img src='" . e($image) . "' class='thumbnail' alt='Product image' onerror=\"this.onerror=null;this.src='" . e(app_placeholder_image()) . "';\">
 							</div>
 							<h4>
-		                        <b>" . $row['catname'] . "</b>
+		                        <b>" . e($row['catname']) . "</b>
 		                        <small>&times; " . $row['quantity'] . "</small>
 		                    </h4>
-		                    <p>" . $productname . "</p>
+		                    <p>" . e($productname) . "</p>
 						</a>
 					</li>
 				";
@@ -43,20 +43,20 @@ if (isset($_SESSION['user'])) {
 			$stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname FROM products LEFT JOIN category ON category.id=products.category_id WHERE products.id=:id");
 			$stmt->execute(['id' => $row['productid']]);
 			$product = $stmt->fetch();
-			$image = (!empty($product['photo'])) ? 'images/' . $product['photo'] : 'images/noimage.jpg';
+			$image = app_image_url($product['photo'] ?? '');
 			$output['list'] .= "
 					<li>
-						<a href='detail.php?product=" . $product['slug'] . "'>
+						<a href='detail.php?product=" . e($product['slug']) . "'>
 					<div class='container-flex'>
 						
 							<div class='pull-left img'>
-								<img src='" . $image . "' class='img-circle' alt='User Image'>
+								<img src='" . e($image) . "' class='img-circle' alt='Product image' onerror=\"this.onerror=null;this.src='" . e(app_placeholder_image()) . "';\">
 							</div>
 							<h4>
-		                        <b>" . $product['catname'] . "</b>
+		                        <b>" . e($product['catname']) . "</b>
 		                        <small style=''>&times; " . $row['quantity'] . "</small>
 		                    </h4>
-		                    <p>" . $product['prodname'] . "</p>
+		                    <p>" . e($product['prodname']) . "</p>
 					</div>
 					
 						</a>

@@ -5,41 +5,22 @@ $stmt = $conn->prepare("SELECT * FROM shippings");
 $stmt->execute();
 $shipping_options = $stmt->fetchAll();
 $pdo->close();
+
+$checkoutUser = [
+    'id' => isset($user['id']) ? (int)$user['id'] : 0,
+    'firstname' => isset($user['firstname']) ? (string)$user['firstname'] : '',
+    'lastname' => isset($user['lastname']) ? (string)$user['lastname'] : '',
+    'email' => isset($user['email']) ? (string)$user['email'] : '',
+    'phone' => isset($user['phone']) ? (string)$user['phone'] : '',
+    'address' => isset($user['address']) ? (string)$user['address'] : '',
+];
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title Page-->
-    <title>Bolakaz</title>
-    <!-- favicon  -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="favicomatic/site.webmanifest">
-    <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
-
-    <!-- CSS only -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-
-    <!-- Libraries Stylesheet -->
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <script src="https://checkout.flutterwave.com/v3.js"></script>
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
+    <?php $pageTitle = "Bolakaz | Checkout"; include "head.php"; ?>
 </head>
 
 <body>
@@ -96,24 +77,24 @@ $pdo->close();
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <label>First Name</label>
-                                <input class="form-control" id="first-name" type="text" value="<?php echo $user['firstname'] ?>">
+                                <input class="form-control" id="first-name" type="text" value="<?php echo e($checkoutUser['firstname']); ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Last Name</label>
-                                <input class="form-control" id="last-name" type="text" value="<?php echo $user['lastname'] ?>">
-                                <input class="form-control" id="id" type="hidden" value="<?php echo $user['id'] ?>">
+                                <input class="form-control" id="last-name" type="text" value="<?php echo e($checkoutUser['lastname']); ?>">
+                                <input class="form-control" id="id" type="hidden" value="<?php echo $checkoutUser['id']; ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>E-mail</label>
-                                <input class="form-control" id="email-address" name="email-address" type="text" value="<?php echo $user['email'] ?>">
+                                <input class="form-control" id="email-address" name="email-address" type="text" value="<?php echo e($checkoutUser['email']); ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Mobile No</label>
-                                <input class="form-control" type="text" name="phone" id="phone" value="<?php echo (!empty($user['phone'])) ?  $user['phone'] : 'Moblie No'; ?>">
+                                <input class="form-control" type="text" name="phone" id="phone" value="<?php echo e($checkoutUser['phone'] !== '' ? $checkoutUser['phone'] : 'Mobile No'); ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Address Line 1</label>
-                                <input class="form-control" type="text" name="address1" id="address1" value="<?php echo (!empty($user['address'])) ?  $user['address'] : '123 Street'; ?>">
+                                <input class="form-control" type="text" name="address1" id="address1" value="<?php echo e($checkoutUser['address'] !== '' ? $checkoutUser['address'] : '123 Street'); ?>">
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Address Line 2</label>
@@ -137,7 +118,7 @@ $pdo->close();
                                 <select id="shipping" name="shipping" class="form-control" required>
                                     <option value="">Select Shipping Option</option>
                                     <?php foreach ($shipping_options as $option) : ?>
-                                        <option value="<?php echo $option['id']; ?>"><?php echo $option['type']; ?></option>
+                                        <option value="<?php echo (int)$option['id']; ?>"><?php echo e($option['type']); ?></option>
 
                                     <?php endforeach; ?>
 
@@ -239,7 +220,7 @@ $pdo->close();
                             </div>
                             <div class="form-group">
                                 <div class="custom-control custom-radio">
-                                    <input type="radio" class="custom-control-input" name="payment" onclick="flutterwave()" id="directcheck" did>
+                                    <input type="radio" class="custom-control-input" name="payment" onclick="flutterwave()" id="directcheck">
                                     <label class="custom-control-label" for="directcheck">Flutterwave</label>
                                 </div>
                             </div>
@@ -468,18 +449,10 @@ $pdo->close();
 
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
 
     <!-- Contact Javascript File -->
-    <script src="mail/jqBootstrapValidation.min.js"></script>
-    <script src="mail/contact.js"></script>
     <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
     <!-- Template Javascript -->
-    <script src="js/main.js"></script>
 </body>
 
 </html>

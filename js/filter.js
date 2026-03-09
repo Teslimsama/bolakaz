@@ -71,7 +71,7 @@ $(document).ready(function () {
 		values: [500, 65000],
 		step: 507,
 		stop: function (event, ui) {
-			$("#price_show").html(ui.values[0] + " - " + ui.values[1]);
+			$("#price_show").html("₦" + ui.values[0].toLocaleString() + ".00 - ₦" + ui.values[1].toLocaleString() + ".00");
 			$("#hidden_minimum_price").val(ui.values[0]);
 			$("#hidden_maximum_price").val(ui.values[1]);
 			filter_data();

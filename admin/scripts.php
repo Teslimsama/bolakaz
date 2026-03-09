@@ -1,5 +1,6 @@
 <!-- jQuery 3 -->
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<meta name="csrf-token" content="<?php echo function_exists('app_get_csrf_token') ? htmlspecialchars(app_get_csrf_token(), ENT_QUOTES, 'UTF-8') : ''; ?>">
 <!-- jQuery UI 1.11.4 -->
 <script src="../bower_components/jquery-ui/jquery-ui.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
@@ -30,47 +31,62 @@
 <script src="../bower_components/ckeditor/ckeditor.js"></script>
 <!-- Active Script -->
 <script>
-$(function(){
-	/** add active class and stay opened when selected */
-	var url = window.location;
-  
-	// for sidebar menu entirely but not cover treeview
-	$('ul.sidebar-menu a').filter(function() {
-	    return this.href == url;
-	}).parent().addClass('active');
+  $(function() {
+    const csrfToken = $('meta[name="csrf-token"]').attr('content') || '';
+    $.ajaxSetup({
+      headers: {
+        'X-CSRF-Token': csrfToken
+      }
+    });
 
-	// for treeview
-	$('ul.treeview-menu a').filter(function() {
-	    return this.href == url;
-	}).parentsUntil(".sidebar-menu > .treeview-menu").addClass('active');
+    $('form').each(function() {
+      if (!$(this).find('input[name="_csrf"]').length) {
+        $(this).append('<input type="hidden" name="_csrf" value="' + csrfToken + '">');
+      }
+    });
 
-});
+    /** add active class and stay opened when selected */
+    var url = window.location;
+
+    // for sidebar menu entirely but not cover treeview
+    $('ul.sidebar-menu a').filter(function() {
+      return this.href == url;
+    }).parent().addClass('active');
+
+    // for treeview
+    $('ul.treeview-menu a').filter(function() {
+      return this.href == url;
+    }).parentsUntil(".sidebar-menu > .treeview-menu").addClass('active');
+
+  });
 </script>
 <!-- Data Table Initialize -->
 <script>
-  $(function () {
+  $(function() {
     $('#example1').DataTable({
       responsive: true
     })
     $('#example2').DataTable({
-      'paging'      : true,
+      'paging': true,
       'lengthChange': false,
-      'searching'   : false,
-      'ordering'    : true,
-      'info'        : true,
-      'autoWidth'   : false
+      'searching': false,
+      'ordering': true,
+      'info': true,
+      'autoWidth': false
     })
   })
 </script>
 <script>
-  $(function(){
+  $(function() {
     //Initialize Select2 Elements
     $('.select2').select2()
 
     //CK Editor
     CKEDITOR.replace('editor1')
+    CKEDITOR.replace('short_desc')
+    CKEDITOR.replace('desc')
     CKEDITOR.replace('editor2')
+    CKEDITOR.replace('edit_short_desc')
+    CKEDITOR.replace('edit_desc')
   });
 </script>
-
-

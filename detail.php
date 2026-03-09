@@ -10,7 +10,7 @@ $slug = $_GET['product'];
 
 try {
 
-    $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id LEFT JOIN 
+    $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, sub_category.name AS subcatname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id LEFT JOIN 
     category AS sub_category ON sub_category.id = products.subcategory_id  WHERE slug = :slug");
     $stmt->execute(['slug' => $slug]);
     $product = $stmt->fetch();
@@ -62,34 +62,7 @@ if ($ratingNumber && $count) {
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title Page-->
-    <title>Bolakaz</title>
-
-    <!-- Favicon -->
-    <!-- favicon  -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="favicomatic/site.webmanifest">
-
-    <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
-    <!-- CSS only -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-
-    <!-- Libraries Stylesheet -->
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
+    <?php $pageTitle = "Bolakaz | Product Detail"; include "head.php"; ?>
 </head>
 
 <body>
@@ -122,7 +95,7 @@ if ($ratingNumber && $count) {
         </div>
         <div class="row px-xl-5">
             <div class="col-lg-5 pb-5">
-                <div id="product-carousel" class="carousel slide" data-ride="carousel">
+                <div id="product-carousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner border">
                         <?php
                         // Fetch product images from the database
@@ -137,24 +110,28 @@ if ($ratingNumber && $count) {
                         if (!empty($images)) {
                             $activeClass = 'active'; // Add "active" class to the first image
                             foreach ($images as $image) {
-                                $imagePath = !empty($image['file_name']) ? 'images/' . $image['file_name'] : 'images/noimage.jpg';
+                                $imagePath = app_image_url($image['file_name'] ?? '');
                                 echo '<div class="carousel-item ' . $activeClass . '">';
-                                echo '<img loading="lazy" class="w-100 h-100" src="' . $imagePath . '" alt="Product Image">';
+                                echo '<div class="sf-media sf-media-detail">';
+                                echo '<img loading="lazy" class="w-100 h-100" src="' . e($imagePath) . '" alt="Product Image" onerror="this.onerror=null;this.src=\'' . e(app_placeholder_image()) . '\';">';
+                                echo '</div>';
                                 echo '</div>';
                                 $activeClass = ''; // Remove "active" class for subsequent items
                             }
                         } else {
                             // If no images are available, display a placeholder
                             echo '<div class="carousel-item active">';
-                            echo '<img class="w-100 h-100" src="images/noimage.jpg" alt="No Image Available">';
+                            echo '<div class="sf-media sf-media-detail">';
+                            echo '<img class="w-100 h-100" src="' . e(app_placeholder_image()) . '" alt="No Image Available">';
+                            echo '</div>';
                             echo '</div>';
                         }
                         ?>
                     </div>
-                    <a class="carousel-control-prev" href="#product-carousel" data-slide="prev">
+                    <a class="carousel-control-prev" href="#product-carousel" data-bs-slide="prev">
                         <i class="fa fa-2x fa-angle-left text-dark"></i>
                     </a>
-                    <a class="carousel-control-next" href="#product-carousel" data-slide="next">
+                    <a class="carousel-control-next" href="#product-carousel" data-bs-slide="next">
                         <i class="fa fa-2x fa-angle-right text-dark"></i>
                     </a>
                 </div>
@@ -179,7 +156,7 @@ if ($ratingNumber && $count) {
                         <?php printf('%.1f', $average); ?>
                     </div>
                 </div>
-                <h3 class="font-weight-semi-bold mb-4">₦<?php echo number_format($product['price'], 2); ?></h3>
+                <h3 class="font-weight-semi-bold mb-4"><?php echo app_money($product['price']); ?></h3>
                 <p class="mb-4"><?php echo $product['description']; ?></p>
                 <form id="productForm">
                     <!-- Display Sizes -->
@@ -245,11 +222,11 @@ if ($ratingNumber && $count) {
                 </form>
                 <div class="d-flex mb-3">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Caterory:</p>
-                    <?php echo ucwords($product['category_name']); ?>
+                    <?php echo e(ucwords((string)($product['category_name'] ?? ''))); ?>
                 </div>
                 <div class="d-flex mb-3">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Sub Caterory:</p>
-                    <?php echo ucwords($product['name']); ?>
+                    <?php echo e(ucwords((string)($product['subcatname'] ?? 'N/A'))); ?>
                 </div>
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
@@ -276,9 +253,9 @@ if ($ratingNumber && $count) {
         <div class="row px-xl-5">
             <div class="col">
                 <div class="nav nav-tabs justify-content-center border-secondary mb-4">
-                    <a class="nav-item nav-link active" data-toggle="tab" href="#tab-pane-1">Description</a>
-                    <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-2">Information</a>
-                    <a class="nav-item nav-link" id="total_review" data-toggle="tab" href="#tab-pane-3">Reviews</a>
+                    <a class="nav-item nav-link active" data-bs-toggle="tab" href="#tab-pane-1">Description</a>
+                    <a class="nav-item nav-link" data-bs-toggle="tab" href="#tab-pane-2">Information</a>
+                    <a class="nav-item nav-link" id="total_review" data-bs-toggle="tab" href="#tab-pane-3">Reviews</a>
                 </div>
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="tab-pane-1">
@@ -338,7 +315,7 @@ if ($ratingNumber && $count) {
                                     }
                                 ?>
                                     <div class="media mb-4">
-                                        <img src="<?php echo (!empty($rating['photo'])) ? 'images/' . $rating['photo'] : 'images/noimage.jpg'; ?>" alt="Image" class="img-fluid rounded mr-3 mt-1" style="width: 45px;">
+                                        <img src="<?php echo e(app_image_url($rating['photo'] ?? '')); ?>" alt="Image" class="img-fluid rounded mr-3 mt-1" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.onerror=null;this.src='<?php echo e(app_placeholder_image()); ?>';">
                                         <div class="media-body">
                                             <h6><?php echo ucwords($rating['firstname'] . " " . $rating['lastname']); ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
                                             <div class="mb-2">
@@ -524,15 +501,8 @@ if ($ratingNumber && $count) {
 
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
     <!-- Contact Javascript File -->
-    <script src="mail/jqBootstrapValidation.min.js"></script>
-    <script src="mail/contact.js"></script>
     <script src="js/rating.js"></script>
 
     <script>
@@ -557,7 +527,6 @@ if ($ratingNumber && $count) {
 
 
     <!-- Template Javascript -->
-    <!-- <script src="js/main.js"></script> -->
 </body>
 
 </html>

@@ -1,7 +1,8 @@
 <?php include 'session.php'; ?>
 <?php
 if (isset($_SESSION['user'])) {
-    header('location: cart');
+    header('location: cart.php');
+    exit;
 }
 
 if (isset($_SESSION['captcha'])) {
@@ -11,223 +12,119 @@ if (isset($_SESSION['captcha'])) {
     }
 }
 
+$recaptchaSiteKey = trim((string)($_ENV['RECAPTCHA_SITE_KEY'] ?? getenv('RECAPTCHA_SITE_KEY') ?? ''));
+$captchaEnabled = ($recaptchaSiteKey !== '' && !isset($_SESSION['captcha']));
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <!-- Required meta tags-->
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title Page-->
-    <title>Bolakaz</title>
-
-    <!-- Icons font CSS-->
-    <link href="css/vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
-    <link href="css/vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
-    <!-- Font special for pages-->
-    <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-    <!-- favicon  -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="favicomatic/site.webmanifest">
-    <!-- Vendor CSS-->
-    <link href="css/vendor/select2/select2.min.css" rel="stylesheet" media="all">
-    <link href="css/vendor/datepicker/daterangepicker.css" rel="stylesheet" media="all">
-    <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
-    <script src="https://www.google.com/recaptcha/api.js"></script>
-    <!-- CSS only -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous"> -->
-    <!-- Main CSS-->
-    <link href="css/navbar.css" rel="stylesheet" media="all">
-    <link href="css/main.css" rel="stylesheet" media="all">
+    <?php $pageTitle = "Bolakaz | Sign Up"; include "head.php"; ?>
+    <link href="css/auth-modern.css" rel="stylesheet" media="all">
+    <?php if ($captchaEnabled): ?>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <?php endif; ?>
 </head>
 
 <body>
-    <div class="page-wrapper bg-gra-02 p-t-130 p-b-100 font-poppins">
-        <div class="container">
-            <nav class="navbar navbar-expand-lg ftco_navbar ftco-navbar-light" id="ftco-navbar">
-                <div class="container">
-                    <a class="navbar-brand" href="index">bolakaz.enterprise</a>
-                    <div class="social-media order-lg-last">
-                        <p class="mb-0 d-flex">
-                            <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-facebook"><i class="sr-only">Facebook</i></span></a>
-                            <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-twitter"><i class="sr-only">Twitter</i></span></a>
-                            <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-instagram"><i class="sr-only">Instagram</i></span></a>
-                            <a href="#" class="d-flex align-items-center justify-content-center"><span class="fa fa-dribbble"><i class="sr-only">Dribbble</i></span></a>
-                        </p>
-                    </div>
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="fa fa-bars"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="ftco-nav">
-                        <ul class="navbar-nav ml-auto mr-md-3">
-                            <li class="nav-item active"><a href="index" class="nav-link">Home</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">About</a></li>
-                            <li class="nav-item"><a href="signin" class="nav-link">Login</a></li>
-                            <li class="nav-item"><a href="contact" class="nav-link">Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-            <div class="wrapper wrapper--w680 mt-5">
-                <div class="card card-4">
-                    <div class="card-body">
-                        <h2 class="title">Registration Form</h2>
-                        <form action="register.php" method="POST">
+    <main class="auth-shell">
+        <nav class="auth-nav">
+            <a class="auth-brand" href="index">BOLAKAZ.ENTERPRISE</a>
+            <div class="auth-links">
+                <a href="index">Home</a>
+                <a href="signin">Login</a>
+                <a href="contact">Contact</a>
+            </div>
+        </nav>
 
-                            <div class="msg">
-                                <?php
-                                if (isset($_SESSION['error'])) {
-                                    echo "
-                                        <div class='alert alert-danger text-center'>
-                                            <p>" . $_SESSION['error'] . "</p> 
-                                        </div>
-                                        ";
-                                    unset($_SESSION['error']);
-                                }
+        <section class="auth-card">
+            <div class="auth-grid">
+                <aside class="auth-side">
+                    <h1>Create Account</h1>
+                    <p>Join Bolakaz to save favorites, checkout faster, and receive curated premium drops.</p>
+                </aside>
 
-                                if (isset($_SESSION['success'])) {
-                                    echo "
-                                        <div class='alert alert-success text-center'>
-                                            <p>" . $_SESSION['success'] . "</p> 
-                                        </div>
-                                        ";
-                                    unset($_SESSION['success']);
-                                }
-                                ?>
-                            </div>
-                            <div class="row row-space">
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">first name</label>
-                                        <input class="input--style-4" type="text" name="firstname" required>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">last name</label>
-                                        <input class="input--style-4" type="text" name="lastname" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row row-space">
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">password</label>
-                                        <input class="input--style-4" type="password" name="password" required>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">Confirm password</label>
-                                        <input class="input--style-4" type="password" name="repassword" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row row-space">
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">Birthday</label>
-                                        <div class="input-group-icon">
-                                            <input class="input--style-4 js-datepicker" type="text" name="dob" required>
-                                            <i class="zmdi zmdi-calendar-note input-icon js-btn-calendar"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">Gender</label>
-                                        <div class="p-t-10">
-                                            <label class="radio-container m-r-45">Male
-                                                <input type="radio" checked="checked" value="male" name="gender" required>
-                                                <span class="checkmark"></span>
-                                            </label>
-                                            <label class="radio-container">Female
-                                                <input type="radio" value="female" name="gender" required>
-                                                <span class="checkmark"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row row-space">
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">Email</label>
-                                        <input class="input--style-4" type="email" name="email" required>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="input-group">
-                                        <label class="label">Phone Number</label>
-                                        <input class="input--style-4" type="tel" name="phone" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- <div class="input-group">
-                                <label class="label">state</label>
-                                <div class="rs-select2 js-select-simple select--no-search">
-                                    <select name="state" required>
-                                        <option disabled="disabled" selected="selected">Choose option</option>
-                                        <option value="fct">Fct</option>
-                                        <option value="yobe">Yobe</option>
-                                        <option value="kogi">Kogi</option>
-                                    </select>
-                                    <div class="select-dropdown"></div>
-                                </div>
-                            </div> -->
-                            <div class="input-group">
-                                <label class="label">referral</label>
-                                <div class="rs-select2 js-select-simple select--no-search">
-                                    <select name="referral" required>
-                                        <option disabled="disabled" selected="selected">Choose option</option>
-                                        <option value="A friend">A friend</option>
-                                        <option value="facebook">Facebook</option>
-                                        <option value="twitter">Twitter</option>
-                                        <option value="instagram">Instagram</option>
-                                        <option value="ad">From an Ad</option>
-                                    </select>
-                                    <div class="select-dropdown"></div>
-                                </div>
-                            </div>
-                            <?php
-                            if (!isset($_SESSION['captcha'])) {
-                                echo '
-                                                <div class="form-group">
-                                                            <div class="g-recaptcha" data-sitekey="6LczMBskAAAAAKCnR8H_Gs00S35fOjAgygobs2tl"></div>
-                                                        </div>
-                                            ';
-                            }
-                            ?>
-                            <div class="p-t-15">
-                                <button class="btn btn--radius-2 btn--blue w-100" name="submit" type="submit">Submit</button>
-                            </div>
+                <div class="auth-form-wrap">
+                    <h2>Sign Up</h2>
 
-                        </form>
+                    <?php
+                    if (isset($_SESSION['error'])) {
+                        echo "<div class='alert alert-danger' role='alert'>" . e($_SESSION['error']) . "</div>";
+                        unset($_SESSION['error']);
+                    }
+                    if (isset($_SESSION['success'])) {
+                        echo "<div class='alert alert-success' role='alert'>" . e($_SESSION['success']) . "</div>";
+                        unset($_SESSION['success']);
+                    }
+                    if (!$captchaEnabled && !isset($_SESSION['captcha'])) {
+                        echo "<div class='alert alert-warning' role='alert'>Captcha is unavailable in this environment. Signup remains enabled.</div>";
+                    }
+                    ?>
 
-                    </div>
+                    <form action="register.php" method="POST" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="firstname">First name</label>
+                            <input id="firstname" class="form-control" type="text" name="firstname" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="lastname">Last name</label>
+                            <input id="lastname" class="form-control" type="text" name="lastname" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="password">Password</label>
+                            <input id="password" class="form-control" type="password" name="password" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="repassword">Confirm password</label>
+                            <input id="repassword" class="form-control" type="password" name="repassword" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="dob">Birthday</label>
+                            <input id="dob" class="form-control" type="date" name="dob" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="gender">Gender</label>
+                            <select id="gender" class="form-select" name="gender" required>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="email">Email</label>
+                            <input id="email" class="form-control" type="email" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="phone">Phone number</label>
+                            <input id="phone" class="form-control" type="tel" name="phone" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="referral">Referral</label>
+                            <select id="referral" class="form-select" name="referral" required>
+                                <option disabled selected value="">Choose option</option>
+                                <option value="A friend">A friend</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="twitter">Twitter</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="ad">From an Ad</option>
+                            </select>
+                        </div>
+
+                        <?php if ($captchaEnabled): ?>
+                            <div class="col-12">
+                                <div class="g-recaptcha" data-sitekey="<?php echo e($recaptchaSiteKey); ?>"></div>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="col-12">
+                            <button class="btn btn-primary w-100" name="submit" type="submit">Submit</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>
+        </section>
+    </main>
 
-
-        <!-- Jquery JS-->
-        <script src="css/vendor/jquery/jquery.min.js"></script>
-        <!-- Vendor JS-->
-        <script src="css/vendor/select2/select2.min.js"></script>
-        <script src="css/vendor/datepicker/moment.min.js"></script>
-        <script src="css/vendor/datepicker/daterangepicker.js"></script>
-        <!-- JavaScript Bundle with Popper -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
-        <!-- Main JS-->
-        <script src="js/global.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-
-
+    <?php include 'scripts.php'; ?>
 </body>
 
 </html>
-<!-- end document-->

@@ -1,366 +1,215 @@
 <?php
-
-//process.php
 include 'session.php';
 
 $conn = $pdo->open();
 
-$slug = $_GET['category'];
-try {
-    $stmt = $conn->prepare("SELECT * FROM category WHERE cat_slug = ?");
-    $stmt->execute([$slug]);
-    $cat = $stmt->fetch();
-    $catid = $cat['id'];
-} catch (PDOException $e) {
-    echo "There is some problem in connection: " . $e->getMessage();
+if (isset($_GET['page'])) {
+    $data = [];
+    $limit = 8;
+    $page = max(1, (int)$_GET['page']);
+    $start = ($page - 1) * $limit;
+
+    $where = [];
+    $params = [];
+    $searchQuery = [];
+
+    if (!empty($_GET['category'])) {
+        $slug = trim((string)$_GET['category']);
+        $stmt = $conn->prepare('SELECT id FROM category WHERE cat_slug = :slug LIMIT 1');
+        $stmt->execute(['slug' => $slug]);
+        $cat = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!empty($cat['id'])) {
+            $where[] = 'category_id = :category_id';
+            $params['category_id'] = (int)$cat['id'];
+        }
+    }
+
+    if (isset($_GET['gender_filter']) && $_GET['gender_filter'] !== '') {
+        $gender = trim((string)$_GET['gender_filter']);
+        $where[] = 'gender = :gender';
+        $params['gender'] = $gender;
+        $searchQuery[] = 'gender_filter=' . rawurlencode($gender);
+    }
+
+    $allowedPriceFilters = [
+        'price < 1000',
+        'price > 1000 AND price < 5000',
+        'price > 5000 AND price < 10000',
+        'price > 10000 AND price < 20000',
+        'price > 20000',
+    ];
+    if (!empty($_GET['price_filter'])) {
+        $priceFilter = strtoupper(trim((string)$_GET['price_filter']));
+        $normalized = str_replace('&&', 'AND', $priceFilter);
+        if (in_array($normalized, $allowedPriceFilters, true)) {
+            $where[] = $normalized;
+            $searchQuery[] = 'price_filter=' . rawurlencode((string)$_GET['price_filter']);
+        }
+    }
+
+    if (!empty($_GET['color_filter'])) {
+        $colorArray = array_values(array_filter(array_map('trim', explode(',', (string)$_GET['color_filter']))));
+        if (!empty($colorArray)) {
+            $placeholders = [];
+            foreach ($colorArray as $index => $color) {
+                $key = 'color_' . $index;
+                $placeholders[] = ':' . $key;
+                $params[$key] = $color;
+            }
+            $where[] = 'color IN (' . implode(', ', $placeholders) . ')';
+            $searchQuery[] = 'color_filter=' . rawurlencode((string)$_GET['color_filter']);
+        }
+    }
+
+    $whereSql = '';
+    if (!empty($where)) {
+        $whereSql = ' WHERE ' . implode(' AND ', $where);
+    }
+
+    $baseSql = " FROM products{$whereSql}";
+    $countStmt = $conn->prepare("SELECT COUNT(*) AS total{$baseSql}");
+    $countStmt->execute($params);
+    $totalData = (int)$countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+    $listSql = "SELECT id, name, price, photo, color{$baseSql} ORDER BY id ASC LIMIT :start, :limit";
+    $listStmt = $conn->prepare($listSql);
+    foreach ($params as $key => $value) {
+        $listStmt->bindValue(':' . $key, $value);
+    }
+    $listStmt->bindValue(':start', $start, PDO::PARAM_INT);
+    $listStmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $listStmt->execute();
+    $result = $listStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($result as $row) {
+        $data[] = [
+            'catid' => (int)$row['id'],
+            'price' => (float)$row['price'],
+            'name' => $row['name'],
+            'photo' => $row['photo'],
+        ];
+    }
+
+    $paginationHtml = '<nav aria-label="Page navigation"><ul class="pagination justify-content-center mb-3">';
+    $totalLinks = (int)ceil($totalData / $limit);
+    $searchQueryString = !empty($searchQuery) ? '&' . implode('&', $searchQuery) : '';
+    $pageLink = '';
+    $previousLink = '';
+    $nextLink = '';
+    $pageArray = [];
+
+    if ($totalLinks > 0) {
+        if ($totalLinks > 4) {
+            if ($page < 5) {
+                for ($count = 1; $count <= 5; $count++) {
+                    $pageArray[] = $count;
+                }
+                $pageArray[] = '...';
+                $pageArray[] = $totalLinks;
+            } else {
+                $endLimit = $totalLinks - 5;
+                if ($page > $endLimit) {
+                    $pageArray[] = 1;
+                    $pageArray[] = '...';
+                    for ($count = $endLimit; $count <= $totalLinks; $count++) {
+                        $pageArray[] = $count;
+                    }
+                } else {
+                    $pageArray[] = 1;
+                    $pageArray[] = '...';
+                    for ($count = $page - 1; $count <= $page + 1; $count++) {
+                        $pageArray[] = $count;
+                    }
+                    $pageArray[] = '...';
+                    $pageArray[] = $totalLinks;
+                }
+            }
+        } else {
+            for ($count = 1; $count <= $totalLinks; $count++) {
+                $pageArray[] = $count;
+            }
+        }
+
+        for ($count = 0; $count < count($pageArray); $count++) {
+            if ($page === $pageArray[$count]) {
+                $pageLink .= '<li class="page-item active"><a class="page-link" href="#">' . $pageArray[$count] . '</a></li>';
+                $previousId = $pageArray[$count] - 1;
+                $nextId = $pageArray[$count] + 1;
+
+                if ($previousId > 0) {
+                    $previousLink = "<li class='page-item'><a class='page-link' href='javascript:load_product(" . $previousId . ",`" . $searchQueryString . "`)' aria-label='Previous'><span aria-hidden='true'>&laquo;</span><span class='sr-only'>Previous</span></a></li>";
+                } else {
+                    $previousLink = "<li class='page-item disabled'><a class='page-link' href='#'><span aria-hidden='true'>&laquo;</span><span class='sr-only'>Previous</span></a></li>";
+                }
+
+                if ($nextId >= $totalLinks) {
+                    $nextLink = "<li class='page-item disabled'><a class='page-link' href='#'><span aria-hidden='true'>&raquo;</span><span class='sr-only'>Next</span></a></li>";
+                } else {
+                    $nextLink = "<li class='page-item'><a class='page-link' href='javascript:load_product(" . $nextId . ",`" . $searchQueryString . "`)'><span aria-hidden='true'>&raquo;</span><span class='sr-only'>Next</span></a></li>";
+                }
+            } else {
+                if ($pageArray[$count] === '...') {
+                    $pageLink .= '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                } else {
+                    $pageLink .= '<li class="page-item"><a class="page-link" href="javascript:load_product(' . $pageArray[$count] . ', `' . $searchQueryString . '`)">' . $pageArray[$count] . '</a></li>';
+                }
+            }
+        }
+    }
+
+    $paginationHtml .= $previousLink . $pageLink . $nextLink . '</ul></nav>';
+
+    echo json_encode([
+        'data' => $data,
+        'pagination' => $paginationHtml,
+        'total_data' => $totalData,
+    ]);
 }
 
-if(isset($_GET["page"]))
-{
+if (isset($_GET['action'])) {
+    $data = [];
 
-	$data = array();
+    $query = "SELECT gender, COUNT(id) AS Total FROM products GROUP BY gender";
+    foreach ($conn->query($query) as $row) {
+        $data['gender'][] = [
+            'name' => $row['gender'],
+            'total' => $row['Total'],
+        ];
+    }
 
-	$limit = 8;
+    $query = "SELECT color, COUNT(id) AS Total FROM products GROUP BY color";
+    foreach ($conn->query($query) as $row) {
+        $data['color'][] = [
+            'name' => $row['color'],
+            'total' => $row['Total'],
+        ];
+    }
 
-	$page = 1;
+    $query = "SELECT size, COUNT(id) AS Total FROM products GROUP BY size";
+    foreach ($conn->query($query) as $row) {
+        $data['size'][] = [
+            'name' => $row['size'],
+            'total' => $row['Total'],
+        ];
+    }
 
-	if($_GET["page"] > 1)
-	{
-		$start = (($_GET["page"] - 1) * $limit);
+    $priceRange = [
+        'price < 1000' => 'Under 1000',
+        'price > 1000 AND price < 5000' => '1000 - 5000',
+        'price > 5000 AND price < 10000' => '5000 - 10000',
+        'price > 10000 AND price < 20000' => '10000 - 20000',
+        'price > 20000' => 'Over 20000',
+    ];
 
-		$page = $_GET["page"];
-	}
-	else
-	{
-		$start = 0;
-	}
+    foreach ($priceRange as $condition => $label) {
+        $rangeQuery = "SELECT COUNT(id) AS Total FROM products WHERE {$condition}";
+        $subData = ['name' => $label, 'total' => 0, 'condition' => $condition];
+        foreach ($conn->query($rangeQuery) as $subRow) {
+            $subData['total'] = (int)$subRow['Total'];
+        }
+        $data['price'][] = $subData;
+    }
 
-	$where = '';
-
-	$search_query = '';
-
-	if(isset($_GET["gender_filter"]))
-	{
-		$where .= ' gender = "'.trim($_GET["gender_filter"]).'" ';
-
-		$search_query .= '&gender_filter='.trim($_GET["gender_filter"]);
-	}
-
-	if(isset($_GET["price_filter"]))
-	{
-		if($where != '')
-		{
-			$where .= ' AND '. trim($_GET["price_filter"]);
-		}
-		else
-		{
-			$where .= trim($_GET["price_filter"]);
-		}
-
-		$search_query .= '&price_filter='.trim($_GET["price_filter"]);
-	}
-
-	if(isset($_GET["color_filter"]))
-	{
-		$color_array = explode(",", trim($_GET["color_filter"]));
-
-		if(count($color_array) > 0)
-		{
-			//if(count($color_array) > 1)
-			//{
-				if($where != '')
-				{
-					$color_condition = '';
-					foreach($color_array as $color)
-					{
-						if(trim($color) != '')
-						{
-							$color_condition .= 'color = "'.trim($color).'" OR ';
-						}
-					}
-					if($color_condition != '')
-					{
-						$where .= ' AND ('.substr($color_condition, 0, -4).')';
-					}
-				}
-				else
-				{
-					$color_condition = '';
-					foreach($color_array as $color)
-					{
-						if(trim($color) != '')
-						{
-							$color_condition .= 'color = "'.trim($color).'" OR ';
-						}
-					}
-					if($color_condition != '')
-					{
-						$where .= substr($color_condition, 0, -4);
-					}
-				}
-			//}
-			$search_query .= '&color_filter=' . trim($_GET["color_filter"]);
-		}
-	}
-
-	if($where != '')
-	{
-		$where = 'WHERE ' . $where;
-	}
-
-	$query = "
-	SELECT name, price, images, color 
-	FROM sample_data 
-	".$where."
-	ORDER BY sample_id ASC
-	";
-
-	$filter_query = $query . ' LIMIT ' . $start . ', ' . $limit . '';
-
-	$statement = $conn->prepare($query);
-
-	$statement->execute();
-
-	$total_data = $statement->rowCount();
-
-	$statement = $conn->prepare($filter_query);
-
-	$statement->execute();
-
-	$result = $statement->fetchAll();
-
-	foreach($result as $row)
-	{
-		// $img_arr = explode(" ~ ", $row['images']);
-
-		$data[] = array(
-				'catid'			=>	$row["id"],
-				'price'			=>	$row['price'],
-				'name'			=>	$row['name'],
-				'photo'			=>	$row['photo']
-		);
-
-	}
-
-	$pagination_html = '
-	<nav aria-label="Page navigation">
-  		<ul class="pagination justify-content-center mb-3">
-	';
-
-	$total_links = ceil($total_data/$limit);
-
-	$previous_link = '';
-
-	$next_link = '';
-
-	$page_link = '';
-
-	$page_array = '';
-
-	if($total_links > 0)
-	{
-		if($total_links > 4)
-		{
-			if($page < 5)
-			{
-				for($count = 1; $count <= 5; $count++)
-				{
-					$page_array[] = $count;
-				}
-				$page_array[] = '...';
-				$page_array[] = $total_links;
-			}
-			else
-			{
-				$end_limit = $total_links - 5;
-
-				if($page > $end_limit)
-				{
-					$page_array[] = 1;
-
-					$page_array[] = '...';
-
-					for($count = $end_limit; $count <= $total_links; $count++)
-					{
-						$page_array[] = $count;
-					}
-				}
-				else
-				{
-					$page_array[] = 1;
-
-					$page_array[] = '...';
-
-					for($count = $page - 1; $count <= $page + 1; $count++)
-					{
-						$page_array[] = $count;
-					}
-
-					$page_array[] = '...';
-
-					$page_array[] = $total_links;
-				}
-			}
-		}
-		else
-		{
-			for($count = 1; $count <= $total_links; $count++)
-			{
-				$page_array[] = $count;
-			}
-		}
-
-		for($count = 0; $count < $count($page_array); $count++)
-		{
-			if($page == $page_array[$count])
-			{
-				$page_link .= '
-				<li class="page-item active">
-		      		<a class="page-link" href="#">'.$page_array[$count].'</a>
-		    	</li>
-				';
-
-				$previous_id = $page_array[$count] - 1;
-
-				if($previous_id > 0)
-				{
-					$previous_link = "<li class='page-item'><a class='page-link' href='javascript:load_product(".$previous_id.",`".$search_query."`)' aria-label='Previous'><span aria-hidden='true'>&laquo;</span>
-                                        <span class='sr-only'>Previous</span></a></li>";
-				}
-				else
-				{
-					$previous_link = "
-					<li class='page-item disabled'>
-				        <a class='page-link' href='#'> <span aria-hidden='true'>&laquo;</span>
-                                        <span class='sr-only'>Previous</span></a>
-				    </li>
-					";
-				}
-
-				$next_id = $page_array[$count] + 1;
-
-				if($next_id >= $total_links)
-				{
-					$next_link = "
-					<li class='page-item disabled'>
-		        		<a class='page-link' href='#'><span aria-hidden='true'>&raquo;</span>
-                                        <span class='sr-only'>Next</span></a>
-		      		</li>
-					";
-				}
-				else
-				{
-					$next_link = "
-					<li class='page-item'><a class='page-link' href='javascript:load_product(".$next_id.",`".$search_query."`)'><span aria-hidden='true'>&raquo;</span>
-                                        <span class='sr-only'>Next </span></a></li>
-					";
-				}
-
-			}
-			else
-			{
-				if($page_array[$count] == '...')
-				{
-					$page_link .= '
-					<li class="page-item disabled">
-		          		<a class="page-link" href="#">...</a>
-		      		</li>
-					';
-				}
-				else
-				{
-					$page_link .= '
-					<li class="page-item">
-						<a class="page-link" href="javascript:load_product('.$page_array[$count].', `'.$search_query.'`)">'.$page_array[$count].'</a>
-					</li>
-					';
-				}
-			}
-		}
-
-	}
-
-	$pagination_html .= $previous_link . $page_link . $next_link;
-
-
-	$pagination_html .= '
-		</ul>
-	</nav>
-	';
-
-	$output = array(
-		'data'				=>	$data,
-		'pagination'		=>	$pagination_html,
-		'total_data'		=>	$total_data
-	);
-
-	echo json_encode($output);
-
+    echo json_encode($data);
 }
 
-
-if(isset($_GET["action"]))
-{
-	$data = array();
-
-	$query = "
-	SELECT gender, COUNT(id) AS Total FROM product GROUP BY gender
-	";
-
-	foreach($conn->query($query) as $row)
-	{
-		$sub_data = array();
-		$sub_data['name'] = $row['gender'];
-		$sub_data['total'] = $row['Total'];
-		$data['gender'][] = $sub_data;
-	}
-
-	$query = "
-	SELECT color, COUNT(id) AS Total FROM product GROUP BY co
-	";
-
-	foreach($conn->query($query) as $row)
-	{
-		$sub_data = array();
-		$sub_data['name'] = $row['color'];
-		$sub_data['total'] = $row['Total'];
-		$data['color'][] = $sub_data;
-	}
-	$query = "
-	SELECT size, COUNT(id) AS Total FROM product GROUP BY size
-	";
-
-	foreach($conn->query($query) as $row)
-	{
-		$sub_data = array();
-		$sub_data['name'] = $row['color'];
-		$sub_data['total'] = $row['Total'];
-		$data['color'][] = $sub_data;
-	}
-
-	$price_range = array(
-		'price < 1000'						=>	'Under 1000',
-		'price > 1000 && price < 5000'		=>	'1000 - 5000', 
-		'price > 5000 && price < 10000'		=>	'5000 - 10000',
-		'price > 10000 && price < 20000'	=>	'10000 - 20000',
-		'price > 20000'						=>	'Over 20000'
-	);
-
-	foreach($price_range as $key => $value)
-	{
-		$query = "
-		SELECT COUNT(id) AS Total FROM product 
-		WHERE ".$key." 
-		";
-		$sub_data = array();
-		foreach($conn->query($query) as $sub_row)
-		{
-			$sub_data['name'] = $value;
-			$sub_data['total'] = $sub_row['Total'];
-			$sub_data['condition'] = $key;		
-		}
-		$data['price'][] = $sub_data;
-	}
-
-	echo json_encode($data);
-}

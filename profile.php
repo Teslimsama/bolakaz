@@ -8,35 +8,7 @@ if (!isset($_SESSION['user'])) {
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title Page-->
-    <title>Bolakaz</title>
-
-    <!-- Favicon -->
-    <link href="img/favicon.ico" rel="icon">
-
-    <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- favicon  -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="favicomatic/site.webmanifest">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
-    <!-- CSS only -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-
-
-    <!-- Libraries Stylesheet -->
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
+    <?php $pageTitle = "Bolakaz | Profile"; include "head.php"; ?>
 </head>
 
 <body>
@@ -61,7 +33,7 @@ if (!isset($_SESSION['user'])) {
             <div class="row gx-4 mb-2">
                 <div class="col-auto ">
                     <div class="" style=" width: 110px !important; height: 210px !important;">
-                        <img src="<?php echo (!empty($user['photo'])) ? 'images/' . $user['photo'] : 'images/profile.jpg'; ?>" style=" border-radius: 8px;" width="100%">
+                        <img src="<?php echo e(app_image_url($user['photo'] ?? '')); ?>" style=" border-radius: 8px; object-fit: cover; height: 100%;" width="100%" onerror="this.onerror=null;this.src='<?php echo e(app_placeholder_image()); ?>';">
                     </div>
 
                 </div>
@@ -73,11 +45,11 @@ if (!isset($_SESSION['user'])) {
                     </div>
                     <ul class="list-group">
 
-                        <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; <?php echo $user['firstname'] . ' ' . $user['lastname']; ?>
-                        <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Mobile:</strong> &nbsp; <?php echo $user['phone']; ?></li>
-                        <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Email:</strong> &nbsp; <?php echo $user['email']; ?></li>
-                        <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Address:</strong> &nbsp; <?php echo (!empty($user['address'])) ? $user['address'] : 'N/a'; ?></li>
-                        <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Member since:</strong> &nbsp;<?php echo date('M d, Y', strtotime($user['created_on'])); ?></li>
+                        <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; <?php echo e(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')); ?>
+                        <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Mobile:</strong> &nbsp; <?php echo e($user['phone'] ?? ''); ?></li>
+                        <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Email:</strong> &nbsp; <?php echo e($user['email'] ?? ''); ?></li>
+                        <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Address:</strong> &nbsp; <?php echo e(!empty($user['address']) ? $user['address'] : 'N/a'); ?></li>
+                        <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Member since:</strong> &nbsp;<?php echo e(date('M d, Y', strtotime($user['created_on']))); ?></li>
 
                 </div>
             </div>
@@ -117,7 +89,7 @@ if (!isset($_SESSION['user'])) {
 	        										<td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
 	        										<td>" . $row['tx_ref'] . "</td>
 	        										<td>" . $row['Status'] . "</td>
-	        										<td>₦" . number_format($total, 2) . "</td>
+	        										<td>" . app_money($total) . "</td>
 	        										<td><button class='btn btn-sm btn-flat btn-primary transact' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</button></td>
 	        									</tr>
 	        								";
@@ -174,19 +146,11 @@ if (!isset($_SESSION['user'])) {
 
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
 
     <!-- Contact Javascript File -->
-    <script src="mail/jqBootstrapValidation.min.js"></script>
-    <script src="mail/contact.js"></script>
 
     <!-- Template Javascript -->
-    <script src="js/main.js"></script>
 </body>
 
 </html>

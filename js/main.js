@@ -33,8 +33,25 @@
     });
 
 
+    function initCarousel(selector, options) {
+        if (!$.fn || typeof $.fn.owlCarousel !== 'function') {
+            return;
+        }
+
+        var $el = $(selector);
+        if (!$el.length) {
+            return;
+        }
+
+        try {
+            $el.owlCarousel(options);
+        } catch (err) {
+            console.warn('Owl init failed for', selector, err);
+        }
+    }
+
     // Vendor carousel
-    $('.vendor-carousel').owlCarousel({
+    initCarousel('.vendor-carousel', {
         loop: true,
         margin: 29,
         nav: false,
@@ -61,7 +78,7 @@
 
 
     // Related carousel
-    $('.related-carousel').owlCarousel({
+    initCarousel('.related-carousel', {
         loop: true,
         margin: 29,
         nav: false,
@@ -101,4 +118,3 @@
     });
     
 })(jQuery);
-

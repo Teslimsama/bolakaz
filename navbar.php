@@ -1,80 +1,54 @@
-      <div class="container-fluid">
-          <div class="row border-top px-xl-5">
-              <div class="col-lg-3 d-none d-lg-block">
-                  <a class="btn shadow-none d-flex align-items-center justify-content-between bg-primary text-white w-100" data-toggle="collapse" href="#navbar-vertical" style="height: 65px; margin-top: -1px; padding: 0 30px;">
-                      <h6 class="m-0">Categories</h6>
-                      <i class="fa fa-angle-down text-dark"></i>
-                  </a>
-                  <nav class="position-absolute navbar navbar-vertical navbar-light align-items-start p-0 border border-top-0 border-bottom-0 bg-light collapse show" style="width: 21.51%; " id="navbar-vertical">
-                      <div class="navbar-nav w-100 overflow-hidden" style="height: 410px">
+<?php
+include_once __DIR__ . '/storefront.php';
 
-                          <?php
-
-                            $conn = $pdo->open();
-                            try {
-                                $stmt = $conn->prepare("SELECT * FROM category");
-                                $stmt->execute();
-                                foreach ($stmt as $row) {
-                                    echo "
-    <a class='nav-item nav-link' href='shop.php?category=" . urlencode($row['cat_slug']) . "'>" .
-                                        htmlspecialchars(ucwords($row['name'])) .
-                                        "</a>
-";
-                                }
-                            } catch (PDOException $e) {
-                                echo "There is some problem in connection: " . $e->getMessage();
-                            }
-
-                            $pdo->close();
-
-                            ?>
-
-                      </div>
-                  </nav>
-              </div>
-              <div class="col-lg-9">
-                  <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-0">
-                      <a href="index" class="text-decoration-none d-block d-lg-none">
-                          <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">B</span>Bolakaz.Ent</h1>
-                      </a>
-                      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
-                          <span class="navbar-toggler-icon"></span>
-                      </button>
-                      <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
-                          <div class="navbar-nav mr-auto py-0">
-                              <a href="index" class="nav-item nav-link active">Home</a>
-                              <a href="shop" class="nav-item nav-link active">Shop</a>
-                              <!-- <div class="nav-item dropdown">
-                                  <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
-                                  <div class="dropdown-menu rounded-0 m-0">
-                                      <a href="cart" class="dropdown-item">Shopping Cart</a>
-                                      <a href="checkout" class="dropdown-item">Checkout</a>
-                                    </div>
-                                </div> -->
-                              <a href="cart" class="nav-item nav-link">Shopping Cart</a>
-                              <a href="checkout" class="nav-item nav-link">Checkout</a>
-                              <a href="contact" class="nav-item nav-link">Contact</a>
-                              <a href="profile" class="nav-item nav-link">Profile</a>
-                          </div>
-                          <div class="navbar-nav ml-auto py-0">
-
-                              <?php
-                                if (isset($_SESSION['user'])) {
-                                    $image = (!empty($user['photo'])) ? 'images/' . $user['photo'] : 'images/profile.jpg';
-                                    echo "
-                                    <a href='logout' class='nav-item nav-link'>Logout</a>
-                                    ";
-                                } else {
-                                    echo "
-                            <a href='signin' class='nav-item nav-link'>Login</a>
-                            <a href='signup' class='nav-item nav-link'>Register</a>
-              ";
-                                }
-                                ?>
-                          </div>
-                      </div>
-                  </nav>
-
-              </div>
-          </div>
+if (!storefront_use_v2()) {
+    include __DIR__ . '/legacy/navbar.legacy.php';
+    return;
+}
+?>
+<div class="sf-nav-wrap">
+  <div class="sf-nav-container">
+    <div class="row g-0 align-items-stretch">
+      <div class="col-lg-3 sf-categories">
+        <button class="sf-categories-btn d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#sfCategoryPanel" aria-expanded="false" aria-controls="sfCategoryPanel">
+          <span>Collections</span>
+          <i class="fa fa-chevron-down"></i>
+        </button>
+        <div class="collapse" id="sfCategoryPanel">
+          <nav class="sf-categories-panel">
+            <?php
+            $conn = $pdo->open();
+            try {
+              $stmt = $conn->prepare("SELECT name, cat_slug FROM category ORDER BY name ASC");
+              $stmt->execute();
+              foreach ($stmt as $row) {
+                echo "<a class='nav-link' href='shop.php?category=" . urlencode((string)$row['cat_slug']) . "'>" . htmlspecialchars(ucwords((string)$row['name']), ENT_QUOTES, 'UTF-8') . "</a>";
+              }
+            } catch (PDOException $e) {
+              echo "<span class='nav-link'>Unable to load categories</span>";
+            }
+            $pdo->close();
+            ?>
+          </nav>
+        </div>
       </div>
+      <div class="col-lg-9">
+        <nav class="navbar navbar-expand-lg sf-nav">
+          <button class="navbar-toggler ms-auto my-2" type="button" data-bs-toggle="collapse" data-bs-target="#sfMainNav" aria-controls="sfMainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="sfMainNav">
+            <div class="navbar-nav me-auto">
+              <a href="index" class="nav-link <?php echo storefront_active_nav('home'); ?>">Home</a>
+              <a href="shop" class="nav-link <?php echo storefront_active_nav('shop'); ?>">Shop</a>
+              <a href="cart" class="nav-link <?php echo storefront_active_nav('cart'); ?>">Cart</a>
+              <a href="checkout" class="nav-link <?php echo storefront_active_nav('checkout'); ?>">Checkout</a>
+              <a href="contact" class="nav-link <?php echo storefront_active_nav('contact'); ?>">Contact</a>
+              <a href="profile" class="nav-link <?php echo storefront_active_nav('profile'); ?>">Profile</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

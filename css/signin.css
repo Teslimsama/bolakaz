@@ -124,7 +124,7 @@ input {
 	padding: 1em;
 	width: 100%;
 	font-weight: 500;
-	background-color: #a18cd1;
+	background-color: #128278;
 	border-radius: 6px;
 	color: #FFF;
 	border: 0;
@@ -133,7 +133,7 @@ input {
     outline: 0;
 }
 .action-button:hover {
-  background: #7c58cf;
+  background: #0f6f67;
 }
 .card-info {
 	padding: 1rem 1rem;
@@ -148,5 +148,7 @@ input {
 		color: #6658d3;
 		text-decoration: none;
 	}
+
+
 
 

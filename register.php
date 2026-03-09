@@ -1,6 +1,7 @@
 <?php
 
 include 'session.php';
+require_once __DIR__ . '/lib/mailer.php';
 
 if (isset($_POST['submit'])) {
 	$firstname = $_POST['firstname'];
@@ -18,20 +19,21 @@ if (isset($_POST['submit'])) {
 	$_SESSION['email'] = $email;
 
 	if (!isset($_SESSION['captcha'])) {
-		$secret = "6LczMBskAAAAAGA4E9ZFVrKdTKU5KISy-0-AGGSg";
-		$response = $_POST['g-recaptcha-response'];
-		$remoteip = $_SERVER['REMOTE_ADDR'];
-		$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
-		$data = file_get_contents($url);
-		$row = json_decode($data, true);
+		$secret = $_ENV['RECAPTCHA_SECRET_KEY'] ?? getenv('RECAPTCHA_SECRET_KEY') ?? '';
+		$response = $_POST['g-recaptcha-response'] ?? '';
+		if ($secret !== '' && $response !== '') {
+			$remoteip = $_SERVER['REMOTE_ADDR'];
+			$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
+			$data = file_get_contents($url);
+			$row = json_decode($data, true);
 
-
-		if ($row['success'] == true) {
-			$_SESSION['captcha'] = time() + (10 * 60);
-		} else {
-			$_SESSION['error'] = 'Please answer recaptcha correctly';
-			header('location: signup');
-			exit();
+			if (!empty($row['success']) && $row['success'] == true) {
+				$_SESSION['captcha'] = time() + (10 * 60);
+			} else {
+				$_SESSION['error'] = 'Please answer recaptcha correctly';
+				header('location: signup');
+				exit();
+			}
 		}
 	}
 
@@ -51,9 +53,8 @@ if (isset($_POST['submit'])) {
 			$now = date('Y-m-d');
 			$password = password_hash($password, PASSWORD_DEFAULT);
 
-			//generate code
-			$set = '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-			$code = substr(str_shuffle($set), 0, 12);
+			// Generate activation token.
+			$code = bin2hex(random_bytes(16));
 
 			try {
 				$stmt = $conn->prepare("INSERT INTO users (email, password, firstname, lastname, gender,dob, phone, activate_code, created_on, referral) VALUES (:email, :password, :firstname, :lastname, :gender, :dob, :phone, :code, :now, :referral)");
@@ -66,28 +67,33 @@ if (isset($_POST['submit'])) {
 
 
 				try {
-					$to = $email; // Change this email to your //
-					$subject = "$to";
-					$header  = 'MIME-Version: 1.0' . "\r\n";
-					$header .= 'Content-Type: text/html; charset=ISO-8859-1' . "\r\n";
-					$message = "
-						<h2>Thank you for Registering.</h2>
-						<p>Your Account:</p>
-						<p>Email: " . $email . "</p>
-						<p>Password: " . $_POST['password'] . "</p>
-						<p>Please click the link below to activate your account.</p>
-						<a href='https://bolakaz.unibooks.com.ng/activate.php?code=" . $code . "&user=" . $userid . "'>Activate Account</a>
-					";
-					$From = "info@bolakaz.unibooks.com.ng";
-					if(mail($to, $subject, $message, $header)){
-					unset($_SESSION['firstname']);
-					unset($_SESSION['lastname']);
-					unset($_SESSION['email']);
-
-					$_SESSION['success'] = 'Account created. Check your email to activate.';}
+					$activateUrl = app_base_url() . '/activate.php?code=' . urlencode($code) . '&user=' . urlencode((string)$userid);
+					$subject = 'Activate your Bolakaz account';
+					$contentHtml = '
+						<p>Welcome to Bolakaz, ' . e($firstname) . '.</p>
+						<p>Confirm your email to activate your account and continue shopping.</p>
+						<p>If the button does not open, copy this URL into your browser:</p>
+						<p><a href="' . e($activateUrl) . '" style="color:#128278;word-break:break-all;">' . e($activateUrl) . '</a></p>
+					';
+					$htmlBody = app_email_template(
+						'Confirm Your Email',
+						'Activate your account to complete setup.',
+						$contentHtml,
+						'Activate Account',
+						$activateUrl
+					);
+					$textBody = "Activate your Bolakaz account\n\nUse this link:\n" . $activateUrl;
+					if (app_send_email($email, $subject, $htmlBody, $textBody)) {
+						unset($_SESSION['firstname']);
+						unset($_SESSION['lastname']);
+						unset($_SESSION['email']);
+						$_SESSION['success'] = 'Account created. Check your email to activate.';
+					} else {
+						$_SESSION['error'] = 'Account created, but we could not send activation email now. Please try again.';
+					}
 					header('location: signup');
-				} catch (Exception $e) {
-					$_SESSION['error'] = 'Message could not be sent. Mailer Error: ' . $mail->ErrorInfo;
+				} catch (Throwable $e) {
+					$_SESSION['error'] = 'Message could not be sent at this time.';
 					header('location: signup');
 				}
 			} catch (PDOException $e) {

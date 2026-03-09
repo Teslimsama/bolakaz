@@ -1,53 +1,61 @@
 <?php
-	include 'session.php';
+include 'session.php';
 
-	if(!isset($_GET['code']) OR !isset($_GET['user'])){
-		header('location: index.php');
-	    exit(); 
-	}
+$token = trim((string)($_GET['code'] ?? ''));
+$userId = (int)($_GET['user'] ?? 0);
+$path = 'password_reset.php?code=' . urlencode($token) . '&user=' . $userId;
 
-	$path = 'password_reset.php?code='.$_GET['code'].'&user='.$_GET['user'];
+if (!isset($_POST['reset'])) {
+    $_SESSION['error'] = 'Set your new password first.';
+    header('location: ' . $path);
+    exit();
+}
 
-	if(isset($_POST['reset'])){
-		$password = $_POST['password'];
-		$repassword = $_POST['repassword'];
+$password = (string)($_POST['password'] ?? '');
+$repassword = (string)($_POST['repassword'] ?? '');
 
-		if($password != $repassword){
-			$_SESSION['error'] = 'Passwords did not match';
-			header('location: '.$path);
-		}
-		else{
-			$conn = $pdo->open();
+if (strlen($password) < 8) {
+    $_SESSION['error'] = 'Password must be at least 8 characters.';
+    header('location: ' . $path);
+    exit();
+}
 
-			$stmt = $conn->prepare("SELECT *, COUNT(*) AS numrows FROM users WHERE reset_code=:code AND id=:id");
-			$stmt->execute(['code'=>$_GET['code'], 'id'=>$_GET['user']]);
-			$row = $stmt->fetch();
+if ($password !== $repassword) {
+    $_SESSION['error'] = 'Passwords did not match.';
+    header('location: ' . $path);
+    exit();
+}
 
-			if($row['numrows'] > 0){
-				$password = password_hash($password, PASSWORD_DEFAULT);
+if ($token === '' || $userId <= 0) {
+    $_SESSION['error'] = 'Invalid or expired reset link.';
+    header('location: password_forgot.php');
+    exit();
+}
 
-				try{
-					$stmt = $conn->prepare("UPDATE users SET password=:password WHERE id=:id");
-					$stmt->execute(['password'=>$password, 'id'=>$row['id']]);
+$conn = $pdo->open();
 
-					$_SESSION['success'] = 'Password successfully reset';
-					header('location: signin');
-				}
-				catch(PDOException $e){
-					$_SESSION['error'] = $e->getMessage();
-					header('location: '.$path);
-				}
-			}
-			else{
-				$_SESSION['error'] = 'Code did not match with user';
-				header('location: '.$path);
-			}
+try {
+    $stmt = $conn->prepare("SELECT id, reset_code FROM users WHERE id=:id LIMIT 1");
+    $stmt->execute(['id' => $userId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-			$pdo->close();
-		}
+    if (!$row || !app_validate_reset_code((string)($row['reset_code'] ?? ''), $token)) {
+        $_SESSION['error'] = 'Invalid or expired reset link.';
+        header('location: password_forgot.php');
+        exit();
+    }
 
-	}
-	else{
-		$_SESSION['error'] = 'Input new password first';
-		header('location: '.$path);
-	}
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
+    $update = $conn->prepare("UPDATE users SET password=:password, reset_code='' WHERE id=:id");
+    $update->execute(['password' => $hashed, 'id' => (int)$row['id']]);
+
+    $_SESSION['success'] = 'Password successfully reset. You can now sign in.';
+    header('location: signin');
+    exit();
+} catch (PDOException $e) {
+    $_SESSION['error'] = 'Unable to reset password right now.';
+    header('location: ' . $path);
+    exit();
+} finally {
+    $pdo->close();
+}

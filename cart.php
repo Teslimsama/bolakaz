@@ -1,38 +1,13 @@
 <?php include 'session.php'; ?>
+<?php
+$userId = isset($user['id']) ? (int)$user['id'] : 0;
+?>
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title Page-->
-    <title>Bolakaz</title>
-
-    <!-- favicon  -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicomatic/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicomatic/favicon-16x16.png">
-    <link rel="manifest" href="favicomatic/site.webmanifest">
-
-    <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/e9de02addb.js" crossorigin="anonymous"></script>
-    <!-- CSS only -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-
-    <!-- Magnify -->
-    <link rel="stylesheet" href="magnify/magnify.min.css">
-    <!-- Libraries Stylesheet -->
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
+    <?php $pageTitle = "Bolakaz | Cart"; include "head.php"; ?>
 </head>
 
 <body>
@@ -121,11 +96,11 @@
                             <div class="d-flex justify-content-between mb-3 pt-1">
                                 <h6 class="font-weight-medium">Subtotal</h6>
                                 <h6 class="font-weight-medium">
-                                    ₦ <?php
-                                        if (isset($_SESSION['user'])) {
+                                    <?php
+                                        if ($userId > 0) {
                                             $conn = $pdo->open();
                                             $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
-                                            $stmt->execute(['user_id' => $user['id']]);
+                                            $stmt->execute(['user_id' => $userId]);
 
                                             $total = 0;
                                             foreach ($stmt as $row) {
@@ -134,7 +109,9 @@
                                             }
 
                                             $pdo->close();
-                                            echo $total;
+                                            echo app_money($total);
+                                        } else {
+                                            echo app_money(0);
                                         }
                                         ?>
                                 </h6>
@@ -142,17 +119,17 @@
                             <div class='d-flex justify-content-between'>
                                 <h6 class='font-weight-medium'>Discount</h6>
                                 <h6 class='font-weight-medium'>
-                                     ₦ <?php echo  isset($_SESSION['coupon']) ? $_SESSION['coupon']['value'] : 0 ?>
+                                     <?php echo app_money(isset($_SESSION['coupon']) ? (float)$_SESSION['coupon']['value'] : 0); ?>
                                 </h6>
                             </div>
                             <div class="d-flex justify-content-between mt-2">
                                 <h5 class="font-weight-bold">Total</h5>
                                 <h5 class="font-weight-bold">
-                                    ₦ <?php
-                                        if (isset($_SESSION['user'])) {
+                                    <?php
+                                        if ($userId > 0) {
                                             $conn = $pdo->open();
                                             $stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
-                                            $stmt->execute(['user_id' => $user['id']]);
+                                            $stmt->execute(['user_id' => $userId]);
 
                                             $total = 0;
                                             foreach ($stmt as $row) {
@@ -164,13 +141,15 @@
                                             $total -= $discount;
 
                                             $pdo->close();
-                                            echo $total;
+                                            echo app_money($total);
+                                        } else {
+                                            echo app_money(0);
                                         }
                                         ?>
                                 </h5>
                             </div>
                             <?php
-                            echo (!empty($user['id'])) ?
+                            echo ($userId > 0) ?
                                 '<a href="checkout.php" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>' :
                                 '<a href="signin.php" class="btn btn-primary px-3">Proceed To Checkout</a>';
                             ?>
@@ -303,18 +282,10 @@
     </script>
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
 
     <!-- Contact Javascript File -->
-    <script src="mail/jqBootstrapValidation.min.js"></script>
-    <script src="mail/contact.js"></script>
     <!-- JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
     <!-- Template Javascript -->
-    <script src="js/main.js"></script>
 </body>
 
 </html>

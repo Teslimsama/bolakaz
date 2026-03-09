@@ -4,38 +4,45 @@ $conn = $pdo->open();
 
 if (isset($_POST['login'])) {
 
-	$email = $_POST['email'];
-	$password = $_POST['password'];
+	$email = trim((string)($_POST['email'] ?? ''));
+	$password = (string)($_POST['password'] ?? '');
+
+	if ($email === '' || $password === '') {
+		$_SESSION['error'] = 'Enter your email and password.';
+		$pdo->close();
+		header('location: ../signin');
+		exit();
+	}
 
 	try {
 
-		$stmt = $conn->prepare("SELECT *, COUNT(*) AS numrows FROM users WHERE email = :email");
+		$stmt = $conn->prepare("SELECT id, email, password, status, type FROM users WHERE email = :email LIMIT 1");
 		$stmt->execute(['email' => $email]);
 		$row = $stmt->fetch();
-		if ($row['numrows'] > 0) {
-			if ($row['status']) {
-				if (password_verify($password, $row['password'])) {
-					if ($row['type']) {
-						$_SESSION['admin'] = $row['id'];
-					} else {
-						$_SESSION['user'] = $row['id'];
-					}
+
+		if ($row && password_verify($password, (string)$row['password'])) {
+			if ((int)$row['status'] === 1) {
+				if (!empty($row['type'])) {
+					$_SESSION['admin'] = $row['id'];
 				} else {
-					$_SESSION['error'] = 'Incorrect Password';
+					$_SESSION['user'] = $row['id'];
 				}
+				unset($_SESSION['pending_activation_email']);
 			} else {
-				$_SESSION['error'] = 'Account not activated.';
+				$_SESSION['pending_activation_email'] = (string)$row['email'];
+				$_SESSION['error'] = 'Your account is not activated yet. Check your email or resend activation below.';
 			}
 		} else {
-			$_SESSION['error'] = 'Email not found';
+			$_SESSION['error'] = 'Invalid email or password.';
 		}
 	} catch (PDOException $e) {
-		echo "There is some problem in connection: " . $e->getMessage();
+		$_SESSION['error'] = 'Unable to sign in right now. Please try again later.';
 	}
 } else {
-	$_SESSION['error'] = 'Input login credentails first';
+	$_SESSION['error'] = 'Input login credentials first.';
 }
 
 $pdo->close();
 
 header('location: ../signin');
+exit();
