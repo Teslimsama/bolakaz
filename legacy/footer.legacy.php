@@ -1,4 +1,8 @@
     <!-- Footer Start -->
+    <?php
+    $newsletterNotice = $_SESSION['newsletter_notice'] ?? null;
+    unset($_SESSION['newsletter_notice']);
+    ?>
     <?php include 'scripts.php'; ?>
 
     <div class="container-fluid bg-secondary text-dark mt-5 pt-5">
@@ -61,6 +65,9 @@
                     by
                     <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng">Teslimsama</a>
                 </p>
+                <p class="mb-0 mt-2 text-center text-md-left text-dark">
+                    Powered by <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng" target="_blank" rel="noopener">TBO Digital Solutions</a>
+                </p>
             </div>
             <div class="col-md-6 px-xl-0 text-center text-md-right">
                 <img class="img-fluid" src="img/payments.png" alt="">
@@ -97,3 +104,53 @@
         //if cookie is set then hide the cookie box else show it
         checkCookie != -1 ? cookieBox.classList.add("hide") : cookieBox.classList.remove("hide");
     </script>
+
+    <?php if (is_array($newsletterNotice) && !empty($newsletterNotice['message'])): ?>
+    <div class="modal fade" id="newsletterStatusModal" tabindex="-1" aria-labelledby="newsletterStatusTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newsletterStatusTitle"><?php echo e((string)($newsletterNotice['title'] ?? 'Newsletter Update')); ?></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0"><?php echo e((string)$newsletterNotice['message']); ?></p>
+                </div>
+                <div class="modal-footer">
+                    <?php
+                    $noticeType = (string)($newsletterNotice['type'] ?? 'info');
+                    $btnClass = 'btn-secondary';
+                    if ($noticeType === 'success') {
+                        $btnClass = 'btn-primary';
+                    } elseif ($noticeType === 'danger') {
+                        $btnClass = 'btn-danger';
+                    } elseif ($noticeType === 'info') {
+                        $btnClass = 'btn-info';
+                    }
+                    ?>
+                    <button type="button" class="btn <?php echo e($btnClass); ?>" data-dismiss="modal">Okay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            var modalEl = document.getElementById('newsletterStatusModal');
+            if (!modalEl) {
+                return;
+            }
+            if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
+                window.jQuery(modalEl).modal('show');
+                return;
+            }
+            if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+                var modal = new window.bootstrap.Modal(modalEl);
+                modal.show();
+                return;
+            }
+            alert(<?php echo json_encode((string)$newsletterNotice['message']); ?>);
+        })();
+    </script>
+    <?php endif; ?>

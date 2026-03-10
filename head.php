@@ -25,8 +25,8 @@ if (!storefront_use_v2()) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 <link href="magnify/magnify.min.css" rel="stylesheet">
-<link href="css/style.css" rel="stylesheet">
-<link href="css/storefront-v2.css" rel="stylesheet">
+<link href="css/style.css?v=<?php echo file_exists(__DIR__ . '/css/style.css') ? filemtime(__DIR__ . '/css/style.css') : time(); ?>" rel="stylesheet">
+<link href="css/storefront-v2.css?v=<?php echo file_exists(__DIR__ . '/css/storefront-v2.css') ? filemtime(__DIR__ . '/css/storefront-v2.css') : time(); ?>" rel="stylesheet">
 
 <meta name="csrf-token" content="<?php echo function_exists('app_get_csrf_token') ? htmlspecialchars(app_get_csrf_token(), ENT_QUOTES, 'UTF-8') : ''; ?>">
 

@@ -1,113 +1,121 @@
 <?php
-
 require __DIR__ . '/vendor/autoload.php';
-
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-// session_start();
+$dotenv->safeLoad();
+
 include_once 'session.php';
+require_once __DIR__ . '/lib/payment_checkout.php';
 
-// Validate and sanitize input
-$status = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_SPECIAL_CHARS);
-$transactionId = filter_input(INPUT_GET, 'transaction_id', FILTER_SANITIZE_SPECIAL_CHARS);
+if (empty($user['id'])) {
+    $_SESSION['error'] = 'Please sign in before verifying payment.';
+    header('location: checkout#payment');
+    exit;
+}
 
-if (empty($status) || empty($transactionId) ) {
-	$_SESSION['error'] = 'Invalid transaction details.';
-	header("location: checkout#payment");
-	exit;
+$transactionId = trim((string)filter_input(INPUT_GET, 'transaction_id', FILTER_SANITIZE_SPECIAL_CHARS));
+if ($transactionId === '') {
+    $_SESSION['error'] = 'Missing transaction details.';
+    header('location: checkout#payment');
+    exit;
+}
+
+$secret = trim((string)($_ENV['FLUTTERWAVE_SECRET_KEY'] ?? getenv('FLUTTERWAVE_SECRET_KEY') ?? ''));
+if ($secret === '') {
+    $_SESSION['error'] = 'Payment configuration is missing.';
+    header('location: checkout#payment');
+    exit;
+}
+
+$intent = app_get_payment_intent();
+if (!is_array($intent) || ($intent['provider'] ?? '') !== 'flutterwave') {
+    $_SESSION['error'] = 'Payment session expired. Please retry checkout.';
+    header('location: checkout#payment');
+    exit;
 }
 
 $curl = curl_init();
-
-curl_setopt_array($curl, array(
-	CURLOPT_URL => "https://api.flutterwave.com/v3/transactions/{$transactionId}/verify",
-	CURLOPT_RETURNTRANSFER => true,
-	CURLOPT_ENCODING => "",
-	CURLOPT_MAXREDIRS => 10,
-	CURLOPT_TIMEOUT => 30,
-	CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	CURLOPT_CUSTOMREQUEST => "GET",
-	CURLOPT_HTTPHEADER => array(
-		"Authorization: Bearer " . $_ENV['FLUTTERWAVE_SECRET_KEY'],
-		"Content-Type: application/json"
-	),
-));
-
+curl_setopt_array($curl, [
+    CURLOPT_URL => 'https://api.flutterwave.com/v3/transactions/' . rawurlencode($transactionId) . '/verify',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CUSTOMREQUEST => 'GET',
+    CURLOPT_HTTPHEADER => [
+        'Authorization: Bearer ' . $secret,
+        'Content-Type: application/json',
+    ],
+]);
 $response = curl_exec($curl);
 $err = curl_error($curl);
-
 curl_close($curl);
 
 if ($err) {
-	$_SESSION['error'] = 'Payment verification error: ' . $err;
-	header("location: checkout#payment");
-	exit;
-} else {
-	$result = json_decode($response);
+    $_SESSION['error'] = 'Payment verification failed. Please try again.';
+    header('location: checkout#payment');
+    exit;
+}
 
-	if ($result->status == 'success' && $result->data->status == 'successful') {
-		$status = $result->data->status;
-		$email = filter_var($result->data->customer->email, FILTER_SANITIZE_EMAIL);
-		$phone = filter_var($result->data->meta->phone, FILTER_SANITIZE_SPECIAL_CHARS);
-		$payid = filter_var($result->data->tx_ref, FILTER_SANITIZE_SPECIAL_CHARS);
-		$amount = filter_var($result->data->amount, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-		$address1 = filter_var($result->data->meta->address1, FILTER_SANITIZE_SPECIAL_CHARS);
-		$address2 = filter_var($result->data->meta->address2, FILTER_SANITIZE_SPECIAL_CHARS);
-		$id = filter_var($result->data->meta->id, FILTER_SANITIZE_NUMBER_INT);
+$result = json_decode((string)$response, true);
+if (!is_array($result) || ($result['status'] ?? '') !== 'success' || !isset($result['data'])) {
+    $_SESSION['error'] = 'Invalid verification response.';
+    header('location: checkout#payment');
+    exit;
+}
 
-		date_default_timezone_set('Africa/Lagos');
-		$date = date("Y-m-d");
+$data = $result['data'];
+$status = (string)($data['status'] ?? '');
+$currency = strtoupper((string)($data['currency'] ?? ''));
+$txRef = (string)($data['tx_ref'] ?? '');
+$gatewayTxId = (int)($data['id'] ?? 0);
+$paidAmountMinor = (int)round(((float)($data['amount'] ?? 0)) * 100);
 
-		$coupon_id = isset($_SESSION['coupon']) ? $_SESSION['coupon']['id'] : 0;
-		$shipping_id = isset($_SESSION['shipping']['shipping_price']) ? $_SESSION['shipping']['shipping_id'] : 0;
+if ($status !== 'successful' || $currency !== 'NGN') {
+    $_SESSION['error'] = 'Transaction failed verification.';
+    header('location: checkout#payment');
+    exit;
+}
 
-		try {
-			$conn = $pdo->open();
-			$stmt = $conn->prepare("INSERT INTO sales (user_id, tx_ref, status, shipping_id, coupon_id, address_1, address_2, phone, email, sales_date) VALUES (:user_id, :tx_ref, :status, :shipping_id, :coupon_id, :address_1, :address_2, :phone, :email, :sales_date)");
-			$stmt->execute([
-				'user_id' => $user['id'],
-				'tx_ref' => $payid,
-				'status' => $status,
-				'shipping_id' => $shipping_id,
-				'coupon_id' => $coupon_id,
-				'address_1' => $address1,
-				'address_2' => $address2,
-				'phone' => $phone,
-				'email' => $email,
-				'sales_date' => $date
-			]);
-			$salesid = $conn->lastInsertId();
+if ($txRef === '' || $txRef !== (string)($intent['tx_ref'] ?? '') || (int)($intent['user_id'] ?? 0) !== (int)$user['id']) {
+    $_SESSION['error'] = 'Payment reference mismatch.';
+    header('location: checkout#payment');
+    exit;
+}
 
-			$stmt = $conn->prepare("SELECT * FROM cart LEFT JOIN products ON products.id=cart.product_id WHERE user_id=:user_id");
-			$stmt->execute(['user_id' => $user['id']]);
+$expectedAmountMinor = (int)($intent['amount_minor'] ?? 0);
+if ($expectedAmountMinor <= 0 || $paidAmountMinor !== $expectedAmountMinor) {
+    $_SESSION['error'] = 'Paid amount did not match expected checkout total.';
+    header('location: checkout#payment');
+    exit;
+}
 
-			foreach ($stmt as $row) {
-				$stmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
-				$stmt->execute([
-					'sales_id' => $salesid,
-					'product_id' => $row['product_id'],
-					'quantity' => $row['quantity']
-				]);
+$conn = $pdo->open();
+try {
+    $conn->beginTransaction();
+    app_finalize_paid_order(
+        $conn,
+        (int)$user['id'],
+        $txRef,
+        'flutterwave',
+        'successful',
+        (string)($intent['email'] ?? (string)$user['email']),
+        (string)($intent['phone'] ?? ''),
+        (string)($intent['address1'] ?? ''),
+        (string)($intent['address2'] ?? ''),
+        (int)($intent['shipping_id'] ?? 0),
+        (int)($intent['coupon_id'] ?? 0),
+        ($gatewayTxId > 0 ? $gatewayTxId : null)
+    );
+    $conn->commit();
 
-				$new_value = $row['qty'] - $row['quantity'];
-				$stmt = $conn->prepare("UPDATE products SET qty = :new_value WHERE id = :id");
-				$stmt->execute(['new_value' => $new_value, 'id' => $row['product_id']]);
-			}
-
-			$stmt = $conn->prepare("DELETE FROM cart WHERE user_id=:user_id");
-			$stmt->execute(['user_id' => $user['id']]);
-
-			$_SESSION['success'] = 'Transaction successful. Thank you.';
-			header("location: profile#trans");
-			exit;
-		} catch (PDOException $e) {
-			$_SESSION['error'] = $e->getMessage();
-		}
-
-		$pdo->close();
-	} else {
-		$_SESSION['error'] = 'Transaction failed.';
-		header("location: checkout#payment");
-		exit;
-	}
+    app_clear_payment_intent();
+    $_SESSION['success'] = 'Transaction successful. Thank you.';
+    header('location: profile#trans');
+    exit;
+} catch (Throwable $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    $_SESSION['error'] = $e->getMessage();
+    header('location: checkout#payment');
+    exit;
+} finally {
+    $pdo->close();
 }

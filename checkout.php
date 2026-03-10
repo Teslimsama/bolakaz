@@ -232,10 +232,10 @@ $checkoutUser = [
                             </div>
                         </div>
                         <div id="paystack" class="card-footer border-secondary bg-transparent">
-                            <button onclick="payWithPaystack()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
+                            <button onclick="payWithPaystack(event)" type="button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
                         </div>
                         <div style="display: none;" id="flutterwave" class="card-footer border-secondary bg-transparent">
-                            <button onclick="payNow()" type="submit" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
+                            <button onclick="payNow(event)" type="button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
                         </div>
                         <div style="display: none;" id="bank_transfer" class="card-footer border-secondary bg-transparent">
                             <button type="button" class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Place Order</button>
@@ -305,7 +305,13 @@ $checkoutUser = [
                     },
                     success: function(response) {
                         // Optionally handle the response
-                        alert('Shipping option updated!');
+                        if (window.appNotify) {
+                            window.appNotify({
+                                message: 'Shipping option updated.',
+                                type: 'success',
+                                title: 'Shipping Updated'
+                            });
+                        }
                         // window.location.reload();
                         getDetails()
                     }
@@ -322,21 +328,52 @@ $checkoutUser = [
                     type: 'POST',
                     url: 'bank_transfer.php',
                     data: formData,
+                    dataType: 'json',
                     success: function(response) {
-                        var data = JSON.parse(response);
+                        var data = response || {};
                         if (data.success) {
-                            window.location.href = 'profile#trans';
+                            if (window.appNotify) {
+                                window.appNotify({
+                                    message: data.message || 'Bank transfer request received.',
+                                    type: 'success',
+                                    title: 'Order Submitted',
+                                    delay: 3500
+                                });
+                            }
+                            setTimeout(function() {
+                                window.location.href = 'profile#trans';
+                            }, 700);
                         } else {
                             $('#message').html('<p style="color: red;">' + data.message + '</p>');
+                            if (window.appNotify) {
+                                window.appNotify({
+                                    message: data.message || 'Unable to process bank transfer.',
+                                    type: 'error',
+                                    title: 'Bank Transfer Failed'
+                                });
+                            }
                         }
                     },
                     error: function() {
                         $('#message').html('<p style="color: red;">An error occurred. Please try again later.</p>');
+                        if (window.appNotify) {
+                            window.appNotify({
+                                message: 'An error occurred. Please try again later.',
+                                type: 'error',
+                                title: 'Request Failed'
+                            });
+                        }
                     }
                 });
 
-                // Close the modal
-                $('#bankTransferModal').modal('hide');
+                // Close the modal (Bootstrap 5 + jQuery fallback).
+                var modalEl = document.getElementById('staticBackdrop');
+                if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+                    var modalInstance = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
+                    modalInstance.hide();
+                } else if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
+                    window.jQuery('#staticBackdrop').modal('hide');
+                }
             });
         });
         var total = 0;

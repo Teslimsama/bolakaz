@@ -355,6 +355,164 @@ i.text-primary,
   box-shadow: var(--sf-shadow-soft);
 }
 
+.sf-cart-dropdown .sf-cart-toggle {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sf-cart-menu {
+  width: min(420px, 92vw);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sf-cart-head {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--sf-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(120deg, #fff7eb 0%, #f9f4ec 100%);
+  font-weight: 700;
+}
+
+.sf-cart-body {
+  max-height: 320px;
+  overflow: auto;
+  padding: 0.4rem;
+  background: #fffdf9;
+}
+
+/* Fallback clamps for legacy cart HTML so dropdown never expands from oversized media */
+#cart_menu img,
+#cart_menu .thumbnail,
+#cart_menu .img-circle {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  max-width: 56px !important;
+  min-height: 56px !important;
+  max-height: 56px !important;
+  object-fit: cover !important;
+  border-radius: 10px !important;
+  display: block !important;
+}
+
+#cart_menu a {
+  max-width: 100%;
+}
+
+#cart_menu li {
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+}
+
+.sf-mini-cart-item {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 0.7rem;
+  padding: 0.6rem;
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  align-items: center;
+}
+
+.sf-mini-cart-item + .sf-mini-cart-item {
+  border-top: 1px solid #f0e8de;
+}
+
+.sf-mini-cart-item:hover {
+  background: #faf5ee;
+}
+
+.sf-mini-cart-thumb {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  max-width: 56px !important;
+  min-height: 56px;
+  max-height: 56px !important;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--sf-border);
+  background: #efe6db;
+  display: block;
+  flex: 0 0 56px;
+}
+
+.sf-mini-cart-meta {
+  min-width: 0;
+}
+
+.sf-mini-cart-name {
+  margin: 0;
+  font-size: 0.93rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1b1a18;
+}
+
+.sf-mini-cart-sub {
+  margin: 0.2rem 0 0;
+  color: var(--sf-muted);
+  font-size: 0.79rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sf-mini-cart-totals {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 88px;
+}
+
+.sf-mini-cart-totals small {
+  color: var(--sf-muted);
+  font-size: 0.75rem;
+}
+
+.sf-mini-cart-totals strong {
+  font-size: 0.86rem;
+}
+
+.sf-mini-cart-summary {
+  margin: 0.4rem;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--sf-border);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff8ee;
+  font-weight: 700;
+}
+
+.sf-mini-cart-empty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--sf-muted);
+}
+
+.sf-cart-footer {
+  padding: 0.8rem 1rem;
+  border-top: 1px solid var(--sf-border);
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  background: #fff;
+}
+
+.sf-cart-footer .btn {
+  min-width: 108px;
+}
+
 .table {
   background: var(--sf-surface);
 }
@@ -381,6 +539,40 @@ i.text-primary,
 }
 
 @media (max-width: 768px) {
+  .sf-header-actions-wrap {
+    margin-top: 0.35rem;
+    text-align: center !important;
+  }
+
+  .sf-header-actions {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0.35rem !important;
+  }
+
+  .sf-header-actions .btn {
+    min-height: 40px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+  }
+
+  .sf-cart-dropdown .sf-cart-toggle {
+    min-width: 74px;
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+
+  .sf-header .row > [class*="col-"] {
+    min-width: 0;
+  }
+
   .sf-media-hero {
     aspect-ratio: 5 / 4;
   }
@@ -391,6 +583,24 @@ i.text-primary,
     bottom: 0.75rem;
     max-width: none;
     width: auto;
+  }
+
+  .sf-cart-menu {
+    width: min(95vw, 420px);
+  }
+
+  .sf-mini-cart-item {
+    grid-template-columns: 52px 1fr auto;
+  }
+
+  .sf-mini-cart-thumb {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    max-width: 52px !important;
+    min-height: 52px;
+    max-height: 52px !important;
+    flex-basis: 52px;
   }
 }
 

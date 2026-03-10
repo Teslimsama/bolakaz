@@ -64,17 +64,34 @@
                           $subtotal = $details['price'] * $details['quantity'];
                           $total += $subtotal;
                         }
+                        $status = strtolower(trim((string)$row['Status']));
+                        $txRef = (string)($row['tx_ref'] ?? '');
+                        $isBankTransfer = (strpos($txRef, 'BKBTRF-') === 0);
+                        $isBankConfirmed = ($isBankTransfer && ($status == 'success' || $status == 'successful'));
+                        $statusColor = ($status == 'success' || $status == 'successful') ? 'green' : ($status == 'pending' ? 'orange' : 'red');
+
+                        $statusHtml = "<button class='status-toggle btn btn-sm' data-id='" . (int)$row['salesid'] . "' data-status='" . htmlspecialchars((string)$row['Status'], ENT_QUOTES, 'UTF-8') . "' style='background-color:" . $statusColor . "; color: white;'>" . ucfirst((string)$row['Status']) . "</button>";
+
+                        if ($isBankTransfer) {
+                          if ($isBankConfirmed) {
+                            $statusHtml = "<span class='btn btn-sm' style='background-color:green; color:#fff; cursor:default;'>Confirmed</span>";
+                          } else {
+                            $statusHtml = "
+                              <div class='btn-group'>
+                                <span class='btn btn-sm' style='background-color:orange; color:#fff; cursor:default;'>Pending</span>
+                                <button class='btn btn-primary btn-sm confirm-bank' data-id='" . (int)$row['salesid'] . "'>Confirm Payment</button>
+                              </div>
+                            ";
+                          }
+                        }
+
                         echo "
                           <tr>
                             <td class='hidden'></td>
                             <td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
                             <td>" . $row['firstname'] . ' ' . $row['lastname'] . "</td>
                             <td>" . $row['tx_ref'] . "</td>
-                            <td>
-                              <button class='status-toggle btn btn-sm' data-id='" . $row['salesid'] . "' data-status='" . $row['Status'] . "' style='background-color:" . ($row['Status'] == 'success' ? 'green' : ($row['Status'] == 'pending' ? 'orange' : 'red')) . "; color: white;'>
-                                " . ucfirst($row['Status']) . "
-                              </button>
-                            </td>
+                            <td>" . $statusHtml . "</td>
 
                             <td> ₦" . number_format($total, 2) . "</td>
                             <td><button type='button' class='btn btn-info btn-sm btn-flat transact' data-id='" . $row['salesid'] . "'><i class='fa fa-search'></i> View</button></td>
@@ -178,6 +195,38 @@
   </script>
   <script>
     $(function() {
+      $(document).on('click', '.confirm-bank', function() {
+        var button = $(this);
+        var id = button.data('id');
+
+        if (!confirm('Confirm this bank transfer and deduct stock now?')) {
+          return;
+        }
+
+        button.prop('disabled', true).text('Confirming...');
+
+        $.ajax({
+          type: 'POST',
+          url: 'confirm_bank_transfer.php',
+          data: {
+            id: id
+          },
+          dataType: 'json',
+          success: function(response) {
+            if (response.success) {
+              window.location.reload();
+            } else {
+              alert('Error: ' + response.message);
+              button.prop('disabled', false).text('Confirm Payment');
+            }
+          },
+          error: function() {
+            alert('An error occurred while confirming payment.');
+            button.prop('disabled', false).text('Confirm Payment');
+          }
+        });
+      });
+
       $(document).on('click', '.status-toggle', function() {
         var button = $(this);
         var id = button.data('id');

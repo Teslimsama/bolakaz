@@ -43,16 +43,30 @@ $(function () {
     })
       .done(function (response) {
         if (response && response.success) {
-          showFeedback(response.message || "Review saved successfully.", false);
+          var okMessage = response.message || "Review saved successfully.";
+          showFeedback(okMessage, false);
+          if (window.appNotify) {
+            window.appNotify({
+              message: okMessage,
+              type: "success",
+              title: "Review Submitted",
+            });
+          }
           setTimeout(function () {
             window.location.reload();
           }, 700);
           return;
         }
-        showFeedback(
-          (response && response.message) || "Unable to save review right now.",
-          true
-        );
+        var failMessage =
+          (response && response.message) || "Unable to save review right now.";
+        showFeedback(failMessage, true);
+        if (window.appNotify) {
+          window.appNotify({
+            message: failMessage,
+            type: "error",
+            title: "Review Failed",
+          });
+        }
       })
       .fail(function (xhr) {
         var message = "Unable to save review right now.";
@@ -60,6 +74,13 @@ $(function () {
           message = xhr.responseJSON.message;
         }
         showFeedback(message, true);
+        if (window.appNotify) {
+          window.appNotify({
+            message: message,
+            type: "error",
+            title: "Review Failed",
+          });
+        }
       })
       .always(function () {
         $submit.prop("disabled", false).removeClass("is-loading");

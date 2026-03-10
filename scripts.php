@@ -46,6 +46,91 @@ if (!storefront_use_v2()) {
       });
     }
 
+    // Expose for page-specific scripts (e.g., checkout/cart pages).
+    window.getCart = getCart;
+
+    function ensureNotifyContainer() {
+      var existing = document.getElementById('appNotifyContainer');
+      if (existing) {
+        return existing;
+      }
+      var container = document.createElement('div');
+      container.id = 'appNotifyContainer';
+      container.className = 'toast-container position-fixed top-0 end-0 p-3';
+      container.style.zIndex = '1090';
+      document.body.appendChild(container);
+      return container;
+    }
+
+    window.appNotify = function (payload, type, title) {
+      var options = {};
+      if (typeof payload === 'object' && payload !== null) {
+        options = payload;
+      } else {
+        options.message = String(payload || '');
+        options.type = type || 'info';
+        options.title = title || 'Notice';
+      }
+
+      var message = String(options.message || '').trim();
+      if (!message) {
+        return;
+      }
+
+      var noticeType = String(options.type || 'info').toLowerCase();
+      var noticeTitle = String(options.title || 'Notice');
+      var icon = {
+        success: 'fa-check-circle',
+        error: 'fa-times-circle',
+        danger: 'fa-times-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+      }[noticeType] || 'fa-info-circle';
+
+      var headerClass = {
+        success: 'text-bg-success',
+        error: 'text-bg-danger',
+        danger: 'text-bg-danger',
+        warning: 'text-bg-warning text-dark',
+        info: 'text-bg-dark'
+      }[noticeType] || 'text-bg-dark';
+
+      var container = ensureNotifyContainer();
+      var toastEl = document.createElement('div');
+      toastEl.className = 'toast border-0 shadow-sm mb-2';
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      toastEl.setAttribute('aria-atomic', 'true');
+      toastEl.innerHTML = ''
+        + '<div class="toast-header ' + headerClass + '">'
+        + '<i class="fa ' + icon + ' mr-2"></i>'
+        + '<strong class="me-auto">' + $('<div>').text(noticeTitle).html() + '</strong>'
+        + '<small class="opacity-75">just now</small>'
+        + '<button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>'
+        + '</div>'
+        + '<div class="toast-body bg-white text-dark">' + $('<div>').text(message).html() + '</div>';
+      container.appendChild(toastEl);
+
+      if (window.bootstrap && typeof window.bootstrap.Toast === 'function') {
+        var toast = new window.bootstrap.Toast(toastEl, { delay: Number(options.delay || 3200) });
+        toast.show();
+        toastEl.addEventListener('hidden.bs.toast', function () {
+          toastEl.remove();
+        });
+        return;
+      }
+
+      if (window.jQuery && typeof window.jQuery.fn.toast === 'function') {
+        window.jQuery(toastEl).toast({ delay: Number(options.delay || 3200) }).toast('show');
+        window.jQuery(toastEl).on('hidden.bs.toast', function () {
+          window.jQuery(this).remove();
+        });
+        return;
+      }
+
+      alert(message);
+    };
+
     $(document).ready(function () {
       function showProductCallout(message, isError) {
         if (!$('#callout').length) {
@@ -147,10 +232,24 @@ if (!storefront_use_v2()) {
           dataType: 'json',
           success: function (response) {
             showProductCallout(response.message, !!response.error);
+            if (window.appNotify) {
+              window.appNotify({
+                message: response.message || 'Cart update completed.',
+                type: response.error ? 'error' : 'success',
+                title: response.error ? 'Add To Cart Failed' : 'Added To Cart'
+              });
+            }
             getCart();
           },
           error: function () {
             showProductCallout('Unable to add item right now. Please try again.', true);
+            if (window.appNotify) {
+              window.appNotify({
+                message: 'Unable to add item right now. Please try again.',
+                type: 'error',
+                title: 'Add To Cart Failed'
+              });
+            }
           },
           complete: function () {
             unlockFormSubmission($form);

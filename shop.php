@@ -7,8 +7,8 @@ include 'session.php';
 
 <head>
     <?php $pageTitle = "Bolakaz | Shop"; include "head.php"; ?>
-    <link href="css/jquery-ui.css" rel="stylesheet">
-    <link href="css/shop-filters.css" rel="stylesheet">
+    <link href="css/jquery-ui.css?v=<?php echo file_exists(__DIR__ . '/css/jquery-ui.css') ? filemtime(__DIR__ . '/css/jquery-ui.css') : time(); ?>" rel="stylesheet">
+    <link href="css/shop-filters.css?v=<?php echo file_exists(__DIR__ . '/css/shop-filters.css') ? filemtime(__DIR__ . '/css/shop-filters.css') : time(); ?>" rel="stylesheet">
 </head>
 
 <body>

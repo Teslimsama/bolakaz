@@ -127,8 +127,13 @@ if (!function_exists('app_image_url')) {
         if ($name === '') {
             return app_placeholder_image();
         }
+        $relative = rtrim($baseDir, '/') . '/' . ltrim($name, '/');
+        $absolute = __DIR__ . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+        if (!is_file($absolute)) {
+            return app_placeholder_image();
+        }
 
-        return rtrim($baseDir, '/') . '/' . ltrim($name, '/');
+        return $relative;
     }
 }
 

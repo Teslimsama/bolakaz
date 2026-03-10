@@ -5,6 +5,9 @@ if (!storefront_use_v2()) {
     include __DIR__ . '/legacy/footer.legacy.php';
     return;
 }
+
+$newsletterNotice = $_SESSION['newsletter_notice'] ?? null;
+unset($_SESSION['newsletter_notice']);
 ?>
 <footer class="sf-footer">
   <div class="sf-foot-grid">
@@ -48,7 +51,7 @@ if (!storefront_use_v2()) {
     <hr class="my-4" style="border-color: rgba(255,255,255,0.12);">
     <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
       <small>&copy; <script>document.write(new Date().getFullYear())</script> Bolakaz. All rights reserved.</small>
-      <small>Crafted for modern premium retail.</small>
+      <small>Powered by <a href="https://teslim.unibooks.com.ng" target="_blank" rel="noopener">TBO Digital Solutions</a></small>
     </div>
   </div>
 </footer>
@@ -62,5 +65,56 @@ if (!storefront_use_v2()) {
   </div>
 </div>
 
+<?php if (is_array($newsletterNotice) && !empty($newsletterNotice['message'])): ?>
+<div class="modal fade" id="newsletterStatusModal" tabindex="-1" aria-labelledby="newsletterStatusTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newsletterStatusTitle"><?php echo e((string)($newsletterNotice['title'] ?? 'Newsletter Update')); ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0"><?php echo e((string)$newsletterNotice['message']); ?></p>
+      </div>
+      <div class="modal-footer">
+        <?php
+          $noticeType = (string)($newsletterNotice['type'] ?? 'info');
+          $btnClass = 'btn-secondary';
+          if ($noticeType === 'success') {
+              $btnClass = 'btn-primary';
+          } elseif ($noticeType === 'danger') {
+              $btnClass = 'btn-danger';
+          } elseif ($noticeType === 'info') {
+              $btnClass = 'btn-info text-white';
+          }
+        ?>
+        <button type="button" class="btn <?php echo e($btnClass); ?>" data-bs-dismiss="modal">Okay</button>
+      </div>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
+
 <?php include 'scripts.php'; ?>
+
+<?php if (is_array($newsletterNotice) && !empty($newsletterNotice['message'])): ?>
+<script>
+  (function () {
+    var modalEl = document.getElementById('newsletterStatusModal');
+    if (!modalEl) {
+      return;
+    }
+    if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+      var modal = new window.bootstrap.Modal(modalEl);
+      modal.show();
+      return;
+    }
+    if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
+      window.jQuery(modalEl).modal('show');
+      return;
+    }
+    alert(<?php echo json_encode((string)$newsletterNotice['message']); ?>);
+  })();
+</script>
+<?php endif; ?>
 
