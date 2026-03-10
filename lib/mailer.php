@@ -1,5 +1,15 @@
 <?php
 
+if (!function_exists('app_register_error_handlers')) {
+    $errorBootstrap = __DIR__ . '/../bootstrap/error_handler.php';
+    if (file_exists($errorBootstrap)) {
+        require_once $errorBootstrap;
+        if (function_exists('app_register_error_handlers')) {
+            app_register_error_handlers();
+        }
+    }
+}
+
 if (!function_exists('app_mail_env')) {
     function app_mail_env(string $key, string $default = ''): string
     {
@@ -10,6 +20,40 @@ if (!function_exists('app_mail_env')) {
 
         $value = trim($value);
         return $value === '' ? $default : $value;
+    }
+}
+
+if (!function_exists('app_mail_log')) {
+    function app_mail_log(string $message, array $context = []): void
+    {
+        if (function_exists('app_log')) {
+            app_log('error', $message, $context);
+            return;
+        }
+
+        $fallbackFile = __DIR__ . '/../storage/logs/app.log';
+        $fallbackDir = dirname($fallbackFile);
+        if (!is_dir($fallbackDir)) {
+            @mkdir($fallbackDir, 0775, true);
+        }
+        $line = '[' . date('Y-m-d H:i:s') . '] ' . $message;
+        if (!empty($context)) {
+            $line .= ' ' . json_encode($context);
+        }
+        @file_put_contents($fallbackFile, $line . PHP_EOL, FILE_APPEND);
+        error_log($message);
+    }
+}
+
+if (!function_exists('app_mail_event')) {
+    function app_mail_event(string $level, string $message, array $context = []): void
+    {
+        if (function_exists('app_log')) {
+            app_log($level, $message, $context);
+            return;
+        }
+
+        app_mail_log($message, $context);
     }
 }
 
@@ -101,6 +145,49 @@ if (!function_exists('app_email_template')) {
 }
 
 if (!function_exists('app_send_email')) {
+    function app_mail_can_send(): bool
+    {
+        $smtpHost = app_mail_env('SMTP_HOST');
+        if ($smtpHost === '') {
+            return true;
+        }
+
+        $smtpUser = app_mail_env('SMTP_USERNAME');
+        $smtpPass = app_mail_env('SMTP_PASSWORD');
+        return ($smtpUser !== '' && $smtpPass !== '');
+    }
+}
+
+if (!function_exists('app_send_email')) {
+    function app_configure_smtp_transport(\PHPMailer\PHPMailer\PHPMailer $mail, string $host, int $port, string $encryption, string $username, string $password): void
+    {
+        $mail->isSMTP();
+        $mail->Host = $host;
+        $mail->Port = $port > 0 ? $port : 587;
+        $mail->SMTPAuth = ($username !== '' && $password !== '');
+        if ($mail->SMTPAuth) {
+            $mail->Username = $username;
+            $mail->Password = $password;
+        }
+        if ($encryption === 'ssl' || $encryption === 'smtps') {
+            $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+        } elseif ($encryption === 'tls' || $encryption === 'starttls') {
+            $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        }
+
+        // Local Windows stacks can fail cert validation depending on OpenSSL bundle path.
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true,
+            ],
+        ];
+        $mail->Timeout = 20;
+    }
+}
+
+if (!function_exists('app_send_email')) {
     function app_send_email(
         string $to,
         string $subject,
@@ -120,30 +207,39 @@ if (!function_exists('app_send_email')) {
             }
         }
 
-        $fromEmail = app_mail_env('MAIL_FROM', 'info@bolakaz.unibooks.com.ng');
-        $fromName = app_mail_env('MAIL_FROM_NAME', 'Bolakaz');
         $smtpHost = app_mail_env('SMTP_HOST');
         $smtpPort = (int)app_mail_env('SMTP_PORT', '587');
         $smtpUser = app_mail_env('SMTP_USERNAME');
         $smtpPass = app_mail_env('SMTP_PASSWORD');
         $smtpEnc = strtolower(app_mail_env('SMTP_ENCRYPTION', 'tls'));
+        $mailDriver = strtolower(app_mail_env('MAIL_MAILER', 'smtp'));
+        $fromEmail = app_mail_env('MAIL_FROM', $smtpUser !== '' ? $smtpUser : 'info@bolakaz.unibooks.com.ng');
+        $fromName = app_mail_env('MAIL_FROM_NAME', 'Bolakaz');
+
+        if ($mailDriver === 'log') {
+            app_mail_event('info', 'Mail written to log transport', [
+                'to' => $to,
+                'subject' => $subject,
+                'from' => $fromEmail,
+                'driver' => 'log',
+                'preview' => mb_substr(trim(strip_tags($textBody !== '' ? $textBody : $htmlBody)), 0, 300),
+            ]);
+            return true;
+        }
+
+        if ($mailDriver === 'mail') {
+            $smtpHost = '';
+        }
+
+        if ($smtpHost !== '' && !app_mail_can_send()) {
+            app_mail_log('Mailer configuration incomplete: SMTP_HOST is set but SMTP_USERNAME/SMTP_PASSWORD is missing.');
+            return false;
+        }
 
         try {
             $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
             if ($smtpHost !== '') {
-                $mail->isSMTP();
-                $mail->Host = $smtpHost;
-                $mail->Port = $smtpPort > 0 ? $smtpPort : 587;
-                $mail->SMTPAuth = ($smtpUser !== '' && $smtpPass !== '');
-                if ($mail->SMTPAuth) {
-                    $mail->Username = $smtpUser;
-                    $mail->Password = $smtpPass;
-                }
-                if ($smtpEnc === 'ssl' || $smtpEnc === 'smtps') {
-                    $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
-                } elseif ($smtpEnc === 'tls' || $smtpEnc === 'starttls') {
-                    $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-                }
+                app_configure_smtp_transport($mail, $smtpHost, $smtpPort, $smtpEnc, $smtpUser, $smtpPass);
             } else {
                 $mail->isMail();
             }
@@ -161,6 +257,47 @@ if (!function_exists('app_send_email')) {
             $mail->XMailer = 'Bolakaz Mailer';
             return $mail->send();
         } catch (\Throwable $e) {
+            // Retry once with alternate Gmail transport if the initial connection mode fails.
+            if ($smtpHost !== '' && stripos($smtpHost, 'gmail.com') !== false) {
+                try {
+                    $retry = new \PHPMailer\PHPMailer\PHPMailer(true);
+                    $altEnc = ($smtpEnc === 'ssl' || $smtpEnc === 'smtps') ? 'tls' : 'ssl';
+                    $altPort = ($altEnc === 'tls') ? 587 : 465;
+                    app_configure_smtp_transport($retry, $smtpHost, $altPort, $altEnc, $smtpUser, $smtpPass);
+                    $retry->CharSet = 'UTF-8';
+                    $retry->setFrom($fromEmail, $fromName);
+                    $retry->addAddress($to);
+                    if ($replyToEmail !== null && filter_var($replyToEmail, FILTER_VALIDATE_EMAIL)) {
+                        $retry->addReplyTo($replyToEmail, $replyToName ?: '');
+                    }
+                    $retry->Subject = $subject;
+                    $retry->isHTML(true);
+                    $retry->Body = $htmlBody;
+                    $retry->AltBody = $textBody !== '' ? $textBody : trim(html_entity_decode(strip_tags($htmlBody), ENT_QUOTES, 'UTF-8'));
+                    $retry->XMailer = 'Bolakaz Mailer';
+                    return $retry->send();
+                } catch (\Throwable $retryError) {
+                    app_mail_log('Mailer send failed', [
+                        'primary_error' => $e->getMessage(),
+                        'retry_error' => $retryError->getMessage(),
+                        'to' => $to,
+                        'subject' => $subject,
+                        'host' => $smtpHost,
+                        'port' => $smtpPort,
+                        'enc' => $smtpEnc,
+                    ]);
+                    return false;
+                }
+            }
+
+            app_mail_log('Mailer send failed', [
+                'error' => $e->getMessage(),
+                'to' => $to,
+                'subject' => $subject,
+                'host' => $smtpHost,
+                'port' => $smtpPort,
+                'enc' => $smtpEnc,
+            ]);
             return false;
         }
     }

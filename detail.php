@@ -1,21 +1,34 @@
 <?php
 include 'session.php';
 include 'Rating.php';
+require_once __DIR__ . '/lib/product_payload.php';
 $rating = new Rating();
 ?>
 <?php
 $conn = $pdo->open();
 
-$slug = $_GET['product'];
+$slug = trim((string)($_GET['product'] ?? ''));
+if ($slug === '') {
+    $pdo->close();
+    header('location: shop');
+    exit();
+}
 
 try {
 
     $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, sub_category.name AS subcatname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id LEFT JOIN 
     category AS sub_category ON sub_category.id = products.subcategory_id  WHERE slug = :slug");
     $stmt->execute(['slug' => $slug]);
-    $product = $stmt->fetch();
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    echo "There is some problem in connection: " . $e->getMessage();
+    error_log('detail.php product fetch error: ' . $e->getMessage());
+    $product = false;
+}
+
+if (!$product) {
+    $pdo->close();
+    header('location: shop');
+    exit();
 }
 
 //page view
@@ -30,6 +43,11 @@ if ($product['date_view'] == $now) {
 
 ?>
 <?php
+$sizeOptions = product_csv_to_array($product['size'] ?? '');
+$colorOptions = product_csv_to_array($product['color'] ?? '');
+$materialOptions = product_csv_to_array($product['material'] ?? '', 80);
+$additionalInfo = product_decode_specs($product['additional_info'] ?? '');
+
 $itemRating = $rating->getItemRating($product['prodid']);
 $ratingNumber = 0;
 $count = 0;
@@ -139,7 +157,7 @@ if ($ratingNumber && $count) {
 
 
             <div class="col-lg-7 pb-5">
-                <h3 class="font-weight-semi-bold"><?php echo $product['prodname']; ?></h3>
+                <h3 class="font-weight-semi-bold"><?php echo e($product['prodname']); ?></h3>
                 <div class="d-flex mb-3">
                     <div class="mr-2">
                         <?php
@@ -160,17 +178,16 @@ if ($ratingNumber && $count) {
                 <p class="mb-4"><?php echo $product['description']; ?></p>
                 <form id="productForm">
                     <!-- Display Sizes -->
-                    <?php if (!empty($product['size'])) { ?>
+                    <?php if (!empty($sizeOptions)) { ?>
                         <div class="d-flex mb-3">
                             <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
                             <?php
                             $n = 1;
-                            $sizes = explode(',', $product['size']);
-                            foreach ($sizes as $size) {
+                            foreach ($sizeOptions as $size) {
                             ?>
                                 <div class="custom-control custom-radio custom-control-inline">
-                                    <input type="radio" class="custom-control-input" value="<?php echo htmlspecialchars($size); ?>" id="<?php echo 'size-' . $n; ?>" name="size">
-                                    <label class="custom-control-label" for="<?php echo 'size-' . $n; ?>"><?php echo htmlspecialchars($size); ?></label>
+                                    <input type="radio" class="custom-control-input" value="<?php echo e($size); ?>" id="<?php echo 'size-' . $n; ?>" name="size">
+                                    <label class="custom-control-label" for="<?php echo 'size-' . $n; ?>"><?php echo e($size); ?></label>
                                 </div>
                             <?php
                                 $n++;
@@ -180,17 +197,16 @@ if ($ratingNumber && $count) {
                     <?php } ?>
 
                     <!-- Display Colors -->
-                    <?php if (!empty($product['color'])) { ?>
+                    <?php if (!empty($colorOptions)) { ?>
                         <div class="d-flex mb-4">
                             <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
                             <?php
-                            $colors = explode(',', $product['color']);
                             $n = 1;
-                            foreach ($colors as $color) {
+                            foreach ($colorOptions as $color) {
                             ?>
                                 <div class="custom-control custom-radio custom-control-inline">
-                                    <input type="radio" class="custom-control-input" value="<?php echo htmlspecialchars($color); ?>" id="<?php echo 'color-' . $n; ?>" name="color">
-                                    <label class="custom-control-label" for="<?php echo 'color-' . $n; ?>"><?php echo htmlspecialchars($color); ?></label>
+                                    <input type="radio" class="custom-control-input" value="<?php echo e($color); ?>" id="<?php echo 'color-' . $n; ?>" name="color">
+                                    <label class="custom-control-label" for="<?php echo 'color-' . $n; ?>"><?php echo e($color); ?></label>
                                 </div>
                             <?php
                                 $n++;
@@ -222,11 +238,27 @@ if ($ratingNumber && $count) {
                 </form>
                 <div class="d-flex mb-3">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Caterory:</p>
-                    <?php echo e(ucwords((string)($product['category_name'] ?? ''))); ?>
+                    <?php echo e(ucwords((string)($product['catname'] ?? 'Uncategorized'))); ?>
                 </div>
                 <div class="d-flex mb-3">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Sub Caterory:</p>
                     <?php echo e(ucwords((string)($product['subcatname'] ?? 'N/A'))); ?>
+                </div>
+                <?php if (!empty($product['brand'])) { ?>
+                    <div class="d-flex mb-3">
+                        <p class="text-dark font-weight-medium mb-0 mr-3">Brand:</p>
+                        <?php echo e((string)$product['brand']); ?>
+                    </div>
+                <?php } ?>
+                <?php if (!empty($materialOptions)) { ?>
+                    <div class="d-flex mb-3">
+                        <p class="text-dark font-weight-medium mb-0 mr-3">Material:</p>
+                        <?php echo e(implode(', ', $materialOptions)); ?>
+                    </div>
+                <?php } ?>
+                <div class="d-flex mb-3">
+                    <p class="text-dark font-weight-medium mb-0 mr-3">Availability:</p>
+                    <?php echo ((int)($product['qty'] ?? 0) > 0) ? 'In stock' : 'Out of stock'; ?>
                 </div>
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
@@ -253,9 +285,9 @@ if ($ratingNumber && $count) {
         <div class="row px-xl-5">
             <div class="col">
                 <div class="nav nav-tabs justify-content-center border-secondary mb-4">
-                    <a class="nav-item nav-link active" data-bs-toggle="tab" href="#tab-pane-1">Description</a>
-                    <a class="nav-item nav-link" data-bs-toggle="tab" href="#tab-pane-2">Information</a>
-                    <a class="nav-item nav-link" id="total_review" data-bs-toggle="tab" href="#tab-pane-3">Reviews</a>
+                    <a class="nav-item nav-link active" data-toggle="tab" data-bs-toggle="tab" href="#tab-pane-1">Description</a>
+                    <a class="nav-item nav-link" data-toggle="tab" data-bs-toggle="tab" href="#tab-pane-2">Information</a>
+                    <a class="nav-item nav-link" id="total_review" data-toggle="tab" data-bs-toggle="tab" href="#tab-pane-3">Reviews</a>
                 </div>
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="tab-pane-1">
@@ -264,41 +296,35 @@ if ($ratingNumber && $count) {
                     </div>
                     <div class="tab-pane fade" id="tab-pane-2">
                         <h4 class="mb-3">Additional Information</h4>
-                        <p>Eos no lorem eirmod diam diam, eos elitr et gubergren diam sea. Consetetur vero aliquyam invidunt duo dolores et duo sit. Vero diam ea vero et dolore rebum, dolor rebum eirmod consetetur invidunt sed sed et, lorem duo et eos elitr, sadipscing kasd ipsum rebum diam. Dolore diam stet rebum sed tempor kasd eirmod. Takimata kasd ipsum accusam sadipscing, eos dolores sit no ut diam consetetur duo justo est, sit sanctus diam tempor aliquyam eirmod nonumy rebum dolor accusam, ipsum kasd eos consetetur at sit rebum, diam kasd invidunt tempor lorem, ipsum lorem elitr sanctus eirmod takimata dolor ea invidunt.</p>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item px-0">
-                                        Sit erat duo lorem duo ea consetetur, et eirmod takimata.
-                                    </li>
-                                    <li class="list-group-item px-0">
-                                        Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
-                                    </li>
-                                    <li class="list-group-item px-0">
-                                        Duo amet accusam eirmod nonumy stet et et stet eirmod.
-                                    </li>
-                                    <li class="list-group-item px-0">
-                                        Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
-                                    </li>
-                                </ul>
+                        <?php if (!empty($additionalInfo)) { ?>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <ul class="list-group list-group-flush">
+                                        <?php
+                                        $specLabels = [
+                                            'fit' => 'Fit',
+                                            'care_instructions' => 'Care Instructions',
+                                            'composition' => 'Composition',
+                                            'dimensions' => 'Dimensions',
+                                            'shipping_class' => 'Shipping Class',
+                                            'origin' => 'Origin',
+                                        ];
+                                        foreach ($specLabels as $specKey => $specLabel) {
+                                            if (empty($additionalInfo[$specKey])) {
+                                                continue;
+                                            }
+                                        ?>
+                                            <li class="list-group-item px-0 d-flex justify-content-between align-items-start">
+                                                <strong><?php echo e($specLabel); ?></strong>
+                                                <span class="text-muted"><?php echo e($additionalInfo[$specKey]); ?></span>
+                                            </li>
+                                        <?php } ?>
+                                    </ul>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item px-0">
-                                        Sit erat duo lorem duo ea consetetur, et eirmod takimata.
-                                    </li>
-                                    <li class="list-group-item px-0">
-                                        Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
-                                    </li>
-                                    <li class="list-group-item px-0">
-                                        Duo amet accusam eirmod nonumy stet et et stet eirmod.
-                                    </li>
-                                    <li class="list-group-item px-0">
-                                        Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
+                        <?php } else { ?>
+                            <p class="text-muted mb-0">No additional product information has been provided yet.</p>
+                        <?php } ?>
                     </div>
                     <div class="tab-pane fade" id="tab-pane-3">
                         <div class="row">
@@ -306,83 +332,83 @@ if ($ratingNumber && $count) {
                                 <h4 class="mb-4">Reviews for "<?php echo $product['prodname']; ?> "</h4>
                                 <?php
                                 $itemRating = $rating->getItemRating($product['prodid']);
-                                foreach ($itemRating as $rating) {
-                                    $date = date_create($rating['created']);
+                                if (empty($itemRating)) {
+                                    echo '<p class="text-muted">No reviews yet. Be the first to review this product.</p>';
+                                }
+                                foreach ($itemRating as $reviewRow) {
+                                    $date = date_create($reviewRow['created']);
                                     $reviewDate = date_format($date, "M d, Y");
-                                    $profilePic = "profile.png";
-                                    if ($rating['photo']) {
-                                        $profilePic = $rating['photo'];
-                                    }
                                 ?>
                                     <div class="media mb-4">
-                                        <img src="<?php echo e(app_image_url($rating['photo'] ?? '')); ?>" alt="Image" class="img-fluid rounded mr-3 mt-1" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.onerror=null;this.src='<?php echo e(app_placeholder_image()); ?>';">
+                                        <img src="<?php echo e(app_image_url($reviewRow['photo'] ?? '')); ?>" alt="Image" class="img-fluid rounded mr-3 mt-1" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.onerror=null;this.src='<?php echo e(app_placeholder_image()); ?>';">
                                         <div class="media-body">
-                                            <h6><?php echo ucwords($rating['firstname'] . " " . $rating['lastname']); ?><small> - <i><?php echo $reviewDate; ?></i></small></h6>
+                                            <h6><?php echo e(ucwords(trim(($reviewRow['firstname'] ?? '') . " " . ($reviewRow['lastname'] ?? '')))); ?><small> - <i><?php echo e($reviewDate); ?></i></small></h6>
                                             <div class="mb-2">
                                                 <?php
                                                 for ($i = 1; $i <= 5; $i++) {
                                                     $ratingClass = "btn-default btn-grey";
-                                                    if ($i <= $rating['ratingNumber']) {
+                                                    if ($i <= $reviewRow['ratingNumber']) {
                                                         $ratingClass = "text-primary";
                                                     }
                                                 ?>
                                                     <i class="fas fa-star <?php echo $ratingClass; ?>"></i>
                                                 <?php } ?>
                                             </div>
-                                            <p><?php echo $rating['comments']; ?></p>
+                                            <h6 class="mb-1"><?php echo e($reviewRow['title']); ?></h6>
+                                            <p><?php echo e($reviewRow['comments']); ?></p>
                                         </div>
                                     </div>
                                 <?php } ?>
                             </div>
                             <div class="col-md-6">
-                                <form id="ratingForm" method="POST">
-                                    <h4 class="mb-4">Leave a review</h4>
-                                    <small>Your email address will not be published. Required fields are marked *</small>
-                                    <div class="d-flex my-3">
-                                        <p class="mb-0 mr-2">Your Rating * :</p>
-                                        <div class="text-primary">
-                                            <button type="button" class="btn btn-primary btn-sm rateButton" aria-label="Left Align">
-                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
-                                            </button>
-                                            <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="Left Align">
-                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
-                                            </button>
-                                            <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="Left Align">
-                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
-                                            </button>
-                                            <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="Left Align">
-                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
-                                            </button>
-                                            <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="Left Align">
-                                                <span class="fa fa-star star-light" aria-hidden="true"></span>
-                                            </button>
-
+                                <?php if (!empty($user['id'])) { ?>
+                                    <form id="ratingForm" method="POST">
+                                        <h4 class="mb-4">Leave a review</h4>
+                                        <small>Required fields are marked *</small>
+                                        <div id="reviewFeedback" class="alert d-none mt-3 mb-3" role="alert"></div>
+                                        <div class="d-flex my-3">
+                                            <p class="mb-0 mr-2">Your Rating * :</p>
+                                            <div class="text-primary">
+                                                <button type="button" class="btn btn-primary btn-sm rateButton" aria-label="1 star">
+                                                    <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                                </button>
+                                                <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="2 stars">
+                                                    <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                                </button>
+                                                <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="3 stars">
+                                                    <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                                </button>
+                                                <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="4 stars">
+                                                    <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                                </button>
+                                                <button type="button" class="btn btn-default btn-grey btn-sm rateButton" aria-label="5 stars">
+                                                    <span class="fa fa-star star-light" aria-hidden="true"></span>
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div class="form-group">
-                                        <label for="message">Your Review *</label>
-                                        <textarea id="comment" name="comment" cols="30" rows="5" class="form-control" required></textarea>
-                                    </div>
+                                        <div class="form-group">
+                                            <label for="title">Title *</label>
+                                            <input type="text" class="form-control" name="title" id="title" maxlength="120" required>
+                                        </div>
 
-                                    <input type="hidden" value="<?php echo $product['prodid']; ?>" id="itemid" name="itemid">
-                                    <input type="hidden" class="form-control" id="rating" name="rating" value="1">
+                                        <div class="form-group">
+                                            <label for="comment">Your Review *</label>
+                                            <textarea id="comment" name="comment" cols="30" rows="5" class="form-control" maxlength="3000" required></textarea>
+                                        </div>
 
-                                    <input type="hidden" name="action" value="saveRating">
-                                    <div class="form-group">
-                                        <label for="name">Title *</label>
-                                        <input type="text" class="form-control" name="title" id="title" required>
-                                    </div>
-                                    <!-- use for later -->
-                                    <div class="form-group">
-                                        <label for="email">Your Email *</label>
-                                        <input type="email" class="form-control" id="email" required>
-                                    </div>
-                                    <div class="form-group mb-0">
-                                        <?php echo (!empty($user['id'])) ? '<button type="submit" id="saveReview" class="btn btn-primary px-3">Leave Your Review</button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="Leave Your Review</a>'; ?>
+                                        <input type="hidden" value="<?php echo (int)$product['prodid']; ?>" id="itemid" name="itemid">
+                                        <input type="hidden" class="form-control" id="rating" name="rating" value="1">
+                                        <input type="hidden" name="_csrf" value="<?php echo e(app_get_csrf_token()); ?>">
+                                        <input type="hidden" name="action" value="saveRating">
 
-                                    </div>
-                                </form>
+                                        <div class="form-group mb-0">
+                                            <button type="submit" id="saveReview" class="btn btn-primary px-3">Leave Your Review</button>
+                                        </div>
+                                    </form>
+                                <?php } else { ?>
+                                    <div class="alert alert-info mb-0">Please <a href="signin">sign in</a> to leave a review.</div>
+                                <?php } ?>
                             </div>
                         </div>
                     </div>
@@ -504,27 +530,6 @@ if ($ratingNumber && $count) {
     <!-- JavaScript Bundle with Popper -->
     <!-- Contact Javascript File -->
     <script src="js/rating.js"></script>
-
-    <script>
-        $(function() {
-            $('#add').click(function(e) {
-                e.preventDefault();
-                var quantity = $('#quantity').val();
-                quantity++;
-                $('#quantity').val(quantity);
-            });
-            $('#minus').click(function(e) {
-                e.preventDefault();
-                var quantity = $('#quantity').val();
-                if (quantity > 1) {
-                    quantity--;
-                }
-                $('#quantity').val(quantity);
-            });
-
-        });
-    </script>
-
 
     <!-- Template Javascript -->
 </body>

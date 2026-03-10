@@ -53,7 +53,7 @@ $keyword = trim((string)($_GET['q'] ?? ''));
                             if ($keyword === '') {
                                 echo '<h1 class="page-header px-3">Enter a keyword to search products.</h1>';
                             } else {
-                                $stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM products WHERE name LIKE :keyword OR description LIKE :keyword");
+                                $stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM products WHERE product_status = '1' AND (name LIKE :keyword OR description LIKE :keyword)");
                                 $stmt->execute(['keyword' => '%' . $keyword . '%']);
                                 $row = $stmt->fetch();
 
@@ -62,7 +62,7 @@ $keyword = trim((string)($_GET['q'] ?? ''));
                                 } else {
                                     echo '<h1 class="page-header px-3">Search results for <i>' . e($keyword) . '</i></h1>';
                                     try {
-                                        $stmt = $conn->prepare("SELECT * FROM products WHERE name LIKE :keyword OR description LIKE :keyword ORDER BY id DESC");
+                                        $stmt = $conn->prepare("SELECT * FROM products WHERE product_status = '1' AND (name LIKE :keyword OR description LIKE :keyword) ORDER BY id DESC");
                                         $stmt->execute(['keyword' => '%' . $keyword . '%']);
 
                                         foreach ($stmt as $row) {

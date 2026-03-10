@@ -7,6 +7,8 @@ include 'session.php';
 
 <head>
     <?php $pageTitle = "Bolakaz | Shop"; include "head.php"; ?>
+    <link href="css/jquery-ui.css" rel="stylesheet">
+    <link href="css/shop-filters.css" rel="stylesheet">
 </head>
 
 <body>
@@ -36,19 +38,15 @@ include 'session.php';
         <form method="post" id="search_form">
             <div class="row px-xl-5">
                 <!-- Shop Sidebar Start -->
-                <div class="col-lg-3 col-md-12">
+                <div class="col-lg-3 col-md-12 shop-filter-sidebar">
                     <!-- Price Start -->
                     <div class="border-bottom mb-4 pb-4">
                         <h5 class="font-weight-semi-bold mb-4">Filter by price</h5>
                         <div class="custom-control custom-checkbox justify-content-between mb-3">
-                            <input type="hidden" id="hidden_minimum_price" value="0" />
+                            <input type="hidden" id="hidden_minimum_price" value="500" />
                             <input type="hidden" id="hidden_maximum_price" value="65000" />
-                            <input type="hidden" id="cat" value="<?php if (isset($_GET['category'])) {
-                                                                        echo $_GET['category'];
-                                                                    } else {
-                                                                        echo "0";
-                                                                    } ?>">
-                            <p id="price_show"><?php echo app_money(1000); ?> - <?php echo app_money(65000); ?></p>
+                            <input type="hidden" id="cat" value="<?php echo e(isset($_GET['category']) ? (string)$_GET['category'] : '0'); ?>">
+                            <p id="price_show"><?php echo app_money(500); ?> - <?php echo app_money(65000); ?></p>
                             <div id="price_range"></div>
                         </div>
                     </div>
@@ -59,24 +57,28 @@ include 'session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by category</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT DISTINCT(category_name) FROM products GROUP BY category_name DESC";
+                        $query = "SELECT p.category_name AS category_slug, c.name AS category_name, COUNT(*) AS total
+                                  FROM products p
+                                  LEFT JOIN category c ON c.cat_slug = p.category_name
+                                  WHERE p.product_status = '1' AND p.category_name <> ''
+                                  GROUP BY p.category_name, c.name
+                                  ORDER BY c.name ASC, p.category_name ASC";
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
 
                         foreach ($result as $row) {
+                            $slug = (string)($row['category_slug'] ?? '');
+                            $label = trim((string)($row['category_name'] ?? ''));
+                            if ($label === '') {
+                                $label = ucwords(str_replace(['_', '-'], ' ', $slug));
+                            }
                         ?>
-                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
-                                <input type="checkbox" class="custom-control-input common_selector category" value="<?php echo $row['category_name']; ?>" id="<?php echo 'cat-' . $n ?>">
-                                <label class=" custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo ucwords(str_replace("_", " ", $row['category_name'])); ?></label>
-                                <span class="text-dark badge border font-weight-normal">
-                                    <?php $name = $row['category_name'];
-                                    $sql = "SELECT * FROM products WHERE category_name='$name'";
-
-                                    $stmt = $conn->prepare($sql);
-                                    $stmt->execute();
-                                    echo $stmt->rowCount();
-                                    ?>
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3 sf-filter-option">
+                                <input type="checkbox" class="custom-control-input common_selector category" value="<?php echo e($slug); ?>" id="<?php echo 'cat-' . $n ?>">
+                                <label class="custom-control-label" for="<?php echo 'cat-' . $n ?>"><?php echo e(ucwords($label)); ?></label>
+                                <span class="text-dark badge border font-weight-normal sf-filter-count">
+                                    <?php echo (int)($row['total'] ?? 0); ?>
                                 </span>
                             </div>
                         <?php
@@ -92,22 +94,21 @@ include 'session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by brand</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT DISTINCT(brand) FROM products GROUP BY brand DESC";
+                        $query = "SELECT DISTINCT(brand) FROM products WHERE product_status = '1' AND brand <> '' ORDER BY brand DESC";
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
                         foreach ($result as $row) {
                         ?>
-                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3">
-                                <input type="checkbox" class="custom-control-input common_selector brand" value="<?php echo $row['brand']; ?>" id="<?php echo 'brand-' . $n ?>">
-                                <label class=" custom-control-label" for="<?php echo 'brand-' . $n ?>"><?php echo ucwords($row['brand']); ?></label>
-                                <span class="text-dark badge border font-weight-normal">
-                                    <?php $name = $row['brand'];
-                                    $sql = "SELECT * FROM products WHERE brand='$name'";
-
+                            <div class="custom-control custom-checkbox checkbox d-flex align-items-center justify-content-between mb-3 sf-filter-option">
+                                <input type="checkbox" class="custom-control-input common_selector brand" value="<?php echo e((string)$row['brand']); ?>" id="<?php echo 'brand-' . $n ?>">
+                                <label class="custom-control-label" for="<?php echo 'brand-' . $n ?>"><?php echo e(ucwords(str_replace(['_', '-'], ' ', (string)$row['brand']))); ?></label>
+                                <span class="text-dark badge border font-weight-normal sf-filter-count">
+                                    <?php $name = (string)$row['brand'];
+                                    $sql = "SELECT COUNT(*) AS total FROM products WHERE product_status = '1' AND brand = :name";
                                     $stmt = $conn->prepare($sql);
-                                    $stmt->execute();
-                                    echo $stmt->rowCount();
+                                    $stmt->execute(['name' => $name]);
+                                    echo (int)($stmt->fetch()['total'] ?? 0);
                                     ?>
                                 </span>
                             </div>

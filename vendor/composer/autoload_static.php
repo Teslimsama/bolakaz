@@ -14,6 +14,10 @@ class ComposerStaticInit99c11773273cd7e70bf7d7ca15ad012f
     );
 
     public static $prefixLengthsPsr4 = array (
+        'W' => 
+        array (
+            'Whoops\\' => 7,
+        ),
         'T' => 
         array (
             'Twilio\\' => 7,
@@ -26,8 +30,13 @@ class ComposerStaticInit99c11773273cd7e70bf7d7ca15ad012f
         ),
         'P' => 
         array (
+            'Psr\\Log\\' => 8,
             'PhpOption\\' => 10,
             'PHPMailer\\PHPMailer\\' => 20,
+        ),
+        'M' => 
+        array (
+            'Monolog\\' => 8,
         ),
         'G' => 
         array (
@@ -40,6 +49,10 @@ class ComposerStaticInit99c11773273cd7e70bf7d7ca15ad012f
     );
 
     public static $prefixDirsPsr4 = array (
+        'Whoops\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/filp/whoops/src/Whoops',
+        ),
         'Twilio\\' => 
         array (
             0 => __DIR__ . '/..' . '/twilio/sdk/src/Twilio',
@@ -56,6 +69,10 @@ class ComposerStaticInit99c11773273cd7e70bf7d7ca15ad012f
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
+        'Psr\\Log\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/log/src',
+        ),
         'PhpOption\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
@@ -63,6 +80,10 @@ class ComposerStaticInit99c11773273cd7e70bf7d7ca15ad012f
         'PHPMailer\\PHPMailer\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
+        ),
+        'Monolog\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
         'GrahamCampbell\\ResultType\\' => 
         array (

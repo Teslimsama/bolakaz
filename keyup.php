@@ -8,11 +8,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $page = isset($_POST['page']) ? max(1, (int)$_POST['page']) : 1;
     $offset = ($page - 1) * $limit;
 
-    $countStmt = $conn->prepare("SELECT COUNT(*) AS total FROM products WHERE name LIKE :query OR description LIKE :query");
+    $countStmt = $conn->prepare("SELECT COUNT(*) AS total FROM products WHERE product_status = '1' AND (name LIKE :query OR description LIKE :query)");
     $countStmt->execute([':query' => '%' . $query . '%']);
     $total = (int)($countStmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0);
 
-    $stmt = $conn->prepare("SELECT * FROM products WHERE name LIKE :query OR description LIKE :query LIMIT :offset, :limit");
+    $stmt = $conn->prepare("SELECT * FROM products WHERE product_status = '1' AND (name LIKE :query OR description LIKE :query) ORDER BY id DESC LIMIT :offset, :limit");
     $stmt->bindValue(':query', '%' . $query . '%', PDO::PARAM_STR);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);

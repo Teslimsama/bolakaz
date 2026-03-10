@@ -126,7 +126,7 @@
 
             <label for="edit_quantity" class="col-sm-1 control-label">Quantity</label>
             <div class="col-sm-5">
-              <input type="text" class="form-control" id="edit_quantity" name="quantity">
+              <input type="number" min="0" class="form-control" id="edit_quantity" name="quantity">
             </div>
           </div>
 
@@ -141,6 +141,50 @@
               <select name="size[]" id="edit_size_1" class="form-control selectpicker" multiple data-live-search="true">
                 <option value="">--Select any size--</option>
               </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_product_status" class="col-sm-1 control-label">Status</label>
+            <div class="col-sm-5">
+              <select class="form-control" id="edit_product_status" name="product_status">
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-12 control-label text-left"><b>Additional Info</b></label>
+          </div>
+          <div class="form-group">
+            <label for="edit_spec_fit" class="col-sm-1 control-label">Fit</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="edit_spec_fit" name="edit_spec_fit">
+            </div>
+            <label for="edit_spec_composition" class="col-sm-1 control-label">Composition</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="edit_spec_composition" name="edit_spec_composition">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit_spec_care_instructions" class="col-sm-1 control-label">Care</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="edit_spec_care_instructions" name="edit_spec_care_instructions">
+            </div>
+            <label for="edit_spec_dimensions" class="col-sm-1 control-label">Dimensions</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="edit_spec_dimensions" name="edit_spec_dimensions">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit_spec_shipping_class" class="col-sm-1 control-label">Shipping</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="edit_spec_shipping_class" name="edit_spec_shipping_class">
+            </div>
+            <label for="edit_spec_origin" class="col-sm-1 control-label">Origin</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="edit_spec_origin" name="edit_spec_origin">
             </div>
           </div>
 

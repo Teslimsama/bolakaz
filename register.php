@@ -3,16 +3,28 @@
 include 'session.php';
 require_once __DIR__ . '/lib/mailer.php';
 
-if (isset($_POST['submit'])) {
-	$firstname = $_POST['firstname'];
-	$lastname = $_POST['lastname'];
-	$email = $_POST['email'];
-	$gender = $_POST['gender'];
-	$phone =$_POST['phone'];
-	$password = $_POST['password'];
-	$repassword = $_POST['repassword'];
-	$referral = $_POST['referral'];
-	$dob=$_POST['dob'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	$firstname = trim((string)($_POST['firstname'] ?? ''));
+	$lastname = trim((string)($_POST['lastname'] ?? ''));
+	$email = trim((string)($_POST['email'] ?? ''));
+	$gender = trim((string)($_POST['gender'] ?? ''));
+	$phone = trim((string)($_POST['phone'] ?? ''));
+	$password = (string)($_POST['password'] ?? '');
+	$repassword = (string)($_POST['repassword'] ?? '');
+	$referral = trim((string)($_POST['referral'] ?? ''));
+	$dob = trim((string)($_POST['dob'] ?? ''));
+
+	if ($firstname === '' || $lastname === '' || $email === '' || $gender === '' || $phone === '' || $password === '' || $repassword === '' || $referral === '' || $dob === '') {
+		$_SESSION['error'] = 'Please complete all signup fields.';
+		header('location: signup');
+		exit();
+	}
+
+	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		$_SESSION['error'] = 'Enter a valid email address.';
+		header('location: signup');
+		exit();
+	}
 
 	$_SESSION['firstname'] = $firstname;
 	$_SESSION['lastname'] = $lastname;
@@ -40,6 +52,7 @@ if (isset($_POST['submit'])) {
 	if ($password != $repassword) {
 		$_SESSION['error'] = 'Passwords did not match';
 		header('location: signup');
+		exit();
 	} else {
 		$conn = $pdo->open();
 
@@ -49,6 +62,7 @@ if (isset($_POST['submit'])) {
 		if ($row['numrows'] > 0) {
 			$_SESSION['error'] = 'Email already taken';
 			header('location: signup');
+			exit();
 		} else {
 			$now = date('Y-m-d');
 			$password = password_hash($password, PASSWORD_DEFAULT);
@@ -57,8 +71,23 @@ if (isset($_POST['submit'])) {
 			$code = bin2hex(random_bytes(16));
 
 			try {
-				$stmt = $conn->prepare("INSERT INTO users (email, password, firstname, lastname, gender,dob, phone, activate_code, created_on, referral) VALUES (:email, :password, :firstname, :lastname, :gender, :dob, :phone, :code, :now, :referral)");
-				$stmt->execute(['email' => $email, 'password' => $password, 'firstname' => $firstname, 'lastname' => $lastname,'gender'=>$gender,'dob'=>$dob, 'phone'=>$phone, 'code' => $code, 'now' => $now,'referral'=>$referral]);
+				$stmt = $conn->prepare("INSERT INTO users (email, password, type, firstname, lastname, address, phone, gender, dob, photo, status, activate_code, created_on, referral) VALUES (:email, :password, :type, :firstname, :lastname, :address, :phone, :gender, :dob, :photo, :status, :code, :now, :referral)");
+				$stmt->execute([
+					'email' => $email,
+					'password' => $password,
+					'type' => 0,
+					'firstname' => $firstname,
+					'lastname' => $lastname,
+					'address' => '',
+					'phone' => $phone,
+					'gender' => $gender,
+					'dob' => $dob,
+					'photo' => '',
+					'status' => 0,
+					'code' => $code,
+					'now' => $now,
+					'referral' => $referral
+				]);
 				$userid = $conn->lastInsertId();
 
 				
@@ -87,24 +116,36 @@ if (isset($_POST['submit'])) {
 						unset($_SESSION['firstname']);
 						unset($_SESSION['lastname']);
 						unset($_SESSION['email']);
-						$_SESSION['success'] = 'Account created. Check your email to activate.';
+						$mailMode = strtolower((string)app_mail_env('MAIL_MAILER', 'smtp'));
+						if ($mailMode === 'log') {
+							$_SESSION['success'] = 'Account created. Activation mail is in log mode. Check storage/logs/app.log for the activation link.';
+						} else {
+							$_SESSION['success'] = 'Account created. Check your email to activate.';
+						}
 					} else {
 						$_SESSION['error'] = 'Account created, but we could not send activation email now. Please try again.';
 					}
 					header('location: signup');
+					exit();
 				} catch (Throwable $e) {
 					$_SESSION['error'] = 'Message could not be sent at this time.';
 					header('location: signup');
+					exit();
 				}
 			} catch (PDOException $e) {
-				$_SESSION['error'] = $e->getMessage();
-				header('location: register');
+				error_log('Signup insert failed: ' . $e->getMessage());
+				$_SESSION['error'] = 'Unable to create account right now. Please try again.';
+				header('location: signup');
+				exit();
 			}
 
 			$pdo->close();
 		}
 	}
 } else {
-	$_SESSION['error'] = 'Fill up signup form first';
+	if (!isset($_SESSION['error'])) {
+		$_SESSION['error'] = 'Fill up signup form first';
+	}
 	header('location: signup');
+	exit();
 }

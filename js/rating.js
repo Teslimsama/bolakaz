@@ -1,67 +1,68 @@
-$(function() {
-	// $('#loginForm').on('submit', function(e){
-	// 	$.ajax({
-	// 		type: 'POST',
-	// 		url : "action.php",
-	// 		dataType: "json",			
-	// 		data:$(this).serialize(),
-	// 		success: function (response) {
-	// 			if(response.success == 1) {
-	// 				$('#loginModal').modal('hide');
-	// 				$('#loggedPanel').removeClass('hidden');
-	// 				$('#loggedUser').text(response.username);
-	// 				$( "#rateProduct" ).addClass('login');
-	// 				// rating section
-	// 				$("#ratingDetails").hide();
-	// 				$("#ratingSection").show();		
-	// 			} else {
-	// 				$('#loginError').show();
-	// 			}				
-	// 		}
-	// 	});
-	// 	return false;
-	// });
-	
-	// // rating form hide/show
- 	// $( "#rateProduct" ).click(function() {
-	// 	if(!$(this).hasClass('login')) {
-	// 		$('#loginModal').modal('show');
-	// 	} else {		
-	// 		$("#ratingDetails").hide();
-	// 		$("#ratingSection").show();
-	// 	}
-	// });	
-	// $( "#cancelReview" ).click(function() {
-	// 	$("#ratingSection").hide();
-	// 	$("#ratingDetails").show();		
-	// });	
-	// implement start rating select/deselect
-	$( ".rateButton" ).click(function() {
-		if($(this).hasClass('btn-grey')) {			
-			$(this).removeClass('btn-grey btn-default').addClass('btn-primary star-selected');
-			$(this).prevAll('.rateButton').removeClass('btn-grey btn-default').addClass('btn-primary star-selected');
-			$(this).nextAll('.rateButton').removeClass('btn-primary star-selected').addClass('btn-grey btn-default');			
-		} else {						
-			$(this).nextAll('.rateButton').removeClass('btn-primary star-selected').addClass('btn-grey btn-default');
-		}
-		$("#rating").val($('.star-selected').length);		
-	});
-	// save review using Ajax
-	$('#ratingForm').on('submit', function(event){
-		event.preventDefault();
-		var formData = $(this).serialize();
-		$.ajax({
-			type : 'POST',
-			dataType: "json",	
-			url : 'action.php',					
-			data : formData,
-			success:function(response){
-				if (response.success == 1) {
-					console.log(response);
-					$("#ratingForm")[0].reset();
-					window.location.reload();
-				}
-			}
-		});		
-	});
+$(function () {
+  function showFeedback(message, isError) {
+    var $feedback = $("#reviewFeedback");
+    if (!$feedback.length) {
+      return;
+    }
+    $feedback
+      .removeClass("alert-success alert-danger d-none")
+      .addClass(isError ? "alert-danger" : "alert-success")
+      .text(message);
+  }
+
+  $(".rateButton").on("click", function () {
+    var selectedIndex = $(".rateButton").index(this) + 1;
+
+    $(".rateButton")
+      .removeClass("btn-primary star-selected")
+      .addClass("btn-grey btn-default");
+
+    $(".rateButton").each(function (idx) {
+      if (idx < selectedIndex) {
+        $(this)
+          .removeClass("btn-grey btn-default")
+          .addClass("btn-primary star-selected");
+      }
+    });
+
+    $("#rating").val(selectedIndex);
+  });
+
+  $("#ratingForm").on("submit", function (event) {
+    event.preventDefault();
+    var $form = $(this);
+    var $submit = $("#saveReview");
+
+    $submit.prop("disabled", true).addClass("is-loading");
+
+    $.ajax({
+      type: "POST",
+      dataType: "json",
+      url: "action.php",
+      data: $form.serialize(),
+    })
+      .done(function (response) {
+        if (response && response.success) {
+          showFeedback(response.message || "Review saved successfully.", false);
+          setTimeout(function () {
+            window.location.reload();
+          }, 700);
+          return;
+        }
+        showFeedback(
+          (response && response.message) || "Unable to save review right now.",
+          true
+        );
+      })
+      .fail(function (xhr) {
+        var message = "Unable to save review right now.";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          message = xhr.responseJSON.message;
+        }
+        showFeedback(message, true);
+      })
+      .always(function () {
+        $submit.prop("disabled", false).removeClass("is-loading");
+      });
+  });
 });

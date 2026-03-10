@@ -20,6 +20,14 @@ if ($cat !== '0' && $cat !== '') {
     $params['cat'] = $cat;
 }
 
+if (isset($_POST['search'])) {
+    $search = trim((string)$_POST['search']);
+    if ($search !== '') {
+        $where[] = "(name LIKE :search OR description LIKE :search)";
+        $params['search'] = '%' . $search . '%';
+    }
+}
+
 if (!empty($_POST['minimum_price']) && !empty($_POST['maximum_price'])) {
     $min = (float)$_POST['minimum_price'];
     $max = (float)$_POST['maximum_price'];

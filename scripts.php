@@ -47,11 +47,98 @@ if (!storefront_use_v2()) {
     }
 
     $(document).ready(function () {
+      function showProductCallout(message, isError) {
+        if (!$('#callout').length) {
+          return;
+        }
+        $('#callout').show();
+        $('.message').html(message);
+        if (isError) {
+          $('#callout').removeClass('alert-success').addClass('alert-danger');
+        } else {
+          $('#callout').removeClass('alert-danger').addClass('alert-success');
+        }
+      }
+
+      function unlockFormSubmission($form) {
+        $form.data('submitLocked', false);
+        $form.find('button[type="submit"], input[type="submit"]').each(function () {
+          var $btn = $(this);
+          $btn.prop('disabled', false).removeAttr('aria-disabled');
+          var originalText = $btn.data('originalText');
+          if (originalText) {
+            if ($btn.is('input')) {
+              $btn.val(originalText);
+            } else {
+              $btn.text(originalText);
+            }
+          }
+        });
+      }
+
+      // Prevent accidental duplicate actions on buttons.
+      $(document).on('click', 'button, input[type="submit"], .btn', function (e) {
+        var $btn = $(this);
+        if ($btn.is('[data-allow-multi-click]')) {
+          return;
+        }
+        if ($btn.data('clickLocked')) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return false;
+        }
+        $btn.data('clickLocked', true);
+        setTimeout(function () {
+          $btn.data('clickLocked', false);
+        }, 800);
+      });
+
+      $('form').on('submit', function () {
+        var $form = $(this);
+        if ($form.data('submitLocked')) {
+          return false;
+        }
+        $form.data('submitLocked', true);
+
+        $form.find('button[type="submit"], input[type="submit"]').each(function () {
+          var $btn = $(this);
+          if ($btn.is('[data-allow-multi-click]')) {
+            return;
+          }
+          $btn.prop('disabled', true).attr('aria-disabled', 'true');
+          if (!$btn.data('originalText')) {
+            $btn.data('originalText', $btn.is('input') ? $btn.val() : $btn.text());
+          }
+          if ($btn.is('input')) {
+            $btn.val('Please wait...');
+          } else {
+            $btn.text('Please wait...');
+          }
+        });
+      });
+
       getCart();
 
       $('#productForm').on('submit', function (e) {
         e.preventDefault();
-        var product = $(this).serialize();
+        var $form = $(this);
+        var product = $form.serialize();
+        var hasSizeOptions = $form.find('input[name="size"]').length > 0;
+        var hasColorOptions = $form.find('input[name="color"]').length > 0;
+        var selectedSize = $form.find('input[name="size"]:checked').val() || '';
+        var selectedColor = $form.find('input[name="color"]:checked').val() || '';
+
+        if (hasSizeOptions && selectedSize === '') {
+          showProductCallout('Please choose a size.', true);
+          unlockFormSubmission($form);
+          return;
+        }
+
+        if (hasColorOptions && selectedColor === '') {
+          showProductCallout('Please choose a color.', true);
+          unlockFormSubmission($form);
+          return;
+        }
 
         $.ajax({
           type: 'POST',
@@ -59,16 +146,14 @@ if (!storefront_use_v2()) {
           data: product,
           dataType: 'json',
           success: function (response) {
-            if ($('#callout').length) {
-              $('#callout').show();
-              $('.message').html(response.message);
-              if (response.error) {
-                $('#callout').removeClass('alert-success').addClass('alert-danger');
-              } else {
-                $('#callout').removeClass('alert-danger').addClass('alert-success');
-              }
-            }
+            showProductCallout(response.message, !!response.error);
             getCart();
+          },
+          error: function () {
+            showProductCallout('Unable to add item right now. Please try again.', true);
+          },
+          complete: function () {
+            unlockFormSubmission($form);
           }
         });
       });

@@ -9,6 +9,13 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	}
 }
 
+if (file_exists(__DIR__ . '/bootstrap/error_handler.php')) {
+	require_once __DIR__ . '/bootstrap/error_handler.php';
+	if (function_exists('app_register_error_handlers')) {
+		app_register_error_handlers();
+	}
+}
+
 class Database
 {
 
@@ -24,7 +31,7 @@ class Database
 			$this->conn = new PDO($this->server, $this->username, $this->password, $this->options);
 			return $this->conn;
 		} catch (PDOException $e) {
-			echo "There is some problem in connection: " . $e->getMessage();
+			throw $e;
 		}
 	}
 

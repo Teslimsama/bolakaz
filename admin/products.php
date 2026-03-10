@@ -131,7 +131,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                                 </div>
                             </td>
                             <td><a href='#description' data-toggle='modal' class='btn btn-info btn-sm btn-flat desc' data-id='" . (int)$row['id'] . "'><i class='fa fa-search'></i> View</a></td>
-                            <td>₦" . number_format((float)$row['price'], 2) . "</td>
+                            <td>" . app_money($row['price']) . "</td>
                             <td>" . $counter . "</td>
                             <td>
                               <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
@@ -234,7 +234,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
         url: 'category_fetch.php',
         dataType: 'json',
         success: function(response) {
-          $('#category').append(response);
+          $('#category').html("<option value='' selected>- Select -</option>" + response);
         }
       });
     }
@@ -245,13 +245,12 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
         url: 'category_fetch.php',
         dataType: 'json',
         success: function(response) {
-          $('#edit_category').append(response);
+          $('#edit_category').html(response);
 
           // Pre-select subcategory if already set
           var childCatId = selectedSubcategoryId;
           if (childCatId) {
             $('#edit_child_cat_div').removeClass('d-none');
-            console.log(selectedCategoryId, selectedSubcategoryId)
             // Fetch and populate subcategories
             $.ajax({
               url: 'subcategory_fetch.php',
@@ -395,36 +394,32 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
     $(document).ready(function() {
       // Initialize the selectpicker
       $('.selectpicker').selectpicker();
-      // Load data from JSON file
+
+      function buildOptions(items, placeholder) {
+        var html = '<option value="">' + placeholder + '</option>';
+        (items || []).forEach(function(item) {
+          html += '<option value="' + item + '">' + item + '</option>';
+        });
+        return html;
+      }
+
+      // Load normalized option values into both add/edit forms without duplicates
       function loadData() {
         $.getJSON('data.json', function(data) {
-          var attributes = data.attributes;
-          // Populate sizes
-          var sizeOptions = '';
-          attributes.sizes.forEach(function(size) {
-            sizeOptions += '<option value="' + size + '">' + size + '</option>';
-          });
-          $('#edit_size_1').append(sizeOptions);
-          $('.selectpicker').selectpicker('refresh');
+          var attributes = data.attributes || {};
+          $('#size_1').html(buildOptions(attributes.sizes, '--Select any size--'));
+          $('#edit_size_1').html(buildOptions(attributes.sizes, '--Select any size--'));
 
-          // Populate colors
-          var colorOptions = '';
-          attributes.colors.forEach(function(color) {
-            colorOptions += '<option value="' + color + '">' + color + '</option>';
-          });
-          $('#edit_color_1').append(colorOptions);
-          $('.selectpicker').selectpicker('refresh');
-          // Populate colors
-          var materialOptions = '';
-          attributes.materials.forEach(function(material) {
-            materialOptions += '<option value="' + material + '">' + material + '</option>';
-          });
-          $('#edit_material_1').append(materialOptions);
+          $('#color_1').html(buildOptions(attributes.colors, '--Select any color--'));
+          $('#edit_color_1').html(buildOptions(attributes.colors, '--Select any color--'));
+
+          $('#material_1').html(buildOptions(attributes.materials, '--Select any material--'));
+          $('#edit_material_1').html(buildOptions(attributes.materials, '--Select any material--'));
+
           $('.selectpicker').selectpicker('refresh');
         });
       }
 
-      // Call the function to load data
       loadData();
     });
 
@@ -449,6 +444,13 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
           $('#edit_price').val(response.price);
           $('#edit_quantity').val(response.qty);
           $('#edit_brand').val(response.brand);
+          $('#edit_product_status').val(String(response.product_status || 1));
+          $('#edit_spec_fit').val((response.additional_info && response.additional_info.fit) ? response.additional_info.fit : '');
+          $('#edit_spec_composition').val((response.additional_info && response.additional_info.composition) ? response.additional_info.composition : '');
+          $('#edit_spec_care_instructions').val((response.additional_info && response.additional_info.care_instructions) ? response.additional_info.care_instructions : '');
+          $('#edit_spec_dimensions').val((response.additional_info && response.additional_info.dimensions) ? response.additional_info.dimensions : '');
+          $('#edit_spec_shipping_class').val((response.additional_info && response.additional_info.shipping_class) ? response.additional_info.shipping_class : '');
+          $('#edit_spec_origin').val((response.additional_info && response.additional_info.origin) ? response.additional_info.origin : '');
           CKEDITOR.instances["editor2"].setData(response.description);
 
           // Prepare pre-selected data for attributes

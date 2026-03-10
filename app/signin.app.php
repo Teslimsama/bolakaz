@@ -2,7 +2,7 @@
 include '../session.php';
 $conn = $pdo->open();
 
-if (isset($_POST['login'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	$email = trim((string)($_POST['email'] ?? ''));
 	$password = (string)($_POST['password'] ?? '');
@@ -39,7 +39,9 @@ if (isset($_POST['login'])) {
 		$_SESSION['error'] = 'Unable to sign in right now. Please try again later.';
 	}
 } else {
-	$_SESSION['error'] = 'Input login credentials first.';
+	if (!isset($_SESSION['error'])) {
+		$_SESSION['error'] = 'Input login credentials first.';
+	}
 }
 
 $pdo->close();

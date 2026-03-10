@@ -17,6 +17,43 @@
 			}
 		});
 
+		// Prevent accidental duplicate actions on buttons.
+		$(document).on('click', 'button, input[type="submit"], .btn', function(e) {
+			var $btn = $(this);
+			if ($btn.is('[data-allow-multi-click]')) {
+				return;
+			}
+			if ($btn.data('clickLocked')) {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				return false;
+			}
+			$btn.data('clickLocked', true);
+			setTimeout(function() {
+				$btn.data('clickLocked', false);
+			}, 800);
+		});
+
+		$('form').on('submit', function() {
+			var $form = $(this);
+			if ($form.data('submitLocked')) {
+				return false;
+			}
+			$form.data('submitLocked', true);
+			$form.find('button[type="submit"], input[type="submit"]').each(function() {
+				var $btn = $(this);
+				if ($btn.is('[data-allow-multi-click]')) {
+					return;
+				}
+				$btn.prop('disabled', true).attr('aria-disabled', 'true');
+				if ($btn.is('input')) {
+					$btn.val('Please wait...');
+				} else {
+					$btn.text('Please wait...');
+				}
+			});
+		});
+
 		// Datatable
 		$('#example1').DataTable()
 		//CK Editor
