@@ -1,34 +1,26 @@
 <header class="main-header">
-  <!-- Logo -->
-  <a href="#" class="logo">
-    <!-- mini logo for sidebar mini 50x50 pixels -->
-    <span class="logo-mini"><b>B</b>K</span>
-    <!-- logo for regular state and mobile devices -->
-    <span class="m-0 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">B</span>Bolakaz.Enterprise</span>
+  <a href="home" class="logo">
+    <span class="logo-lg"><span style="display:inline-block;background:#0f766e;color:#fff;border-radius:8px;padding:4px 10px;margin-right:8px;">BK</span>Bolakaz Admin</span>
   </a>
-  <!-- Header Navbar: style can be found in header.less -->
-  <nav class="navbar navbar-static-top">
-    <!-- Sidebar toggle button-->
-    <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
-      <span class="sr-only">Toggle navigation</span>
+
+  <nav class="navbar navbar-static-top" role="navigation">
+    <a href="#" class="sidebar-toggle" data-admin-sidebar-toggle aria-label="Toggle sidebar">
+      <i class="fa fa-bars"></i>
     </a>
 
     <div class="navbar-custom-menu">
       <ul class="nav navbar-nav">
-        <!-- User Account: style can be found in dropdown.less -->
         <li class="dropdown user user-menu">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-            <img src="<?php echo (!empty($admin['photo'])) ? '../images/' . $admin['photo'] : '../images/profile.jpg'; ?>" class="user-image" alt="User Image">
-            <span class="hidden-xs"><?php echo $admin['firstname'] . ' ' . $admin['lastname']; ?></span>
+            <img src="<?php echo (!empty($admin['photo'])) ? '../images/' . $admin['photo'] : '../images/profile.jpg'; ?>" class="user-image" alt="Admin">
+            <span class="hidden-xs"><?php echo e($admin['firstname'] . ' ' . $admin['lastname']); ?></span>
           </a>
           <ul class="dropdown-menu">
-            <!-- User image -->
-            <li class="user-header">
-              <img src="<?php echo (!empty($admin['photo'])) ? '../images/' . $admin['photo'] : '../images/profile.jpg'; ?>" class="img-circle" alt="User Image">
-
+            <li class="user-header" style="background:#0f766e;">
+              <img src="<?php echo (!empty($admin['photo'])) ? '../images/' . $admin['photo'] : '../images/profile.jpg'; ?>" class="img-circle" alt="Admin">
               <p>
-                <?php echo $admin['firstname'] . ' ' . $admin['lastname']; ?>
-                <small>Member since <?php echo date('M. Y', strtotime($admin['created_on'])); ?></small>
+                <?php echo e($admin['firstname'] . ' ' . $admin['lastname']); ?>
+                <small>Member since <?php echo e(date('M Y', strtotime((string)$admin['created_on']))); ?></small>
               </p>
             </li>
             <li class="user-footer">
@@ -36,7 +28,7 @@
                 <a href="#profile" data-toggle="modal" class="btn btn-default btn-flat" id="admin_profile">Update</a>
               </div>
               <div class="pull-right">
-                <a href="../logout.php" class="btn btn-default btn-flat">Sign out</a>
+                <a href="../logout.php" class="btn btn-danger btn-flat">Sign out</a>
               </div>
             </li>
           </ul>

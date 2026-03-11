@@ -52,12 +52,14 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
         <div class="row">
           <div class="col-xs-12">
             <div class="box">
-              <div class="box-header with-border">
-                <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm btn-flat" id="addproduct"><i class="fa fa-plus"></i> New</a>
-                <div class="pull-right">
-                  <form class="form-inline">
+              <div class="box-header with-border admin-list-toolbar">
+                <div class="admin-list-toolbar-main">
+                  <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm" id="addproduct"><i class="fa fa-plus"></i> Add Product</a>
+                </div>
+                <div class="admin-list-toolbar-filters">
+                  <form class="form-inline" onsubmit="return false;">
                     <div class="form-group">
-                      <label>Category: </label>
+                      <label for="select_category">Category</label>
                       <select class="form-control input-sm" id="select_category">
                         <option value="0">ALL</option>
                         <?php
@@ -77,6 +79,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                         ?>
                       </select>
                     </div>
+                    <button type="button" id="clear_product_filters" class="btn btn-default btn-sm">Reset</button>
                   </form>
                 </div>
               </div>
@@ -220,6 +223,10 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
         } else {
           window.location = 'products.php?category=' + val;
         }
+      });
+
+      $('#clear_product_filters').on('click', function() {
+        window.location = 'products.php';
       });
 
       $('#addproduct').click(function(e) {

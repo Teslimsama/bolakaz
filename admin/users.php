@@ -47,11 +47,11 @@
         <div class="row">
           <div class="col-xs-12">
             <div class="box">
-              <div class="box-header with-border">
-                <div class="pull-left">
-                  <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm btn-flat"><i class="fa fa-plus"></i> New</a>
+              <div class="box-header with-border admin-list-toolbar">
+                <div class="admin-list-toolbar-main">
+                  <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> Add User</a>
                 </div>
-                <div class="pull-right">
+                <div class="admin-list-toolbar-filters">
                   <div class="form-inline">
                     <div class="form-group">
                       <label for="filter_user_status" class="sr-only">Status</label>
@@ -65,7 +65,7 @@
                       <label for="filter_user_date" class="sr-only">Date Added</label>
                       <input type="text" id="filter_user_date" class="form-control input-sm" placeholder="Date range" style="min-width: 190px;">
                     </div>
-                    <button type="button" id="clear_user_filters" class="btn btn-default btn-sm btn-flat" style="margin-left:8px;">Clear</button>
+                    <button type="button" id="clear_user_filters" class="btn btn-default btn-sm" style="margin-left:8px;">Reset</button>
                   </div>
                 </div>
               </div>

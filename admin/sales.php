@@ -25,8 +25,8 @@
         <div class="row">
           <div class="col-xs-12">
             <div class="box">
-              <div class="box-header with-border">
-                <div class="pull-left">
+              <div class="box-header with-border admin-list-toolbar">
+                <div class="admin-list-toolbar-filters">
                   <div class="form-inline">
                     <div class="form-group">
                       <label for="filter_status" class="sr-only">Status</label>
@@ -47,9 +47,10 @@
                         <option value="other">Other</option>
                       </select>
                     </div>
+                    <button type="button" id="clear_sales_filters" class="btn btn-default btn-sm" style="margin-left:8px;">Reset</button>
                   </div>
                 </div>
-                <div class="pull-right">
+                <div class="admin-list-toolbar-main">
                   <form method="POST" class="form-inline" action="sales_print.php">
                     <div class="input-group">
                       <div class="input-group-addon">
@@ -57,7 +58,7 @@
                       </div>
                       <input type="text" class="form-control pull-right col-sm-8" id="reservation" name="date_range">
                     </div>
-                    <button type="submit" class="btn btn-success btn-sm btn-flat" name="print"><span class="glyphicon glyphicon-print"></span> Print</button>
+                    <button type="submit" class="btn btn-primary btn-sm" name="print"><span class="glyphicon glyphicon-print"></span> Print Report</button>
                   </form>
                 </div>
               </div>
@@ -307,6 +308,14 @@
       });
 
       $('#filter_status, #filter_payment').on('change', function() {
+        if (salesTable) {
+          salesTable.draw();
+        }
+      });
+
+      $('#clear_sales_filters').on('click', function() {
+        $('#filter_status').val('');
+        $('#filter_payment').val('');
         if (salesTable) {
           salesTable.draw();
         }

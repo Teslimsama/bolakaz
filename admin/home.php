@@ -1,291 +1,258 @@
 <?php
 include 'session.php';
-include 'format.php';
-?>
-<?php
-$today = date('Y-m-d');
-$year = date('Y');
-if (isset($_GET['year'])) {
-  $year = $_GET['year'];
+
+$year = (int)($_GET['year'] ?? date('Y'));
+if ($year < 2015 || $year > 2100) {
+  $year = (int)date('Y');
+}
+$defaultStart = sprintf('%04d-01-01', $year);
+$defaultEnd = sprintf('%04d-12-31', $year);
+
+$startDate = trim((string)($_GET['start_date'] ?? $defaultStart));
+$endDate = trim((string)($_GET['end_date'] ?? $defaultEnd));
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
+  $startDate = $defaultStart;
+}
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+  $endDate = $defaultEnd;
+}
+if ($startDate > $endDate) {
+  $tmp = $startDate;
+  $startDate = $endDate;
+  $endDate = $tmp;
 }
 
-$conn = $pdo->open();
+include 'header.php';
 ?>
-<?php include 'header.php'; ?>
 
-<body class="hold-transition skin-blue sidebar-mini">
+<body>
   <div class="wrapper">
-
     <?php include 'navbar.php'; ?>
     <?php include 'menubar.php'; ?>
 
-    <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
-      <!-- Content Header (Page header) -->
       <section class="content-header">
-        <h1>
-          Dashboard
-        </h1>
+        <h1>Dashboard</h1>
         <ol class="breadcrumb">
-          <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+          <li><a href="home"><i class="fa fa-home"></i> Home</a></li>
           <li class="active">Dashboard</li>
         </ol>
       </section>
 
-      <!-- Main content -->
       <section class="content">
-        <?php
-        if (isset($_SESSION['error'])) {
-          echo "
-            <div class='alert alert-danger alert-dismissible'>
-              <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
-              <h4><i class='icon fa fa-warning'></i> Error!</h4>
-              " . $_SESSION['error'] . "
-            </div>
-          ";
-          unset($_SESSION['error']);
-        }
-        if (isset($_SESSION['success'])) {
-          echo "
-            <div class='alert alert-success alert-dismissible'>
-              <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
-              <h4><i class='icon fa fa-check'></i> Success!</h4>
-              " . $_SESSION['success'] . "
-            </div>
-          ";
-          unset($_SESSION['success']);
-        }
-        ?>
-        <!-- Small boxes (Stat box) -->
-        <div class="row">
-          <div class="col-lg-3 col-xs-12">
-            <!-- small box -->
-            <div class="small-box bg-aqua">
-              <div class="inner">
-                <?php
-                $stmt = $conn->prepare("SELECT * FROM details LEFT JOIN products ON products.id=details.product_id");
-                $stmt->execute();
-
-                $total = 0;
-                foreach ($stmt as $srow) {
-                  $subtotal = $srow['price'] * $srow['quantity'];
-                  $total += $subtotal;
-                }
-
-                echo "<h3>₦ " . number_format_short($total, 2) . "</h3>";
-                ?>
-                <p>Total Sales</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-shopping-cart"></i>
-              </div>
-              <a href="sales" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
+        <?php if (isset($_SESSION['error'])): ?>
+          <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4><i class="icon fa fa-warning"></i> Error</h4>
+            <?php echo e($_SESSION['error']); ?>
           </div>
-          <!-- ./col -->
-          <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box bg-green">
-              <div class="inner">
-                <?php
-                $stmt = $conn->prepare("SELECT *, COUNT(*) AS numrows FROM products");
-                $stmt->execute();
-                $prow =  $stmt->fetch();
+          <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
 
-                echo "<h3>" . $prow['numrows'] . "</h3>";
-                ?>
-
-                <p>Number of Products</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-barcode"></i>
-              </div>
-              <a href="products" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
+        <?php if (isset($_SESSION['success'])): ?>
+          <div class="alert alert-success alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4><i class="icon fa fa-check"></i> Success</h4>
+            <?php echo e($_SESSION['success']); ?>
           </div>
-          <!-- ./col -->
-          <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box bg-yellow">
-              <div class="inner">
-                <?php
-                $stmt = $conn->prepare("SELECT *, COUNT(*) AS numrows FROM users");
-                $stmt->execute();
-                $urow =  $stmt->fetch();
+          <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
 
-                echo "<h3>" . $urow['numrows'] . "</h3>";
-                ?>
-
-                <p>Number of Users</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-users"></i>
-              </div>
-              <a href="users" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+        <div class="admin-toolbar">
+          <form id="dashboardFilters" class="row" style="margin:0;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+            <div class="form-group" style="min-width:170px;">
+              <label for="year">Year</label>
+              <select id="year" name="year" class="form-control">
+                <?php for ($i = ((int)date('Y') - 6); $i <= ((int)date('Y') + 1); $i++): ?>
+                  <option value="<?php echo $i; ?>" <?php echo ($i === $year) ? 'selected' : ''; ?>><?php echo $i; ?></option>
+                <?php endfor; ?>
+              </select>
             </div>
-          </div>
-          <!-- ./col -->
-          <div class="col-lg-3 col-xs-6">
-            <!-- small box -->
-            <div class="small-box bg-red">
-              <div class="inner">
-                <?php
-                $stmt = $conn->prepare("SELECT * FROM details LEFT JOIN sales ON sales.id=details.sales_id LEFT JOIN products ON products.id=details.product_id WHERE sales_date=:sales_date");
-                $stmt->execute(['sales_date' => $today]);
-
-                $total = 0;
-                foreach ($stmt as $trow) {
-                  $subtotal = $trow['price'] * $trow['quantity'];
-                  $total += $subtotal;
-                }
-
-                echo "<h3>₦ " . number_format_short($total, 2) . "</h3>";
-
-                ?>
-
-                <p>Sales Today</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-money"></i>
-              </div>
-              <a href="sales" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            <div class="form-group" style="min-width:190px;">
+              <label for="start_date">Start Date</label>
+              <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo e($startDate); ?>">
             </div>
-          </div>
-          <!-- ./col -->
-        </div>
-        <!-- /.row -->
-        <div class="row">
-          <div class="col-xs-12">
-            <div class="box">
-              <div class="box-header with-border">
-                <h3 class="box-title">Monthly Sales Report</h3>
-                <div class="box-tools pull-right">
-                  <form class="form-inline">
-                    <div class="form-group">
-                      <label>Select Year: </label>
-                      <select class="form-control input-sm" id="select_year">
-                        <?php
-                        for ($i = 2015; $i <= 2065; $i++) {
-                          $selected = ($i == $year) ? 'selected' : '';
-                          echo "
-                            <option value='" . $i . "' " . $selected . ">" . $i . "</option>
-                          ";
-                        }
-                        ?>
-                      </select>
-                    </div>
-                  </form>
-                </div>
-              </div>
-              <div class="box-body">
-                <div class="chart">
-                  <br>
-                  <div id="legend" class="text-center"></div>
-                  <canvas id="barChart" style="height:350px"></canvas>
-                </div>
-              </div>
+            <div class="form-group" style="min-width:190px;">
+              <label for="end_date">End Date</label>
+              <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo e($endDate); ?>">
             </div>
-          </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Apply Filters</button>
+            </div>
+          </form>
         </div>
 
+        <div class="admin-grid admin-grid-3" id="kpiCards">
+          <div class="kpi-card"><div class="kpi-card-label">Total Revenue</div><div class="kpi-card-value" id="kpi_total_revenue">-</div><div class="kpi-card-hint">All time</div></div>
+          <div class="kpi-card"><div class="kpi-card-label">Revenue Today</div><div class="kpi-card-value" id="kpi_revenue_today">-</div><div class="kpi-card-hint">Current day</div></div>
+          <div class="kpi-card"><div class="kpi-card-label">Total Orders</div><div class="kpi-card-value" id="kpi_total_orders">-</div><div class="kpi-card-hint">All placed orders</div></div>
+          <div class="kpi-card"><div class="kpi-card-label">Total Products</div><div class="kpi-card-value" id="kpi_total_products">-</div><div class="kpi-card-hint">Catalog size</div></div>
+          <div class="kpi-card"><div class="kpi-card-label">Total Users</div><div class="kpi-card-value" id="kpi_total_users">-</div><div class="kpi-card-hint">Registered customers</div></div>
+          <div class="kpi-card"><div class="kpi-card-label">Low Stock</div><div class="kpi-card-value" id="kpi_low_stock_count">-</div><div class="kpi-card-hint">Qty <= 5</div></div>
+        </div>
+
+        <div class="admin-grid admin-grid-2" style="margin-top:16px;">
+          <div class="chart-card">
+            <h3 class="chart-title">Monthly Revenue Trend</h3>
+            <div id="chartMonthlyRevenue"></div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Monthly Order Count</h3>
+            <div id="chartMonthlyOrders"></div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Top 10 Products by Revenue</h3>
+            <div id="chartTopProducts"></div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Sales by Category Share</h3>
+            <div id="chartCategoryShare"></div>
+          </div>
+        </div>
       </section>
-      <!-- right col -->
     </div>
+
     <?php include 'footer.php'; ?>
-
   </div>
-  <!-- ./wrapper -->
 
-  <!-- Chart Data -->
-  <?php
-  $months = array();
-  $sales = array();
-  for ($m = 1; $m <= 12; $m++) {
-    try {
-      $stmt = $conn->prepare("SELECT * FROM details LEFT JOIN sales ON sales.id=details.sales_id LEFT JOIN products ON products.id=details.product_id WHERE MONTH(sales_date)=:month AND YEAR(sales_date)=:year");
-      $stmt->execute(['month' => $m, 'year' => $year]);
-      $total = 0;
-      foreach ($stmt as $srow) {
-        $subtotal = $srow['price'] * $srow['quantity'];
-        $total += $subtotal;
-      }
-      array_push($sales, round($total, 2));
-    } catch (PDOException $e) {
-      echo $e->getMessage();
-    }
-
-    $num = str_pad($m, 2, 0, STR_PAD_LEFT);
-    $month =  date('M', mktime(0, 0, 0, $m, 1));
-    array_push($months, $month);
-  }
-
-  $months = json_encode($months);
-  $sales = json_encode($sales);
-
-  ?>
-  <!-- End Chart Data -->
-
-  <?php $pdo->close(); ?>
   <?php include 'scripts.php'; ?>
   <script>
-    $(function() {
-      var barChartCanvas = $('#barChart').get(0).getContext('2d')
-      var barChart = new Chart(barChartCanvas)
-      var barChartData = {
-        labels: <?php echo $months; ?>,
-        datasets: [{
-          label: 'SALES',
-          fillColor: 'rgba(60,141,188,0.9)',
-          strokeColor: 'rgba(60,141,188,0.8)',
-          pointColor: '#3b8bba',
-          pointStrokeColor: 'rgba(60,141,188,1)',
-          pointHighlightFill: '#fff',
-          pointHighlightStroke: 'rgba(60,141,188,1)',
-          data: <?php echo $sales; ?>
-        }]
-      }
-      //barChartData.datasets[1].fillColor   = '#00a65a'
-      //barChartData.datasets[1].strokeColor = '#00a65a'
-      //barChartData.datasets[1].pointColor  = '#00a65a'
-      var barChartOptions = {
-        //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
-        scaleBeginAtZero: true,
-        //Boolean - Whether grid lines are shown across the chart
-        scaleShowGridLines: true,
-        //String - Colour of the grid lines
-        scaleGridLineColor: 'rgba(0,0,0,.05)',
-        //Number - Width of the grid lines
-        scaleGridLineWidth: 1,
-        //Boolean - Whether to show horizontal lines (except X axis)
-        scaleShowHorizontalLines: true,
-        //Boolean - Whether to show vertical lines (except Y axis)
-        scaleShowVerticalLines: true,
-        //Boolean - If there is a stroke on each bar
-        barShowStroke: true,
-        //Number - Pixel width of the bar stroke
-        barStrokeWidth: 2,
-        //Number - Spacing between each of the X value sets
-        barValueSpacing: 5,
-        //Number - Spacing between data sets within X values
-        barDatasetSpacing: 1,
-        //String - A legend template
-        legendTemplate: '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<datasets.length; i++){%><li><span style="background-color:<%=datasets[i].fillColor%>"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>',
-        //Boolean - whether to make the chart responsive
-        responsive: true,
-        maintainAspectRatio: true
+    (function() {
+      var charts = {
+        monthlyRevenue: null,
+        monthlyOrders: null,
+        topProducts: null,
+        categoryShare: null
+      };
+
+      function formatMoney(value) {
+        var amount = Number(value || 0);
+        return 'NGN ' + amount.toLocaleString('en-NG', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
       }
 
-      barChartOptions.datasetFill = false
-      var myChart = barChart.Bar(barChartData, barChartOptions)
-      document.getElementById('legend').innerHTML = myChart.generateLegend();
-    });
-  </script>
-  <script>
-    $(function() {
-      $('#select_year').change(function() {
-        window.location.href = 'home.php?year=' + $(this).val();
+      function formatInt(value) {
+        return Number(value || 0).toLocaleString('en-NG');
+      }
+
+      function setKPIs(cards) {
+        document.getElementById('kpi_total_revenue').textContent = formatMoney(cards.total_revenue);
+        document.getElementById('kpi_revenue_today').textContent = formatMoney(cards.revenue_today);
+        document.getElementById('kpi_total_orders').textContent = formatInt(cards.total_orders);
+        document.getElementById('kpi_total_products').textContent = formatInt(cards.total_products);
+        document.getElementById('kpi_total_users').textContent = formatInt(cards.total_users);
+        document.getElementById('kpi_low_stock_count').textContent = formatInt(cards.low_stock_count);
+      }
+
+      function createOrUpdateChart(instanceKey, selector, options) {
+        if (charts[instanceKey]) {
+          charts[instanceKey].updateOptions(options, true, true);
+          return;
+        }
+        charts[instanceKey] = new ApexCharts(document.querySelector(selector), options);
+        charts[instanceKey].render();
+      }
+
+      function renderCharts(payload) {
+        createOrUpdateChart('monthlyRevenue', '#chartMonthlyRevenue', {
+          chart: { type: 'area', height: 300, toolbar: { show: false } },
+          series: [{ name: 'Revenue', data: payload.monthly_revenue.series || [] }],
+          xaxis: { categories: payload.monthly_revenue.labels || [] },
+          colors: ['#0f766e'],
+          stroke: { curve: 'smooth', width: 3 },
+          dataLabels: { enabled: false },
+          yaxis: {
+            labels: {
+              formatter: function(val) { return 'NGN ' + Number(val || 0).toLocaleString('en-NG'); }
+            }
+          }
+        });
+
+        createOrUpdateChart('monthlyOrders', '#chartMonthlyOrders', {
+          chart: { type: 'bar', height: 300, toolbar: { show: false } },
+          series: [{ name: 'Orders', data: payload.monthly_orders.series || [] }],
+          xaxis: { categories: payload.monthly_orders.labels || [] },
+          colors: ['#1d4ed8'],
+          dataLabels: { enabled: false }
+        });
+
+        var topLabels = [];
+        var topSeries = [];
+        (payload.top_products || []).forEach(function(item) {
+          topLabels.push(item.name || 'Unknown');
+          topSeries.push(item.revenue || 0);
+        });
+
+        createOrUpdateChart('topProducts', '#chartTopProducts', {
+          chart: { type: 'bar', height: 320, toolbar: { show: false } },
+          plotOptions: { bar: { horizontal: true, borderRadius: 5 } },
+          series: [{ name: 'Revenue', data: topSeries }],
+          xaxis: { categories: topLabels },
+          colors: ['#0ea5e9'],
+          dataLabels: { enabled: false }
+        });
+
+        var catLabels = [];
+        var catSeries = [];
+        (payload.category_sales || []).forEach(function(item) {
+          catLabels.push(item.category || 'Uncategorized');
+          catSeries.push(item.revenue || 0);
+        });
+
+        createOrUpdateChart('categoryShare', '#chartCategoryShare', {
+          chart: { type: 'donut', height: 320 },
+          series: catSeries.length ? catSeries : [1],
+          labels: catLabels.length ? catLabels : ['No data'],
+          legend: { position: 'bottom' },
+          colors: ['#0f766e', '#0ea5e9', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#475569']
+        });
+      }
+
+      function fetchMetrics(params) {
+        var query = new URLSearchParams(params);
+        return fetch('dashboard_metrics.php?' + query.toString(), {
+          credentials: 'same-origin'
+        }).then(function(resp) {
+          return resp.json();
+        });
+      }
+
+      function currentFilters() {
+        return {
+          year: document.getElementById('year').value,
+          start_date: document.getElementById('start_date').value,
+          end_date: document.getElementById('end_date').value
+        };
+      }
+
+      function syncUrl(filters) {
+        var q = new URLSearchParams(filters);
+        window.history.replaceState({}, '', 'home.php?' + q.toString());
+      }
+
+      function loadDashboard() {
+        var filters = currentFilters();
+        fetchMetrics(filters).then(function(payload) {
+          if (!payload || !payload.success) {
+            return;
+          }
+          setKPIs(payload.cards || {});
+          renderCharts(payload);
+          syncUrl(filters);
+        }).catch(function() {
+          // Keep silent to avoid disruptive alert loops.
+        });
+      }
+
+      document.getElementById('dashboardFilters').addEventListener('submit', function(event) {
+        event.preventDefault();
+        loadDashboard();
       });
-    });
+
+      loadDashboard();
+    })();
   </script>
 </body>
 
