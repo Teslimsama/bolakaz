@@ -2,8 +2,9 @@
 include 'session.php';
 include 'slugify.php';
 require_once __DIR__ . '/../lib/product_payload.php';
+require_once __DIR__ . '/../lib/catalog_v2.php';
 
-if (!isset($_POST['edit'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST' || (int)($_POST['id'] ?? 0) <= 0) {
     $_SESSION['error'] = 'Fill up edit product form first';
     header('location: products.php');
     exit();
@@ -22,6 +23,12 @@ $productStatus = (int)($_POST['product_status'] ?? 1);
 $sizeValues = product_normalize_values($_POST['size'] ?? []);
 $colorValues = product_normalize_values($_POST['color'] ?? []);
 $materialValues = product_normalize_values($_POST['material'] ?? [], 80);
+$customSizeValues = product_normalize_values(explode(',', (string)($_POST['edit_custom_size_values'] ?? '')));
+$customColorValues = product_normalize_values(explode(',', (string)($_POST['edit_custom_color_values'] ?? '')));
+$customMaterialValues = product_normalize_values(explode(',', (string)($_POST['edit_custom_material_values'] ?? '')), 80);
+$sizeValues = product_normalize_values(array_merge($sizeValues, $customSizeValues));
+$colorValues = product_normalize_values(array_merge($colorValues, $customColorValues));
+$materialValues = product_normalize_values(array_merge($materialValues, $customMaterialValues), 80);
 $specs = product_collect_specs($_POST, 'edit_');
 $additionalInfo = product_encode_specs($specs);
 
@@ -126,6 +133,31 @@ try {
         'product_status' => $productStatus,
         'id' => $id,
     ]);
+
+    if (catalog_v2_table_exists($conn, 'products_v2')) {
+        $syncSource = [
+            'id' => $id,
+            'category_id' => $category,
+            'subcategory_id' => ($subcategory > 0 ? $subcategory : null),
+            'name' => $name,
+            'description' => $description,
+            'additional_info' => ($additionalInfo !== '' ? $additionalInfo : null),
+            'slug' => $slug,
+            'price' => $price,
+            'color' => product_values_to_csv($colorValues),
+            'size' => product_values_to_csv($sizeValues),
+            'brand' => $brand,
+            'material' => product_values_to_csv($materialValues),
+            'qty' => $qty,
+            'photo' => null,
+            'product_status' => $productStatus,
+        ];
+
+        $photoStmt = $conn->prepare("SELECT photo FROM products WHERE id = :id LIMIT 1");
+        $photoStmt->execute(['id' => $id]);
+        $syncSource['photo'] = (string)($photoStmt->fetchColumn() ?? '');
+        catalog_v2_sync_product_from_legacy($conn, $syncSource);
+    }
 
     $_SESSION['success'] = 'Product updated successfully';
 } catch (Throwable $e) {

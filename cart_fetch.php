@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/lib/catalog_v2.php';
 $conn = $pdo->open();
 
 $output = ['list' => '', 'count' => 0];
@@ -32,9 +33,31 @@ function cart_item_html(array $item): string
 		. "</a>";
 }
 
+function cart_variant_label(PDO $conn, int $variantId, string $size, string $color): string
+{
+	if ($variantId > 0 && catalog_v2_ready($conn)) {
+		$stmt = $conn->prepare("SELECT a.label, av.value
+			FROM variant_option_values vov
+			INNER JOIN attributes a ON a.id = vov.attribute_id
+			INNER JOIN attribute_values av ON av.id = vov.attribute_value_id
+			WHERE vov.variant_id = :variant_id
+			ORDER BY a.label ASC");
+		$stmt->execute(['variant_id' => $variantId]);
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$parts = [];
+		foreach ($rows as $row) {
+			$parts[] = trim((string)$row['label']) . ': ' . trim((string)$row['value']);
+		}
+		return implode(' | ', $parts);
+	}
+
+	$legacy = trim($size . ' ' . $color);
+	return $legacy;
+}
+
 if (isset($_SESSION['user'])) {
 	try {
-		$stmt = $conn->prepare("SELECT products.slug, products.photo, products.price, products.name AS prodname, category.name AS catname, cart.quantity
+		$stmt = $conn->prepare("SELECT products.slug, products.photo, products.price, products.name AS prodname, category.name AS catname, cart.quantity, cart.variant_id, cart.size, cart.color
 			FROM cart
 			LEFT JOIN products ON products.id = cart.product_id
 			LEFT JOIN category ON category.id = products.category_id
@@ -44,6 +67,18 @@ if (isset($_SESSION['user'])) {
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 		foreach ($rows as $row) {
+			if (catalog_v2_ready($conn) && (int)($row['variant_id'] ?? 0) > 0) {
+				$vpStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
+				$vpStmt->execute(['id' => (int)$row['variant_id']]);
+				$variantPrice = $vpStmt->fetchColumn();
+				if ($variantPrice !== false) {
+					$row['price'] = (float)$variantPrice;
+				}
+				$variantLabel = cart_variant_label($conn, (int)$row['variant_id'], '', '');
+				if ($variantLabel !== '') {
+					$row['catname'] = $variantLabel;
+				}
+			}
 			$output['count']++;
 			$subtotal += max(1, (int)($row['quantity'] ?? 1)) * (float)($row['price'] ?? 0);
 			$output['list'] .= cart_item_html($row);
@@ -73,6 +108,21 @@ if (isset($_SESSION['user'])) {
 			}
 
 			$product['quantity'] = $qty;
+			$product['variant_id'] = (int)($row['variant_id'] ?? 0);
+			$product['size'] = trim((string)($row['size'] ?? ''));
+			$product['color'] = trim((string)($row['color'] ?? ''));
+			if (catalog_v2_ready($conn) && (int)$product['variant_id'] > 0) {
+				$vpStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
+				$vpStmt->execute(['id' => (int)$product['variant_id']]);
+				$variantPrice = $vpStmt->fetchColumn();
+				if ($variantPrice !== false) {
+					$product['price'] = (float)$variantPrice;
+				}
+				$variantLabel = cart_variant_label($conn, (int)$product['variant_id'], '', '');
+				if ($variantLabel !== '') {
+					$product['catname'] = $variantLabel;
+				}
+			}
 			$output['count']++;
 			$subtotal += $qty * (float)($product['price'] ?? 0);
 			$output['list'] .= cart_item_html($product);

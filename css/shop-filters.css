@@ -128,3 +128,7 @@
   color: #3d352f !important;
   font-weight: 700;
 }
+
+.filter_data .pagination .page-link {
+  touch-action: manipulation;
+}

@@ -1,21 +1,60 @@
 <?php
 include 'session.php';
-$conn = $pdo->open();
+require_once __DIR__ . '/lib/catalog_v2.php';
 
+$conn = $pdo->open();
 $output = '';
 
 if (isset($_SESSION['user']) && isset($user['id'])) {
-    if (isset($_SESSION['cart'])) {
+    if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
         foreach ($_SESSION['cart'] as $row) {
-            $stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM cart WHERE user_id=:user_id AND product_id=:product_id");
-            $stmt->execute(['user_id' => $user['id'], 'product_id' => $row['productid']]);
-            $crow = $stmt->fetch();
-            if ((int)$crow['numrows'] < 1) {
-                $stmt = $conn->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (:user_id, :product_id, :quantity)");
-                $stmt->execute(['user_id' => $user['id'], 'product_id' => $row['productid'], 'quantity' => $row['quantity']]);
+            $productId = (int)($row['productid'] ?? 0);
+            $variantId = (int)($row['variant_id'] ?? 0);
+            $qty = max(1, (int)($row['quantity'] ?? 1));
+            $size = trim((string)($row['size'] ?? ''));
+            $color = trim((string)($row['color'] ?? ''));
+            if ($productId <= 0) {
+                continue;
+            }
+
+            $sql = "SELECT COUNT(*) AS numrows FROM cart WHERE user_id=:user_id AND product_id=:product_id";
+            $params = ['user_id' => $user['id'], 'product_id' => $productId];
+            if ($variantId > 0) {
+                $sql .= " AND variant_id = :variant_id";
+                $params['variant_id'] = $variantId;
             } else {
-                $stmt = $conn->prepare("UPDATE cart SET quantity=:quantity WHERE user_id=:user_id AND product_id=:product_id");
-                $stmt->execute(['quantity' => $row['quantity'], 'user_id' => $user['id'], 'product_id' => $row['productid']]);
+                $sql .= " AND size = :size AND color = :color";
+                $params['size'] = $size;
+                $params['color'] = $color;
+            }
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($params);
+            $crow = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ((int)($crow['numrows'] ?? 0) < 1) {
+                $stmt = $conn->prepare("INSERT INTO cart (user_id, product_id, variant_id, quantity, size, color)
+                    VALUES (:user_id, :product_id, :variant_id, :quantity, :size, :color)");
+                $stmt->execute([
+                    'user_id' => $user['id'],
+                    'product_id' => $productId,
+                    'variant_id' => ($variantId > 0 ? $variantId : null),
+                    'quantity' => $qty,
+                    'size' => $size,
+                    'color' => $color,
+                ]);
+            } else {
+                $updateSql = "UPDATE cart SET quantity=:quantity WHERE user_id=:user_id AND product_id=:product_id";
+                $updateParams = ['quantity' => $qty, 'user_id' => $user['id'], 'product_id' => $productId];
+                if ($variantId > 0) {
+                    $updateSql .= " AND variant_id = :variant_id";
+                    $updateParams['variant_id'] = $variantId;
+                } else {
+                    $updateSql .= " AND size = :size AND color = :color";
+                    $updateParams['size'] = $size;
+                    $updateParams['color'] = $color;
+                }
+                $stmt = $conn->prepare($updateSql);
+                $stmt->execute($updateParams);
             }
         }
         unset($_SESSION['cart']);
@@ -26,13 +65,23 @@ if (isset($_SESSION['user']) && isset($user['id'])) {
         $stmt = $conn->prepare("SELECT *, cart.id AS cartid FROM cart LEFT JOIN products ON products.id=cart.product_id WHERE user_id=:user_id");
         $stmt->execute(['user_id' => $user['id']]);
         foreach ($stmt as $row) {
-            $subtotal = (float)$row['price'] * (int)$row['quantity'];
+            $linePrice = (float)($row['price'] ?? 0);
+            if (catalog_v2_ready($conn) && (int)($row['variant_id'] ?? 0) > 0) {
+                $vpStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
+                $vpStmt->execute(['id' => (int)$row['variant_id']]);
+                $variantPrice = $vpStmt->fetchColumn();
+                if ($variantPrice !== false) {
+                    $linePrice = (float)$variantPrice;
+                }
+            }
+
+            $subtotal = $linePrice * (int)$row['quantity'];
             $total += $subtotal;
             $output .= "
                 <div class='d-flex justify-content-between'>
                     <p>" . (int)$row['quantity'] . " &times;</p>
                     <p>" . e($row['name']) . "</p>
-                    <p>" . app_money($row['price']) . "</p>
+                    <p>" . app_money($linePrice) . "</p>
                 </div>
             ";
         }
@@ -71,18 +120,29 @@ if (isset($_SESSION['user']) && isset($user['id'])) {
         $total = 0.0;
         foreach ($_SESSION['cart'] as $row) {
             $stmt = $conn->prepare("SELECT *, products.name AS prodname FROM products WHERE products.id=:id");
-            $stmt->execute(['id' => $row['productid']]);
-            $product = $stmt->fetch();
+            $stmt->execute(['id' => (int)($row['productid'] ?? 0)]);
+            $product = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$product) {
                 continue;
             }
 
-            $subtotal = (float)$product['price'] * (int)$row['quantity'];
+            $linePrice = (float)($product['price'] ?? 0);
+            if (catalog_v2_ready($conn) && (int)($row['variant_id'] ?? 0) > 0) {
+                $vpStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
+                $vpStmt->execute(['id' => (int)$row['variant_id']]);
+                $variantPrice = $vpStmt->fetchColumn();
+                if ($variantPrice !== false) {
+                    $linePrice = (float)$variantPrice;
+                }
+            }
+
+            $qty = max(1, (int)($row['quantity'] ?? 1));
+            $subtotal = $linePrice * $qty;
             $total += $subtotal;
             $output .= "
                 <div class='d-flex justify-content-between'>
-                    <p>" . (int)$row['quantity'] . " &times; " . e($product['prodname']) . "</p>
-                    <p>" . app_money($product['price']) . "</p>
+                    <p>" . $qty . " &times; " . e($product['prodname']) . "</p>
+                    <p>" . app_money($linePrice) . "</p>
                 </div>
             ";
         }
@@ -120,3 +180,4 @@ if (isset($_SESSION['user']) && isset($user['id'])) {
 
 $pdo->close();
 echo json_encode($output);
+

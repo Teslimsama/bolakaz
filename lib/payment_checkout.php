@@ -1,4 +1,20 @@
 <?php
+require_once __DIR__ . '/catalog_v2.php';
+
+if (!function_exists('app_db_has_column')) {
+    function app_db_has_column(PDO $conn, string $table, string $column): bool
+    {
+        static $cache = [];
+        $key = $table . '.' . $column;
+        if (array_key_exists($key, $cache)) {
+            return $cache[$key];
+        }
+        $stmt = $conn->prepare("SHOW COLUMNS FROM `{$table}` LIKE :column_name");
+        $stmt->execute(['column_name' => $column]);
+        $cache[$key] = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+        return $cache[$key];
+    }
+}
 
 if (!function_exists('app_payment_base_url')) {
     function app_payment_base_url(): string
@@ -25,7 +41,7 @@ if (!function_exists('app_payment_build_ref')) {
 if (!function_exists('app_checkout_snapshot')) {
     function app_checkout_snapshot(PDO $conn, int $userId): array
     {
-        $stmt = $conn->prepare("SELECT cart.product_id, cart.quantity, products.price, products.qty
+        $stmt = $conn->prepare("SELECT cart.product_id, cart.variant_id, cart.quantity, products.price, products.qty
             FROM cart
             LEFT JOIN products ON products.id = cart.product_id
             WHERE cart.user_id = :user_id");
@@ -40,15 +56,29 @@ if (!function_exists('app_checkout_snapshot')) {
         $normalized = [];
         foreach ($items as $item) {
             $productId = (int)($item['product_id'] ?? 0);
+            $variantId = (int)($item['variant_id'] ?? 0);
             $quantity = max(1, (int)($item['quantity'] ?? 0));
             $price = (float)($item['price'] ?? 0);
             $stock = (int)($item['qty'] ?? 0);
             if ($productId <= 0 || $price < 0) {
                 continue;
             }
+
+            if (catalog_v2_ready($conn) && $variantId > 0) {
+                $variantStmt = $conn->prepare("SELECT price, stock_qty, status FROM product_variants WHERE id = :id LIMIT 1");
+                $variantStmt->execute(['id' => $variantId]);
+                $variant = $variantStmt->fetch(PDO::FETCH_ASSOC);
+                if (!$variant || (string)($variant['status'] ?? '') !== 'active') {
+                    throw new RuntimeException('One or more cart variants are unavailable.');
+                }
+                $price = (float)($variant['price'] ?? $price);
+                $stock = (int)($variant['stock_qty'] ?? 0);
+            }
+
             $subtotal += ($price * $quantity);
             $normalized[] = [
                 'product_id' => $productId,
+                'variant_id' => $variantId,
                 'quantity' => $quantity,
                 'price' => $price,
                 'stock' => $stock,
@@ -157,7 +187,7 @@ if (!function_exists('app_finalize_paid_order')) {
         ]);
         $salesId = (int)$conn->lastInsertId();
 
-        $cartStmt = $conn->prepare("SELECT cart.product_id, cart.quantity, products.qty
+        $cartStmt = $conn->prepare("SELECT cart.product_id, cart.variant_id, cart.quantity, products.qty
             FROM cart
             LEFT JOIN products ON products.id = cart.product_id
             WHERE cart.user_id = :user_id");
@@ -169,25 +199,53 @@ if (!function_exists('app_finalize_paid_order')) {
 
         foreach ($cartItems as $row) {
             $productId = (int)($row['product_id'] ?? 0);
+            $variantId = (int)($row['variant_id'] ?? 0);
             $quantity = max(1, (int)($row['quantity'] ?? 0));
             $stock = (int)($row['qty'] ?? 0);
             if ($productId <= 0) {
                 continue;
             }
 
-            if ($stock < $quantity) {
-                throw new RuntimeException('Insufficient stock for one or more items.');
+            if (catalog_v2_ready($conn) && $variantId > 0) {
+                $variantLock = $conn->prepare("SELECT id, stock_qty, status FROM product_variants WHERE id = :id FOR UPDATE");
+                $variantLock->execute(['id' => $variantId]);
+                $variant = $variantLock->fetch(PDO::FETCH_ASSOC);
+                if (!$variant || (string)($variant['status'] ?? '') !== 'active') {
+                    throw new RuntimeException('One or more product variants are unavailable.');
+                }
+                if ((int)$variant['stock_qty'] < $quantity) {
+                    throw new RuntimeException('Insufficient stock for one or more variants.');
+                }
+            } else {
+                if ($stock < $quantity) {
+                    throw new RuntimeException('Insufficient stock for one or more items.');
+                }
             }
 
-            $detailStmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
-            $detailStmt->execute([
-                'sales_id' => $salesId,
-                'product_id' => $productId,
-                'quantity' => $quantity,
-            ]);
+            if (app_db_has_column($conn, 'details', 'variant_id')) {
+                $detailStmt = $conn->prepare("INSERT INTO details (sales_id, product_id, variant_id, quantity) VALUES (:sales_id, :product_id, :variant_id, :quantity)");
+                $detailStmt->execute([
+                    'sales_id' => $salesId,
+                    'product_id' => $productId,
+                    'variant_id' => ($variantId > 0 ? $variantId : null),
+                    'quantity' => $quantity,
+                ]);
+            } else {
+                $detailStmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
+                $detailStmt->execute([
+                    'sales_id' => $salesId,
+                    'product_id' => $productId,
+                    'quantity' => $quantity,
+                ]);
+            }
 
-            $updateStock = $conn->prepare("UPDATE products SET qty = qty - :quantity WHERE id = :id");
-            $updateStock->execute(['quantity' => $quantity, 'id' => $productId]);
+            if (catalog_v2_ready($conn) && $variantId > 0) {
+                $updateVariantStock = $conn->prepare("UPDATE product_variants SET stock_qty = stock_qty - :quantity WHERE id = :id");
+                $updateVariantStock->execute(['quantity' => $quantity, 'id' => $variantId]);
+            } else {
+                $updateStock = $conn->prepare("UPDATE products SET qty = qty - :quantity WHERE id = :id");
+                $updateStock->execute(['quantity' => $quantity, 'id' => $productId]);
+            }
         }
 
         $clearCart = $conn->prepare("DELETE FROM cart WHERE user_id = :user_id");

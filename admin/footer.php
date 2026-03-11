@@ -1,11 +1,9 @@
 <footer class="main-footer">
   <div class="pull-right hidden-xs">
-    <b>All Rights Reserved</b>
+   <b>Powered by</b> <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng" target="_blank" rel="noopener">TBO Digital Solutions</a>
   </div>
   <strong> &copy; <script>
       document.write(new Date().getFullYear())
-    </script> <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng">teslim.unibooks.com.ng</a>. Designed
-    by
-    <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng">Teslimsama</a>
+    </script> Bolakaz. <b>All Rights Reserved</b>
   </strong>
 </footer>

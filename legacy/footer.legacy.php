@@ -61,9 +61,9 @@
                 <p class="mb-md-0 text-center text-md-left text-dark">
                     &copy; <script>
                         document.write(new Date().getFullYear())
-                    </script> <a class="text-dark font-weight-semi-bold" href="https://bolakaz.unibooks.com.ng">Bolakaz Enterprise</a>. All Rights Reserved. Designed
+                    </script> <a class="text-dark font-weight-semi-bold" href="https://bolakaz.unibooks.com.ng">Bolakaz Enterprise</a>. All Rights Reserved. Powered
                     by
-                    <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng">Teslimsama</a>
+                    <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng" target="_blank" rel="noopener">TBO Digital Solutions</a>
                 </p>
                 <p class="mb-0 mt-2 text-center text-md-left text-dark">
                     Powered by <a class="text-dark font-weight-semi-bold" href="https://teslim.unibooks.com.ng" target="_blank" rel="noopener">TBO Digital Solutions</a>

@@ -1,5 +1,6 @@
 <?php include 'session.php'; ?>
 <?php
+require_once __DIR__ . '/lib/catalog_v2.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postedKeyword = trim((string)($_POST['keyword'] ?? $_POST['search'] ?? ''));
     header('location: search?q=' . urlencode($postedKeyword));
@@ -53,7 +54,11 @@ $keyword = trim((string)($_GET['q'] ?? ''));
                             if ($keyword === '') {
                                 echo '<h1 class="page-header px-3">Enter a keyword to search products.</h1>';
                             } else {
-                                $stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM products WHERE product_status = '1' AND (name LIKE :keyword OR description LIKE :keyword)");
+                                if (catalog_v2_ready($conn)) {
+                                    $stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM products_v2 WHERE status = 'active' AND (name LIKE :keyword OR description LIKE :keyword)");
+                                } else {
+                                    $stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM products WHERE product_status = '1' AND (name LIKE :keyword OR description LIKE :keyword)");
+                                }
                                 $stmt->execute(['keyword' => '%' . $keyword . '%']);
                                 $row = $stmt->fetch();
 
@@ -62,7 +67,11 @@ $keyword = trim((string)($_GET['q'] ?? ''));
                                 } else {
                                     echo '<h1 class="page-header px-3">Search results for <i>' . e($keyword) . '</i></h1>';
                                     try {
-                                        $stmt = $conn->prepare("SELECT * FROM products WHERE product_status = '1' AND (name LIKE :keyword OR description LIKE :keyword) ORDER BY id DESC");
+                                        if (catalog_v2_ready($conn)) {
+                                            $stmt = $conn->prepare("SELECT id, slug, name, base_price AS price, main_image AS photo FROM products_v2 WHERE status = 'active' AND (name LIKE :keyword OR description LIKE :keyword) ORDER BY id DESC");
+                                        } else {
+                                            $stmt = $conn->prepare("SELECT * FROM products WHERE product_status = '1' AND (name LIKE :keyword OR description LIKE :keyword) ORDER BY id DESC");
+                                        }
                                         $stmt->execute(['keyword' => '%' . $keyword . '%']);
 
                                         foreach ($stmt as $row) {

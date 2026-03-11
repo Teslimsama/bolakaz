@@ -208,18 +208,28 @@ if (!storefront_use_v2()) {
         e.preventDefault();
         var $form = $(this);
         var product = $form.serialize();
+        var catalogMode = ($form.find('input[name="catalog_mode"]').val() || 'legacy').toLowerCase();
+        var variantId = $form.find('select[name="variant_id"]').val() || '';
         var hasSizeOptions = $form.find('input[name="size"]').length > 0;
         var hasColorOptions = $form.find('input[name="color"]').length > 0;
         var selectedSize = $form.find('input[name="size"]:checked').val() || '';
         var selectedColor = $form.find('input[name="color"]:checked').val() || '';
 
-        if (hasSizeOptions && selectedSize === '') {
+        if (catalogMode === 'v2') {
+          if (variantId === '') {
+            showProductCallout('Please choose a variant.', true);
+            unlockFormSubmission($form);
+            return;
+          }
+        }
+
+        if (catalogMode !== 'v2' && hasSizeOptions && selectedSize === '') {
           showProductCallout('Please choose a size.', true);
           unlockFormSubmission($form);
           return;
         }
 
-        if (hasColorOptions && selectedColor === '') {
+        if (catalogMode !== 'v2' && hasColorOptions && selectedColor === '') {
           showProductCallout('Please choose a color.', true);
           unlockFormSubmission($form);
           return;

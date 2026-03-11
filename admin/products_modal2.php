@@ -6,13 +6,13 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title"><b>Deleting...</b></h4>
+        <h4 class="modal-title"><b>Archiving...</b></h4>
       </div>
       <form class="form-horizontal" method="POST" action="products_delete.php">
         <div class="modal-body">
           <input type="hidden" class="prodid" name="id">
           <div class="text-center">
-            <p>DELETE PRODUCT</p>
+            <p>ARCHIVE PRODUCT</p>
             <h2 class="bold name"></h2>
           </div>
         </div>
@@ -21,7 +21,7 @@
             <i class="fa fa-close"></i> Close
           </button>
           <button type="submit" class="btn btn-danger btn-flat" name="delete">
-            <i class="fa fa-trash"></i> Delete
+            <i class="fa fa-archive"></i> Archive
           </button>
         </div>
       </form>
@@ -43,16 +43,7 @@
         <div class="container">
           <div class="row">
             <div class="col-md-6">
-              <form method="post" action="image_actions.php" enctype="multipart/form-data">
-                <!-- Uncomment below to enable file upload -->
-                <!--
-                <div class="form-group">
-                  <label>Images:</label>
-                  <input type="file" name="images[]" class="form-control" multiple>
-                </div>
-                -->
-                <div class="image_show" id="image_show"></div>
-              </form>
+              <div class="image_show" id="image_show"></div>
             </div>
           </div>
         </div>
@@ -122,6 +113,7 @@
               <select name="material[]" id="edit_material_1" class="form-control selectpicker" multiple data-live-search="true">
                 <option value="">--Select any material--</option>
               </select>
+              <input type="text" class="form-control mt-1" id="edit_custom_material_values" name="edit_custom_material_values" placeholder="Custom materials (comma separated)">
             </div>
 
             <label for="edit_quantity" class="col-sm-1 control-label">Quantity</label>
@@ -141,6 +133,13 @@
               <select name="size[]" id="edit_size_1" class="form-control selectpicker" multiple data-live-search="true">
                 <option value="">--Select any size--</option>
               </select>
+              <input type="text" class="form-control mt-1" id="edit_custom_size_values" name="edit_custom_size_values" placeholder="Custom sizes (comma separated)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit_color_custom" class="col-sm-1 control-label">Color</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="edit_custom_color_values" name="edit_custom_color_values" placeholder="Custom colors (comma separated)">
             </div>
           </div>
 

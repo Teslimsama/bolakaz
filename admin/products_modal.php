@@ -101,12 +101,20 @@
               <select name="size[]" id="size_1" class="form-control selectpicker" multiple data-live-search="true">
                 <option value="">--Select any size--</option>
               </select>
+              <input type="text" class="form-control mt-1" name="custom_size_values" placeholder="Custom sizes (comma separated)">
             </div>
             <label for="color" class="col-sm-1 control-label">Color</label>
             <div class="col-sm-5 mt-2">
               <select name="color[]" id="color_1" class="form-control selectpicker" multiple data-live-search="true">
                 <option value="">--Select any color--</option>
               </select>
+              <input type="text" class="form-control mt-1" name="custom_color_values" placeholder="Custom colors (comma separated)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-1 control-label"></label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" name="custom_material_values" placeholder="Custom materials (comma separated)">
             </div>
           </div>
 

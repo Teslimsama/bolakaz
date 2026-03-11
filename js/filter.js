@@ -38,16 +38,36 @@ $(document).ready(function () {
 			success: function (response) {
 				$(".filter_data").html(response);
 			},
+			error: function () {
+				$(".filter_data").html(
+					'<div class="col-12"><div class="alert alert-danger">Unable to load products. Please try again.</div></div>'
+				);
+			},
 		});
 	}
 
-	$(document).on("click", ".page-link", function (e) {
+	function handlePaginationTap(e) {
 		e.preventDefault();
+		e.stopPropagation();
 		if ($(this).closest(".page-item").hasClass("disabled")) {
 			return;
 		}
-		var page = $(this).data("page") || 1;
+		var page = parseInt($(this).attr("data-page"), 10);
+		if (!page || page < 1) {
+			return;
+		}
 		filter_data(page);
+	}
+
+	$(document).on("click", ".filter_data .page-link", handlePaginationTap);
+	$(document).on("touchend", ".filter_data .page-link", function (e) {
+		// Mobile fallback: some browsers delay/drop click on dynamic pagination controls.
+		if ($(this).data("tapHandled")) {
+			return;
+		}
+		$(this).data("tapHandled", true);
+		handlePaginationTap.call(this, e);
+		setTimeout(() => $(this).removeData("tapHandled"), 350);
 	});
 
 	$(".common_selector").on("change", function () {

@@ -4,7 +4,7 @@
 	$conn = $pdo->open();
 
 	$output = array('error'=>false);
-	$id = $_POST['id'];
+	$id = (string)($_POST['id'] ?? '');
 
 	if(isset($_SESSION['user'])){
 		try{
@@ -18,10 +18,18 @@
 		}
 	}
 	else{
-		foreach($_SESSION['cart'] as $key => $row){
-			if($row['productid'] == $id){
-				unset($_SESSION['cart'][$key]);
+		if (strpos($id, 's') === 0) {
+			$sessionKey = substr($id, 1);
+			if (isset($_SESSION['cart'][$sessionKey])) {
+				unset($_SESSION['cart'][$sessionKey]);
 				$output['message'] = 'Deleted';
+			}
+		} else {
+			foreach($_SESSION['cart'] as $key => $row){
+				if((string)$row['productid'] === $id){
+					unset($_SESSION['cart'][$key]);
+					$output['message'] = 'Deleted';
+				}
 			}
 		}
 	}

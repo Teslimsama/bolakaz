@@ -2,67 +2,100 @@
 include 'session.php';
 include 'slugify.php';
 
-if (isset($_POST['add'])) {
-	$name = htmlspecialchars($_POST['name']); // Sanitize input data
-	$slug = slugify($_POST['name']); // Generate slug
-	$is_parent = isset($_POST['is_parent']) ? 1 : 0; // Checkbox for is_parent
-	$parent_id = $is_parent ? null : htmlspecialchars($_POST['parent_id']); // Parent ID only if not a parent category
-	$status = htmlspecialchars($_POST['status']); // Category status (active/inactive)
+function category_upload_image(array $file, string &$error = ''): ?string
+{
+    if (empty($file['name']) || !is_uploaded_file((string)($file['tmp_name'] ?? ''))) {
+        $error = 'Category image is required.';
+        return null;
+    }
 
-	// Handle category image upload
-	if (isset($_FILES['cat-image']) && $_FILES['cat-image']['error'] === UPLOAD_ERR_OK) {
-		$target_dir = "../images/"; // Directory where the image will be uploaded
-		$target_file = $target_dir . basename($_FILES["cat-image"]["name"]);
-		$imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $tmp = (string)$file['tmp_name'];
+    $check = @getimagesize($tmp);
+    if ($check === false) {
+        $error = 'File is not an image.';
+        return null;
+    }
 
-		// Check if the file is an actual image or fake image
-		$check = getimagesize($_FILES["cat-image"]["tmp_name"]);
-		if ($check !== false) {
-			// Allow certain file formats
-			if (in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif'])) {
-				// Move uploaded file to destination directory
-				move_uploaded_file($_FILES["cat-image"]["tmp_name"], $target_file);
-				$cat_image = $target_file;
+    $size = (int)($file['size'] ?? 0);
+    if ($size > 5 * 1024 * 1024) {
+        $error = 'Sorry, your file is too large.';
+        return null;
+    }
 
-				$conn = $pdo->open();
+    $ext = strtolower((string)pathinfo((string)$file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+        $error = 'Sorry, only JPG, JPEG, PNG, GIF & WEBP files are allowed.';
+        return null;
+    }
 
-				// Check if category already exists
-				$stmt = $conn->prepare("SELECT COUNT(*) AS numrows FROM category WHERE name=:name");
-				$stmt->execute(['name' => $name]);
-				$row = $stmt->fetch();
+    $filename = uniqid('cat_', true) . '.' . $ext;
+    $target = '../images/' . $filename;
+    if (!move_uploaded_file($tmp, $target)) {
+        $error = 'Error uploading category image.';
+        return null;
+    }
 
-				if ($row['numrows'] > 0) {
-					$_SESSION['error'] = 'Category already exists';
-				} else {
-					try {
-						// Insert category data into the database
-						$stmt = $conn->prepare("INSERT INTO category (name, cat_slug, cat_image, is_parent, parent_id, status) 
-                                                VALUES (:name, :cat_slug, :cat_image, :is_parent, :parent_id, :status)");
-						$stmt->execute([
-							'name' => $name,
-							'cat_slug' => $slug,
-							'cat_image' => $cat_image,
-							'is_parent' => $is_parent,
-							'parent_id' => $parent_id,
-							'status' => $status,
-						]);
-						$_SESSION['success'] = 'Category added successfully';
-					} catch (PDOException $e) {
-						$_SESSION['error'] = $e->getMessage();
-					}
-				}
-
-				$pdo->close();
-			} else {
-				$_SESSION['error'] = 'Sorry, only JPG, JPEG, PNG & GIF files are allowed.';
-			}
-		} else {
-			$_SESSION['error'] = 'File is not an image.';
-		}
-	} else {
-		$_SESSION['error'] = 'Category image is required.';
-	}
-} else {
-	$_SESSION['error'] = 'Fill up category form first';
+    return $filename;
 }
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $name = trim((string)($_POST['name'] ?? ''));
+    $slug = slugify($name);
+    $isParent = isset($_POST['is_parent']) ? 1 : 0;
+    $parentId = $isParent ? null : (int)($_POST['parent_id'] ?? 0);
+    $status = trim((string)($_POST['status'] ?? 'active'));
+
+    if ($name === '' || $slug === '' || !in_array($status, ['active', 'inactive'], true)) {
+        $_SESSION['error'] = 'Please provide valid category details';
+        header('location: category.php');
+        exit;
+    }
+
+    if (!$isParent && $parentId <= 0) {
+        $_SESSION['error'] = 'Please select a parent category';
+        header('location: category.php');
+        exit;
+    }
+
+    $uploadError = '';
+    $catImage = category_upload_image($_FILES['cat-image'] ?? [], $uploadError);
+    if ($catImage === null) {
+        $_SESSION['error'] = $uploadError;
+        header('location: category.php');
+        exit;
+    }
+
+    $conn = $pdo->open();
+    try {
+        $exists = $conn->prepare("SELECT COUNT(*) AS numrows FROM category WHERE name = :name");
+        $exists->execute(['name' => $name]);
+        $row = $exists->fetch(PDO::FETCH_ASSOC);
+
+        if ((int)($row['numrows'] ?? 0) > 0) {
+            $_SESSION['error'] = 'Category already exists';
+            header('location: category.php');
+            exit;
+        }
+
+        $insert = $conn->prepare("INSERT INTO category (name, cat_slug, cat_image, is_parent, parent_id, status)
+            VALUES (:name, :cat_slug, :cat_image, :is_parent, :parent_id, :status)");
+        $insert->execute([
+            'name' => $name,
+            'cat_slug' => $slug,
+            'cat_image' => $catImage,
+            'is_parent' => $isParent,
+            'parent_id' => $isParent ? null : $parentId,
+            'status' => $status,
+        ]);
+
+        $_SESSION['success'] = 'Category added successfully';
+    } catch (Throwable $e) {
+        $_SESSION['error'] = 'Unable to add category';
+    } finally {
+        $pdo->close();
+    }
+} else {
+    $_SESSION['error'] = 'Invalid request method';
+}
+
 header('location: category.php');

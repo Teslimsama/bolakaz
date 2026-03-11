@@ -2,6 +2,7 @@
 include 'session.php';
 include 'Rating.php';
 require_once __DIR__ . '/lib/product_payload.php';
+require_once __DIR__ . '/lib/catalog_v2.php';
 $rating = new Rating();
 ?>
 <?php
@@ -15,11 +16,42 @@ if ($slug === '') {
 }
 
 try {
-
-    $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, sub_category.name AS subcatname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id LEFT JOIN 
-    category AS sub_category ON sub_category.id = products.subcategory_id  WHERE slug = :slug");
-    $stmt->execute(['slug' => $slug]);
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    $v2Product = catalog_v2_get_product_by_slug($conn, $slug);
+    if ($v2Product) {
+        $legacyMapStmt = $conn->prepare("SELECT legacy_product_id FROM product_legacy_map WHERE product_v2_id = :product_v2_id LIMIT 1");
+        $legacyMapStmt->execute(['product_v2_id' => (int)$v2Product['id']]);
+        $legacyProductId = (int)$legacyMapStmt->fetchColumn();
+        $product = [
+            'prodid' => ($legacyProductId > 0 ? $legacyProductId : (int)$v2Product['id']),
+            'product_v2_id' => (int)$v2Product['id'],
+            'prodname' => (string)$v2Product['name'],
+            'catname' => (string)($v2Product['catname'] ?? ''),
+            'subcatname' => (string)($v2Product['subcatname'] ?? ''),
+            'price' => (float)($v2Product['base_price'] ?? 0),
+            'description' => (string)$v2Product['description'],
+            'brand' => (string)($v2Product['brand'] ?? ''),
+            'qty' => 0,
+            'date_view' => date('Y-m-d'),
+            'photo' => (string)($v2Product['main_image'] ?? ''),
+            'additional_info' => (string)($v2Product['specs_json'] ?? ''),
+            'variants' => $v2Product['variants'],
+            'is_v2' => 1,
+        ];
+        foreach ($product['variants'] as $variantRow) {
+            if (((string)($variantRow['status'] ?? 'active')) === 'active') {
+                $product['qty'] += max(0, (int)($variantRow['stock_qty'] ?? 0));
+            }
+        }
+    } else {
+        $stmt = $conn->prepare("SELECT *, products.name AS prodname, category.name AS catname, sub_category.name AS subcatname, products.id AS prodid FROM products LEFT JOIN category ON category.id=products.category_id LEFT JOIN 
+        category AS sub_category ON sub_category.id = products.subcategory_id WHERE slug = :slug AND products.product_status = 1");
+        $stmt->execute(['slug' => $slug]);
+        $product = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($product) {
+            $product['is_v2'] = 0;
+            $product['variants'] = [];
+        }
+    }
 } catch (PDOException $e) {
     error_log('detail.php product fetch error: ' . $e->getMessage());
     $product = false;
@@ -47,6 +79,32 @@ $sizeOptions = product_csv_to_array($product['size'] ?? '');
 $colorOptions = product_csv_to_array($product['color'] ?? '');
 $materialOptions = product_csv_to_array($product['material'] ?? '', 80);
 $additionalInfo = product_decode_specs($product['additional_info'] ?? '');
+
+if (!empty($product['is_v2'])) {
+    $sizeMap = [];
+    $colorMap = [];
+    $materialMap = [];
+    foreach ($product['variants'] as $variant) {
+        $variantOptions = $variant['options'] ?? [];
+        foreach ($variantOptions as $opt) {
+            $code = (string)($opt['code'] ?? '');
+            $value = trim((string)($opt['value'] ?? ''));
+            if ($value === '') {
+                continue;
+            }
+            if ($code === 'size') {
+                $sizeMap[strtolower($value)] = $value;
+            } elseif ($code === 'color') {
+                $colorMap[strtolower($value)] = $value;
+            } elseif ($code === 'material') {
+                $materialMap[strtolower($value)] = $value;
+            }
+        }
+    }
+    $sizeOptions = array_values($sizeMap);
+    $colorOptions = array_values($colorMap);
+    $materialOptions = array_values($materialMap);
+}
 
 $itemRating = $rating->getItemRating($product['prodid']);
 $ratingNumber = 0;
@@ -116,7 +174,7 @@ if ($ratingNumber && $count) {
                 <div id="product-carousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner border">
                         <?php
-                        // Fetch product images from the database
+                        // Fetch product gallery images from the database
                         $proid = $product['prodid'];
                         $sql = 'SELECT * FROM gallery_images WHERE gallery_id = :gallery_id';
                         $stmt = $conn->prepare($sql);
@@ -124,19 +182,39 @@ if ($ratingNumber && $count) {
                         $stmt->execute();
                         $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                        // Check if images exist
+                        $renderedFirst = false;
+                        $mainImage = app_image_url($product['photo'] ?? '');
+
+                        // Always show main image first when available
+                        if (!empty(trim((string)($product['photo'] ?? '')))) {
+                            echo '<div class="carousel-item active">';
+                            echo '<div class="sf-media sf-media-detail">';
+                            echo '<img loading="lazy" class="w-100 h-100" src="' . e($mainImage) . '" alt="Product Main Image" onerror="this.onerror=null;this.src=\'' . e(app_placeholder_image()) . '\';">';
+                            echo '</div>';
+                            echo '</div>';
+                            $renderedFirst = true;
+                        }
+
+                        // Then append gallery images
                         if (!empty($images)) {
                             $activeClass = 'active'; // Add "active" class to the first image
                             foreach ($images as $image) {
                                 $imagePath = app_image_url($image['file_name'] ?? '');
-                                echo '<div class="carousel-item ' . $activeClass . '">';
+                                if (!$renderedFirst) {
+                                    echo '<div class="carousel-item ' . $activeClass . '">';
+                                    $renderedFirst = true;
+                                } else {
+                                    echo '<div class="carousel-item">';
+                                }
                                 echo '<div class="sf-media sf-media-detail">';
                                 echo '<img loading="lazy" class="w-100 h-100" src="' . e($imagePath) . '" alt="Product Image" onerror="this.onerror=null;this.src=\'' . e(app_placeholder_image()) . '\';">';
                                 echo '</div>';
                                 echo '</div>';
                                 $activeClass = ''; // Remove "active" class for subsequent items
                             }
-                        } else {
+                        }
+
+                        if (!$renderedFirst) {
                             // If no images are available, display a placeholder
                             echo '<div class="carousel-item active">';
                             echo '<div class="sf-media sf-media-detail">';
@@ -177,8 +255,36 @@ if ($ratingNumber && $count) {
                 <h3 class="font-weight-semi-bold mb-4"><?php echo app_money($product['price']); ?></h3>
                 <p class="mb-4"><?php echo $product['description']; ?></p>
                 <form id="productForm">
+                    <?php if (!empty($product['is_v2']) && !empty($product['variants'])) { ?>
+                        <div class="mb-3">
+                            <p class="text-dark font-weight-medium mb-2">Variant:</p>
+                            <select class="form-control" name="variant_id" id="variant_id" required>
+                                <option value="">Select a variant</option>
+                                <?php foreach ($product['variants'] as $variant) {
+                                    $variantId = (int)($variant['id'] ?? 0);
+                                    $variantPrice = (float)($variant['price'] ?? 0);
+                                    $variantStock = max(0, (int)($variant['stock_qty'] ?? 0));
+                                    $optionPieces = [];
+                                    foreach (($variant['options'] ?? []) as $opt) {
+                                        $label = trim((string)($opt['label'] ?? $opt['code'] ?? ''));
+                                        $value = trim((string)($opt['value'] ?? ''));
+                                        if ($label !== '' && $value !== '') {
+                                            $optionPieces[] = $label . ': ' . $value;
+                                        }
+                                    }
+                                    $variantLabel = !empty($optionPieces) ? implode(' | ', $optionPieces) : ('Variant #' . $variantId);
+                                    $isDisabled = ($variantStock <= 0) ? 'disabled' : '';
+                                    $stockText = ($variantStock > 0) ? 'In Stock' : 'Out of Stock';
+                                ?>
+                                    <option value="<?php echo $variantId; ?>" data-price="<?php echo e((string)$variantPrice); ?>" data-stock="<?php echo $variantStock; ?>" <?php echo $isDisabled; ?>>
+                                        <?php echo e($variantLabel . ' - ' . app_money($variantPrice) . ' (' . $stockText . ')'); ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    <?php } ?>
                     <!-- Display Sizes -->
-                    <?php if (!empty($sizeOptions)) { ?>
+                    <?php if (empty($product['is_v2']) && !empty($sizeOptions)) { ?>
                         <div class="d-flex mb-3">
                             <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
                             <?php
@@ -197,7 +303,7 @@ if ($ratingNumber && $count) {
                     <?php } ?>
 
                     <!-- Display Colors -->
-                    <?php if (!empty($colorOptions)) { ?>
+                    <?php if (empty($product['is_v2']) && !empty($colorOptions)) { ?>
                         <div class="d-flex mb-4">
                             <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
                             <?php
@@ -215,8 +321,7 @@ if ($ratingNumber && $count) {
                         </div>
                     <?php } ?>
 
-
-
+                    <input type="hidden" name="catalog_mode" value="<?php echo !empty($product['is_v2']) ? 'v2' : 'legacy'; ?>">
 
                     <div class="d-flex align-items-center mb-4 pt-2">
                         <div class="input-group quantity mr-3" style="width: 130px;">
@@ -225,7 +330,7 @@ if ($ratingNumber && $count) {
                                     <i class="fa fa-minus"></i>
                                 </button>
                             </div>
-                            <input type="text" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
+                            <input type="number" min="1" step="1" name="quantity" id="quantity" class="form-control bg-secondary text-center" value="1">
 
                             <div class="input-group-btn">
                                 <button id="add" type="button" class="btn btn-primary btn-plus">

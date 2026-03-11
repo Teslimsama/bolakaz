@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/lib/banner_links.php';
 
 try {
     $stmt = $conn->prepare("SELECT * FROM banner");
@@ -45,7 +46,7 @@ $pdo->close();
                                     <div class='p-3 text-center' style='max-width: 780px;'>
                                         <p class='text-uppercase mb-2'>" . htmlspecialchars($item['caption_text'], ENT_QUOTES, 'UTF-8') . "</p>
                                         <h2 class='display-4 text-white mb-4'>" . htmlspecialchars($item['caption_heading'], ENT_QUOTES, 'UTF-8') . "</h2>
-                                        <a href='" . htmlspecialchars($item['link'], ENT_QUOTES, 'UTF-8') . "' class='btn btn-primary px-4 py-2'>Shop Collection</a>
+                                        <a href='" . e(banner_resolve_storefront_link((string)($item['link'] ?? ''))) . "' class='btn btn-primary px-4 py-2'>Shop Collection</a>
                                     </div>
                                 </div>
                             </div>";
@@ -102,8 +103,8 @@ $pdo->close();
             <?php
             $conn = $pdo->open();
             try {
-                $stmt = $conn->prepare("SELECT * FROM category WHERE is_parent = 1");
-                $stmt->execute();
+                $stmt = $conn->prepare("SELECT * FROM category WHERE is_parent = 1 AND status = :status");
+                $stmt->execute(['status' => 'active']);
                 foreach ($stmt as $row) {
                     echo "
     <div class='col-lg-3 col-md-4 col-sm-6 pb-1'>

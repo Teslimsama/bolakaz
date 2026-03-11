@@ -8,7 +8,7 @@ function getRows($conditions = array())
 {
     global $conn, $imgTbl, $galleryTbl;
 
-    $sql = 'SELECT *, (SELECT file_name FROM ' . $imgTbl . ' WHERE id = ' . $galleryTbl . '.id ORDER BY id DESC LIMIT 1) as default_image';
+    $sql = 'SELECT *, (SELECT file_name FROM ' . $imgTbl . ' WHERE gallery_id = ' . $galleryTbl . '.id ORDER BY id DESC LIMIT 1) as default_image';
     $sql .= ' FROM ' . $galleryTbl;
 
     if (array_key_exists("where", $conditions)) {
@@ -125,19 +125,21 @@ function deleteImage($conditions)
 {
     global $conn, $imgTbl, $galleryTbl;
 
-    $whereSql = '';
-    if (!empty($conditions) && is_array($conditions)) {
-        $whereSql .= ' WHERE ';
-        $i = 0;
-        foreach ($conditions as $key => $value) {
-            $pre = ($i > 0) ? ' AND ' : '';
-            $whereSql .= $pre . $key . " = '" . $value . "'";
-            $i++;
-        }
+    if (empty($conditions) || !is_array($conditions)) {
+        return false;
     }
-    $query = "DELETE FROM " . $imgTbl . $whereSql;
-    $delete = $conn->query($query);
-    return $delete ? true : false;
+
+    $whereSql = [];
+    $bindings = [];
+    foreach ($conditions as $key => $value) {
+        $param = ':' . $key;
+        $whereSql[] = $key . ' = ' . $param;
+        $bindings[$param] = $value;
+    }
+
+    $query = "DELETE FROM " . $imgTbl . " WHERE " . implode(' AND ', $whereSql);
+    $stmt = $conn->prepare($query);
+    return $stmt->execute($bindings);
 }
 
 // function convert_filesize($bytes, $decimals = 2)

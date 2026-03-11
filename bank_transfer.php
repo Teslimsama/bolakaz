@@ -4,6 +4,21 @@ require_once __DIR__ . '/lib/payment_checkout.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
+if (!function_exists('bank_transfer_has_column')) {
+    function bank_transfer_has_column(PDO $conn, string $table, string $column): bool
+    {
+        static $cache = [];
+        $key = $table . '.' . $column;
+        if (array_key_exists($key, $cache)) {
+            return $cache[$key];
+        }
+        $stmt = $conn->prepare("SHOW COLUMNS FROM `{$table}` LIKE :column_name");
+        $stmt->execute(['column_name' => $column]);
+        $cache[$key] = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+        return $cache[$key];
+    }
+}
+
 $response = ['success' => false, 'message' => 'Unable to process bank transfer.'];
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -63,12 +78,22 @@ try {
     $salesId = (int)$conn->lastInsertId();
 
     foreach ($snapshot['items'] as $item) {
-        $detailStmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
-        $detailStmt->execute([
-            'sales_id' => $salesId,
-            'product_id' => (int)$item['product_id'],
-            'quantity' => (int)$item['quantity'],
-        ]);
+        if (bank_transfer_has_column($conn, 'details', 'variant_id')) {
+            $detailStmt = $conn->prepare("INSERT INTO details (sales_id, product_id, variant_id, quantity) VALUES (:sales_id, :product_id, :variant_id, :quantity)");
+            $detailStmt->execute([
+                'sales_id' => $salesId,
+                'product_id' => (int)$item['product_id'],
+                'variant_id' => ((int)($item['variant_id'] ?? 0) > 0 ? (int)$item['variant_id'] : null),
+                'quantity' => (int)$item['quantity'],
+            ]);
+        } else {
+            $detailStmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
+            $detailStmt->execute([
+                'sales_id' => $salesId,
+                'product_id' => (int)$item['product_id'],
+                'quantity' => (int)$item['quantity'],
+            ]);
+        }
     }
 
     // Bank transfer remains pending. Do not deduct stock here.

@@ -20,7 +20,7 @@
             <label for="slug" class="col-sm-3 control-label">Slug</label>
 
             <div class="col-sm-9">
-              <input type="text" class="form-control" id="slug" name="slug" required>
+              <input type="text" class="form-control" id="slug" name="slug" readonly placeholder="Auto-generated from name">
             </div>
           </div>
           <div class="form-group">
@@ -94,20 +94,18 @@
             <label for="is_parent" class="col-sm-3 control-label">Is Parent</label>
 
             <div class="col-sm-9">
-              <input type="checkbox" name="is_parent" id="is_parent_edit" value="1"
-                <?php echo ($category['is_parent'] == 1) ? 'checked' : ''; ?>> Yes
+              <input type="checkbox" name="is_parent" id="is_parent_edit" value="1"> Yes
             </div>
           </div>
 
 
-          <div class="form-group <?php echo ($category['is_parent'] == 1) ? 'd-none' : ''; ?>" id="parent_cat_div_edit">
+          <div class="form-group d-none" id="parent_cat_div_edit">
             <label for="parent_id" class="col-sm-3 control-label">Parent Category</label>
             <div class="col-sm-9">
-              <select name="parent_id" class="form-control">
+              <select name="parent_id" id="edit_parent_id" class="form-control">
                 <option value="">--Select any category--</option>
                 <?php foreach ($parent_cats as $parent_cat): ?>
-                  <option value="<?php echo htmlspecialchars($parent_cat['id']); ?>"
-                    <?php echo ($parent_cat['id'] == $category['parent_id']) ? 'selected' : ''; ?>>
+                  <option value="<?php echo htmlspecialchars($parent_cat['id']); ?>">
                     <?php echo htmlspecialchars($parent_cat['name']); ?>
                   </option>
                 <?php endforeach; ?>

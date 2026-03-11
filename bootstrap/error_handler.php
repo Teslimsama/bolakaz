@@ -115,6 +115,21 @@ if (!function_exists('app_register_error_handlers')) {
                 return false;
             }
 
+            // PHP 8.1+ emits many vendor deprecations (e.g. return type compatibility)
+            // for older packages. Log but do not escalate to exceptions.
+            if (in_array($severity, [E_DEPRECATED, E_USER_DEPRECATED], true)) {
+                try {
+                    app_logger()->notice($message, [
+                        'severity' => $severity,
+                        'file' => $file,
+                        'line' => $line,
+                    ]);
+                } catch (\Throwable $loggingException) {
+                    // Ignore logging failure and continue.
+                }
+                return true;
+            }
+
             throw new \ErrorException($message, 0, $severity, $file, $line);
         });
 

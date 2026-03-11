@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/lib/catalog_v2.php';
 
 ?>
 <!DOCTYPE html>
@@ -57,12 +58,21 @@ include 'session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by category</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT p.category_name AS category_slug, c.name AS category_name, COUNT(*) AS total
-                                  FROM products p
-                                  LEFT JOIN category c ON c.cat_slug = p.category_name
-                                  WHERE p.product_status = '1' AND p.category_name <> ''
-                                  GROUP BY p.category_name, c.name
-                                  ORDER BY c.name ASC, p.category_name ASC";
+                        if (catalog_v2_ready($conn)) {
+                            $query = "SELECT c.cat_slug AS category_slug, c.name AS category_name, COUNT(DISTINCT p.id) AS total
+                                      FROM products_v2 p
+                                      INNER JOIN category c ON c.id = p.category_id
+                                      WHERE p.status = 'active'
+                                      GROUP BY c.cat_slug, c.name
+                                      ORDER BY c.name ASC";
+                        } else {
+                            $query = "SELECT p.category_name AS category_slug, c.name AS category_name, COUNT(*) AS total
+                                      FROM products p
+                                      LEFT JOIN category c ON c.cat_slug = p.category_name
+                                      WHERE p.product_status = '1' AND p.category_name <> ''
+                                      GROUP BY p.category_name, c.name
+                                      ORDER BY c.name ASC, p.category_name ASC";
+                        }
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
@@ -94,7 +104,9 @@ include 'session.php';
                         <h5 class="font-weight-semi-bold mb-4">Filter by brand</h5>
                         <?php
                         $n = 1;
-                        $query = "SELECT DISTINCT(brand) FROM products WHERE product_status = '1' AND brand <> '' ORDER BY brand DESC";
+                        $query = catalog_v2_ready($conn)
+                            ? "SELECT DISTINCT(brand) FROM products_v2 WHERE status = 'active' AND brand <> '' ORDER BY brand DESC"
+                            : "SELECT DISTINCT(brand) FROM products WHERE product_status = '1' AND brand <> '' ORDER BY brand DESC";
                         $statement = $conn->prepare($query);
                         $statement->execute();
                         $result = $statement->fetchAll();
@@ -105,7 +117,9 @@ include 'session.php';
                                 <label class="custom-control-label" for="<?php echo 'brand-' . $n ?>"><?php echo e(ucwords(str_replace(['_', '-'], ' ', (string)$row['brand']))); ?></label>
                                 <span class="text-dark badge border font-weight-normal sf-filter-count">
                                     <?php $name = (string)$row['brand'];
-                                    $sql = "SELECT COUNT(*) AS total FROM products WHERE product_status = '1' AND brand = :name";
+                                    $sql = catalog_v2_ready($conn)
+                                        ? "SELECT COUNT(*) AS total FROM products_v2 WHERE status = 'active' AND brand = :name"
+                                        : "SELECT COUNT(*) AS total FROM products WHERE product_status = '1' AND brand = :name";
                                     $stmt = $conn->prepare($sql);
                                     $stmt->execute(['name' => $name]);
                                     echo (int)($stmt->fetch()['total'] ?? 0);
@@ -285,7 +299,7 @@ include 'session.php';
 
     <!-- JavaScript Libraries -->
     <script src="js/jquery-ui.js"></script>
-    <script src="js/filter.js"></script>
+    <script src="js/filter.js?v=<?php echo file_exists(__DIR__ . '/js/filter.js') ? filemtime(__DIR__ . '/js/filter.js') : time(); ?>"></script>
     <!-- JavaScript Bundle with Popper -->
 
     <!-- Contact Javascript File -->

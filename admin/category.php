@@ -38,7 +38,7 @@ $parent_cats = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class='alert alert-danger alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-warning'></i> Error!</h4>
-              " . $_SESSION['error'] . "
+              " . e($_SESSION['error']) . "
             </div>
           ";
           unset($_SESSION['error']);
@@ -48,7 +48,7 @@ $parent_cats = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class='alert alert-success alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-check'></i> Success!</h4>
-              " . $_SESSION['success'] . "
+              " . e($_SESSION['success']) . "
             </div>
           ";
           unset($_SESSION['success']);
@@ -76,16 +76,16 @@ $parent_cats = $stmt->fetchAll(PDO::FETCH_ASSOC);
                       foreach ($stmt as $row) {
                         echo "
                           <tr>
-                            <td>" . $row['name'] . "</td>
+                            <td>" . e($row['name']) . "</td>
                             <td>
-                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
-                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
+                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
                           </tr>
                         ";
                       }
                     } catch (PDOException $e) {
-                      echo $e->getMessage();
+                      echo 'Unable to load categories.';
                     }
 
                     $pdo->close();
@@ -133,9 +133,13 @@ $parent_cats = $stmt->fetchAll(PDO::FETCH_ASSOC);
         },
         dataType: 'json',
         success: function(response) {
+          if (!response || !response.success) {
+            alert((response && response.message) || 'Unable to load category.');
+            return;
+          }
           $('.catid').val(response.category.id);
           $('#edit_name').val(response.category.name);
-          $('.catname').html(response.category.name);
+          $('.catname').text(response.category.name || '');
 
           // Populate status dropdown
           const statusSelect = $('#status');
@@ -146,6 +150,16 @@ $parent_cats = $stmt->fetchAll(PDO::FETCH_ASSOC);
               `<option value="${status.value}" ${selected}>${status.label}</option>`
             );
           });
+
+          const isParent = String(response.category.is_parent) === '1';
+          $('#is_parent_edit').prop('checked', isParent);
+          if (isParent) {
+            $('#parent_cat_div_edit').addClass('d-none');
+            $('#edit_parent_id').val('');
+          } else {
+            $('#parent_cat_div_edit').removeClass('d-none');
+            $('#edit_parent_id').val(response.category.parent_id || '');
+          }
 
         }
       });

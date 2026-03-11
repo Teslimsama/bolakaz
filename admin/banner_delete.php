@@ -1,39 +1,40 @@
 <?php
 include 'session.php';
 
-if (isset($_POST['delete'])) {
-	$id = $_POST['id'];
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id <= 0) {
+        $_SESSION['error'] = 'Invalid banner item selected';
+        header('location: banner.php');
+        exit;
+    }
 
-	$conn = $pdo->open();
+    $conn = $pdo->open();
 
-	try {
-		// Fetch the image path
-		$stmt = $conn->prepare("SELECT image_path FROM banner WHERE id=:id");
-		$stmt->execute(['id' => $id]);
-		$banner = $stmt->fetch();
+    try {
+        $stmt = $conn->prepare("SELECT image_path FROM banner WHERE id=:id LIMIT 1");
+        $stmt->execute(['id' => $id]);
+        $banner = $stmt->fetch(PDO::FETCH_ASSOC);
 
-		if ($banner) {
-			// Delete the image file from the server
-			$imagePath = '../images/' . $banner['image_path'];
-			if (file_exists($imagePath)) {
-				unlink($imagePath);
-			}
+        if ($banner) {
+            $imagePath = '../images/' . (string)$banner['image_path'];
+            if (is_file($imagePath)) {
+                @unlink($imagePath);
+            }
 
-			// Delete the banner record from the database
-			$stmt = $conn->prepare("DELETE FROM banner WHERE id=:id");
-			$stmt->execute(['id' => $id]);
+            $delete = $conn->prepare("DELETE FROM banner WHERE id=:id");
+            $delete->execute(['id' => $id]);
+            $_SESSION['success'] = 'Banner item deleted successfully';
+        } else {
+            $_SESSION['error'] = 'Banner item not found';
+        }
+    } catch (Throwable $e) {
+        $_SESSION['error'] = 'Unable to delete banner item.';
+    }
 
-			$_SESSION['success'] = 'Banner item deleted successfully';
-		} else {
-			$_SESSION['error'] = 'Banner item not found';
-		}
-	} catch (PDOException $e) {
-		$_SESSION['error'] = $e->getMessage();
-	}
-
-	$pdo->close();
+    $pdo->close();
 } else {
-	$_SESSION['error'] = 'Select banner item to delete first';
+    $_SESSION['error'] = 'Invalid request method';
 }
 
 header('location: banner.php');

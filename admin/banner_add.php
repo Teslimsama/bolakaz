@@ -1,58 +1,90 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/banner_links.php';
 
-if (isset($_POST['add'])) {
-	$name = htmlspecialchars($_POST['name']);
-	$caption_heading = htmlspecialchars($_POST['caption_heading']);
-	$caption_text = htmlspecialchars($_POST['caption_text']);
-	$link = htmlspecialchars($_POST['link']);
+function banner_upload_image(array $file, string &$error = ''): ?string
+{
+    if (empty($file['name']) || !is_uploaded_file((string)($file['tmp_name'] ?? ''))) {
+        $error = 'Please upload an image for the banner.';
+        return null;
+    }
 
-	// Handle file upload
-	if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] === UPLOAD_ERR_OK) {
-		$target_dir = "../images/";
-		$target_file = $target_dir . basename($_FILES["banner_image"]["name"]);
-		$imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $tmp = (string)$file['tmp_name'];
+    $check = @getimagesize($tmp);
+    if ($check === false) {
+        $error = 'File is not an image.';
+        return null;
+    }
 
-		// Check if the file is an actual image
-		$check = getimagesize($_FILES["banner_image"]["tmp_name"]);
-		if ($check !== false) {
-			// Allow certain file formats
-			if ($imageFileType == "jpg" || $imageFileType == "png" || $imageFileType == "jpeg" || $imageFileType == "gif") {
-				if (move_uploaded_file($_FILES["banner_image"]["tmp_name"], $target_file)) {
-					$image_path = basename($_FILES["banner_image"]["name"]);
+    $size = (int)($file['size'] ?? 0);
+    if ($size > 5 * 1024 * 1024) {
+        $error = 'Sorry, your file is too large.';
+        return null;
+    }
 
-					$conn = $pdo->open();
+    $ext = strtolower((string)pathinfo((string)$file['name'], PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (!in_array($ext, $allowed, true)) {
+        $error = 'Sorry, only JPG, JPEG, PNG, GIF & WEBP files are allowed.';
+        return null;
+    }
 
-					try {
-						// Insert banner item
-						$stmt = $conn->prepare("INSERT INTO banner (name,  image_path, caption_heading, caption_text, link) VALUES (:name, :image_path, :caption_heading, :caption_text, :link)");
-						$stmt->execute([
-							'name' => $name,
-							'image_path' => $image_path,
-							'caption_heading' => $caption_heading,
-							'caption_text' => $caption_text,
-							'link' => $link
-						]);
-						$_SESSION['success'] = 'banner item added successfully';
-					} catch (PDOException $e) {
-						$_SESSION['error'] = $e->getMessage();
-					}
+    $filename = uniqid('banner_', true) . '.' . $ext;
+    $target = '../images/' . $filename;
+    if (!move_uploaded_file($tmp, $target)) {
+        $error = 'Failed to upload image.';
+        return null;
+    }
 
-					$pdo->close();
-				} else {
-					$_SESSION['error'] = 'Failed to upload image';
-				}
-			} else {
-				$_SESSION['error'] = 'Sorry, only JPG, JPEG, PNG & GIF files are allowed.';
-			}
-		} else {
-			$_SESSION['error'] = 'File is not an image.';
-		}
-	} else {
-		$_SESSION['error'] = 'Please upload an image for the banner';
-	}
+    return $filename;
+}
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $name = trim((string)($_POST['name'] ?? ''));
+    $captionHeading = trim((string)($_POST['caption_heading'] ?? ''));
+    $captionText = trim((string)($_POST['caption_text'] ?? ''));
+
+    if ($name === '' || $captionHeading === '' || $captionText === '') {
+        $_SESSION['error'] = 'Please fill all banner fields.';
+        header('location: banner.php');
+        exit;
+    }
+
+    $uploadError = '';
+    $imagePath = banner_upload_image($_FILES['banner_image'] ?? [], $uploadError);
+    if ($imagePath === null) {
+        $_SESSION['error'] = $uploadError;
+        header('location: banner.php');
+        exit;
+    }
+
+    $conn = $pdo->open();
+    try {
+        $destinationError = '';
+        $link = banner_build_link_from_request($conn, $_POST, $destinationError);
+        if ($link === null) {
+            $_SESSION['error'] = $destinationError;
+            header('location: banner.php');
+            exit;
+        }
+
+        $stmt = $conn->prepare("INSERT INTO banner (name, image_path, caption_heading, caption_text, link)
+            VALUES (:name, :image_path, :caption_heading, :caption_text, :link)");
+        $stmt->execute([
+            'name' => $name,
+            'image_path' => $imagePath,
+            'caption_heading' => $captionHeading,
+            'caption_text' => $captionText,
+            'link' => $link,
+        ]);
+        $_SESSION['success'] = 'Banner item added successfully';
+    } catch (Throwable $e) {
+        $_SESSION['error'] = 'Unable to add banner item.';
+    } finally {
+        $pdo->close();
+    }
 } else {
-	$_SESSION['error'] = 'Fill up banner form first';
+    $_SESSION['error'] = 'Invalid request method';
 }
 
 header('location: banner.php');

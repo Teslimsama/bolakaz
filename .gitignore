@@ -16,3 +16,4 @@ Thumbs.db
 # Local editor/OS noise
 *.swp
 *.swo
+/images

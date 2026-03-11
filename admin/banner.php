@@ -1,4 +1,5 @@
 <?php include 'session.php'; ?>
+<?php require_once __DIR__ . '/../lib/banner_links.php'; ?>
 <?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -29,7 +30,7 @@
             <div class='alert alert-danger alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-warning'></i> Error!</h4>
-              " . $_SESSION['error'] . "
+              " . e($_SESSION['error']) . "
             </div>
           ";
           unset($_SESSION['error']);
@@ -39,7 +40,7 @@
             <div class='alert alert-success alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-check'></i> Success!</h4>
-              " . $_SESSION['success'] . "
+              " . e($_SESSION['success']) . "
             </div>
           ";
           unset($_SESSION['success']);
@@ -69,22 +70,30 @@
                       $stmt = $conn->prepare("SELECT * FROM banner");
                       $stmt->execute();
                       foreach ($stmt as $row) {
+                        $meta = banner_destination_meta($conn, (string)($row['link'] ?? ''));
+                        $image = '../images/' . ltrim((string)($row['image_path'] ?? ''), '/');
+                        $linkLabel = (string)($meta['display'] ?? 'Fallback: Shop');
+                        if (!empty($meta['is_fallback'])) {
+                          $linkLabel = "<span class='text-warning'>" . e($linkLabel) . "</span>";
+                        } else {
+                          $linkLabel = e($linkLabel);
+                        }
                         echo "
                           <tr>
-                            <td>" . htmlspecialchars_decode($row['name']) . "</td>
-                            <td>" . htmlspecialchars_decode($row['caption_heading']) . "</td>
-                            <td>" . htmlspecialchars_decode($row['caption_text']) . "</td>
-                            <td>" . htmlspecialchars_decode($row['link']) . "</td>
-                            <td><img src='../images/" . $row['image_path'] . "' height='50px'></td>
+                            <td>" . e($row['name']) . "</td>
+                            <td>" . e($row['caption_heading']) . "</td>
+                            <td>" . e($row['caption_text']) . "</td>
+                            <td>" . $linkLabel . "</td>
+                            <td><img src='" . e($image) . "' height='50px' onerror=\"this.onerror=null;this.src='../images/storefront-placeholder.svg';\"></td>
                             <td>
-                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
-                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
+                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
                           </tr>
                         ";
                       }
                     } catch (PDOException $e) {
-                      echo $e->getMessage();
+                      echo 'Unable to load banner items.';
                     }
 
                     $pdo->close();
@@ -132,15 +141,61 @@
         },
         dataType: 'json',
         success: function(response) {
+          if (response.error) {
+            alert(response.message || 'Unable to load banner.');
+            return;
+          }
           $('.bannerid').val(response.id);
           $('#edit_banner_name').val(response.name);
           $('#edit_caption_heading').val(response.caption_heading);
           $('#edit_caption_text').val(response.caption_text);
-          $('#edit_link').val(response.link);
-          $('.bannername').html(response.bannername);
+          $('#edit_destination_type').val(response.destination_type || 'category');
+          $('#edit_product_slug').val(response.product_slug || '');
+          $('#edit_category_slug').val(response.category_slug || '');
+          syncDestinationControls('edit_');
+          $('.bannername').text(response.name || '');
         }
       });
     }
+
+    function syncDestinationControls(prefix) {
+      var type = $('#' + prefix + 'destination_type').val() || 'category';
+      var $productWrap = $('#' + prefix + 'product_group');
+      var $categoryWrap = $('#' + prefix + 'category_group');
+      var $product = $('#' + prefix + 'product_slug');
+      var $category = $('#' + prefix + 'category_slug');
+      var $link = $('#' + prefix + 'link');
+
+      if (type === 'product') {
+        $productWrap.show();
+        $categoryWrap.hide();
+        $product.prop('required', true);
+        $category.prop('required', false);
+        $link.val('detail.php?product=' + encodeURIComponent($product.val() || ''));
+      } else {
+        $categoryWrap.show();
+        $productWrap.hide();
+        $category.prop('required', true);
+        $product.prop('required', false);
+        $link.val('shop.php?category=' + encodeURIComponent($category.val() || ''));
+      }
+    }
+
+    $(document).on('change', '#add_destination_type, #add_product_slug, #add_category_slug, #edit_destination_type, #edit_product_slug, #edit_category_slug', function() {
+      if (this.id.indexOf('edit_') === 0) {
+        syncDestinationControls('edit_');
+      } else {
+        syncDestinationControls('add_');
+      }
+    });
+
+    $('#addnewBanner').on('shown.bs.modal', function() {
+      syncDestinationControls('add_');
+    });
+
+    $('#editBanner').on('shown.bs.modal', function() {
+      syncDestinationControls('edit_');
+    });
   </script>
 </body>
 

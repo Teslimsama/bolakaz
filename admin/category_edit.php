@@ -2,80 +2,116 @@
 include 'session.php';
 include 'slugify.php';
 
-if (isset($_POST['edit'])) {
-	$id = $_POST['id'];
-	$name = htmlspecialchars($_POST['name']); // Sanitize input data
-	$slug = slugify($_POST['name']); // Generate slug
-	$is_parent = isset($_POST['is_parent']) ? 1 : 0; // Checkbox for is_parent
-	$parent_id = $is_parent ? null : htmlspecialchars($_POST['parent_id']); // Parent ID only if not a parent category
-	$status = htmlspecialchars($_POST['status']); // Category status (active/inactive)
+function category_upload_image_optional(array $file, string &$error = ''): ?string
+{
+    if (empty($file['name']) || !is_uploaded_file((string)($file['tmp_name'] ?? ''))) {
+        return '';
+    }
 
-	// Check if a file was uploaded
-	if (isset($_FILES['cat-image']) && $_FILES['cat-image']['error'] === UPLOAD_ERR_OK) {
-		$target_dir = "../images/"; // Directory where the image will be uploaded
-		$target_file = $target_dir . basename($_FILES["cat-image"]["name"]);
-		$imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $tmp = (string)$file['tmp_name'];
+    $check = @getimagesize($tmp);
+    if ($check === false) {
+        $error = 'File is not an image.';
+        return null;
+    }
 
-		// Check if the file is a valid image
-		$check = getimagesize($_FILES["cat-image"]["tmp_name"]);
-		if ($check !== false) {
-			// Allow certain file formats
-			if (in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif'])) {
-				// Move uploaded file to destination directory
-				if (move_uploaded_file($_FILES["cat-image"]["tmp_name"], $target_file)) {
-					$cat_image = $target_file;
+    $size = (int)($file['size'] ?? 0);
+    if ($size > 5 * 1024 * 1024) {
+        $error = 'Sorry, your file is too large.';
+        return null;
+    }
 
-					// Update category with new image path
-					try {
-						$stmt = $conn->prepare("UPDATE category 
-                                                SET name=:name, cat_slug=:cat_slug, cat_image=:cat_image, 
-                                                    is_parent=:is_parent, parent_id=:parent_id, status=:status 
-                                                WHERE id=:id");
-						$stmt->execute([
-							'name' => $name,
-							'cat_slug' => $slug,
-							'cat_image' => $cat_image,
-							'is_parent' => $is_parent,
-							'parent_id' => $parent_id,
-							'status' => $status,
-							'id' => $id
-						]);
-						$_SESSION['success'] = 'Category updated successfully';
-					} catch (PDOException $e) {
-						$_SESSION['error'] = $e->getMessage();
-					}
-				} else {
-					$_SESSION['error'] = 'Error uploading image.';
-				}
-			} else {
-				$_SESSION['error'] = 'Sorry, only JPG, JPEG, PNG & GIF files are allowed.';
-			}
-		} else {
-			$_SESSION['error'] = 'File is not an image.';
-		}
-	} else {
-		// Update category without changing the image
-		try {
-			$stmt = $conn->prepare("UPDATE category 
-                                    SET name=:name, cat_slug=:cat_slug, 
-                                        is_parent=:is_parent, parent_id=:parent_id, status=:status 
-                                    WHERE id=:id");
-			$stmt->execute([
-				'name' => $name,
-				'cat_slug' => $slug,
-				'is_parent' => $is_parent,
-				'parent_id' => $parent_id,
-				'status' => $status,
-				'id' => $id
-			]);
-			$_SESSION['success'] = 'Category updated successfully';
-		} catch (PDOException $e) {
-			$_SESSION['error'] = $e->getMessage();
-		}
-	}
-	$pdo->close();
+    $ext = strtolower((string)pathinfo((string)$file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+        $error = 'Sorry, only JPG, JPEG, PNG, GIF & WEBP files are allowed.';
+        return null;
+    }
+
+    $filename = uniqid('cat_', true) . '.' . $ext;
+    $target = '../images/' . $filename;
+    if (!move_uploaded_file($tmp, $target)) {
+        $error = 'Error uploading image.';
+        return null;
+    }
+
+    return $filename;
+}
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $id = (int)($_POST['id'] ?? 0);
+    $name = trim((string)($_POST['name'] ?? ''));
+    $slug = slugify($name);
+    $isParent = isset($_POST['is_parent']) ? 1 : 0;
+    $parentId = $isParent ? null : (int)($_POST['parent_id'] ?? 0);
+    $status = trim((string)($_POST['status'] ?? 'active'));
+
+    if ($id <= 0 || $name === '' || $slug === '' || !in_array($status, ['active', 'inactive'], true)) {
+        $_SESSION['error'] = 'Please provide valid category details';
+        header('location: category.php');
+        exit;
+    }
+
+    if (!$isParent && $parentId <= 0) {
+        $_SESSION['error'] = 'Please select a parent category';
+        header('location: category.php');
+        exit;
+    }
+
+    $uploadError = '';
+    $newImage = category_upload_image_optional($_FILES['cat-image'] ?? [], $uploadError);
+    if ($newImage === null) {
+        $_SESSION['error'] = $uploadError;
+        header('location: category.php');
+        exit;
+    }
+
+    $conn = $pdo->open();
+    try {
+        $currentStmt = $conn->prepare("SELECT cat_image FROM category WHERE id=:id LIMIT 1");
+        $currentStmt->execute(['id' => $id]);
+        $current = $currentStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$current) {
+            $_SESSION['error'] = 'Category not found';
+            header('location: category.php');
+            exit;
+        }
+        $oldImage = (string)($current['cat_image'] ?? '');
+
+        $sql = "UPDATE category
+            SET name=:name, cat_slug=:cat_slug, is_parent=:is_parent, parent_id=:parent_id, status=:status";
+        $params = [
+            'name' => $name,
+            'cat_slug' => $slug,
+            'is_parent' => $isParent,
+            'parent_id' => $isParent ? null : $parentId,
+            'status' => $status,
+            'id' => $id,
+        ];
+
+        if ($newImage !== '') {
+            $sql .= ", cat_image=:cat_image";
+            $params['cat_image'] = $newImage;
+        }
+
+        $sql .= " WHERE id=:id";
+        $update = $conn->prepare($sql);
+        $update->execute($params);
+
+        if ($newImage !== '' && $oldImage !== '' && $oldImage !== $newImage) {
+            $oldPath = '../images/' . ltrim($oldImage, '/');
+            if (is_file($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+
+        $_SESSION['success'] = 'Category updated successfully';
+    } catch (Throwable $e) {
+        $_SESSION['error'] = 'Unable to update category';
+    } finally {
+        $pdo->close();
+    }
 } else {
-	$_SESSION['error'] = 'Fill up edit category form first';
+    $_SESSION['error'] = 'Invalid request method';
 }
 
 header('location: category.php');

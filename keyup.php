@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/lib/catalog_v2.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'search') {
     $conn = $pdo->open();
@@ -8,11 +9,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $page = isset($_POST['page']) ? max(1, (int)$_POST['page']) : 1;
     $offset = ($page - 1) * $limit;
 
-    $countStmt = $conn->prepare("SELECT COUNT(*) AS total FROM products WHERE product_status = '1' AND (name LIKE :query OR description LIKE :query)");
+    if (catalog_v2_ready($conn)) {
+        $countStmt = $conn->prepare("SELECT COUNT(*) AS total FROM products_v2 WHERE status = 'active' AND (name LIKE :query OR description LIKE :query)");
+    } else {
+        $countStmt = $conn->prepare("SELECT COUNT(*) AS total FROM products WHERE product_status = '1' AND (name LIKE :query OR description LIKE :query)");
+    }
     $countStmt->execute([':query' => '%' . $query . '%']);
     $total = (int)($countStmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0);
 
-    $stmt = $conn->prepare("SELECT * FROM products WHERE product_status = '1' AND (name LIKE :query OR description LIKE :query) ORDER BY id DESC LIMIT :offset, :limit");
+    if (catalog_v2_ready($conn)) {
+        $stmt = $conn->prepare("SELECT id, slug, name, base_price AS price, main_image AS photo FROM products_v2 WHERE status = 'active' AND (name LIKE :query OR description LIKE :query) ORDER BY id DESC LIMIT :offset, :limit");
+    } else {
+        $stmt = $conn->prepare("SELECT * FROM products WHERE product_status = '1' AND (name LIKE :query OR description LIKE :query) ORDER BY id DESC LIMIT :offset, :limit");
+    }
     $stmt->bindValue(':query', '%' . $query . '%', PDO::PARAM_STR);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);

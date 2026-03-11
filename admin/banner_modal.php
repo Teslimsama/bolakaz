@@ -1,3 +1,23 @@
+<?php
+$conn = $pdo->open();
+$bannerProducts = [];
+$bannerCategories = [];
+try {
+  $productStmt = $conn->prepare("SELECT slug, name FROM products WHERE product_status = 1 AND slug <> '' ORDER BY name ASC");
+  $productStmt->execute();
+  $bannerProducts = $productStmt->fetchAll(PDO::FETCH_ASSOC);
+
+  $categoryStmt = $conn->prepare("SELECT cat_slug, name FROM category WHERE status = :status AND cat_slug <> '' ORDER BY name ASC");
+  $categoryStmt->execute(['status' => 'active']);
+  $bannerCategories = $categoryStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+  $bannerProducts = [];
+  $bannerCategories = [];
+} finally {
+  $pdo->close();
+}
+?>
+
 <!-- Add Banner Item Modal -->
 <div class="modal fade" id="addnewBanner">
   <div class="modal-dialog">
@@ -36,11 +56,37 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="link" class="col-sm-3 control-label">Link</label>
+            <label for="add_destination_type" class="col-sm-3 control-label">Destination</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" id="link" name="link" required>
+              <select class="form-control" id="add_destination_type" name="destination_type" required>
+                <option value="category">Category</option>
+                <option value="product">Product</option>
+              </select>
             </div>
           </div>
+          <div class="form-group" id="add_category_group">
+            <label for="add_category_slug" class="col-sm-3 control-label">Category</label>
+            <div class="col-sm-9">
+              <select class="form-control" id="add_category_slug" name="category_slug">
+                <option value="">Select category</option>
+                <?php foreach ($bannerCategories as $category): ?>
+                  <option value="<?php echo e($category['cat_slug']); ?>"><?php echo e($category['name']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" id="add_product_group" style="display:none;">
+            <label for="add_product_slug" class="col-sm-3 control-label">Product</label>
+            <div class="col-sm-9">
+              <select class="form-control" id="add_product_slug" name="product_slug">
+                <option value="">Select product</option>
+                <?php foreach ($bannerProducts as $product): ?>
+                  <option value="<?php echo e($product['slug']); ?>"><?php echo e($product['name']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+          <input type="hidden" id="add_link" name="link" value="shop">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal"><i class="fa fa-close"></i> Close</button>
@@ -89,11 +135,37 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="edit_link" class="col-sm-3 control-label">Link</label>
+            <label for="edit_destination_type" class="col-sm-3 control-label">Destination</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" id="edit_link" name="link">
+              <select class="form-control" id="edit_destination_type" name="destination_type" required>
+                <option value="category">Category</option>
+                <option value="product">Product</option>
+              </select>
             </div>
           </div>
+          <div class="form-group" id="edit_category_group">
+            <label for="edit_category_slug" class="col-sm-3 control-label">Category</label>
+            <div class="col-sm-9">
+              <select class="form-control" id="edit_category_slug" name="category_slug">
+                <option value="">Select category</option>
+                <?php foreach ($bannerCategories as $category): ?>
+                  <option value="<?php echo e($category['cat_slug']); ?>"><?php echo e($category['name']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" id="edit_product_group" style="display:none;">
+            <label for="edit_product_slug" class="col-sm-3 control-label">Product</label>
+            <div class="col-sm-9">
+              <select class="form-control" id="edit_product_slug" name="product_slug">
+                <option value="">Select product</option>
+                <?php foreach ($bannerProducts as $product): ?>
+                  <option value="<?php echo e($product['slug']); ?>"><?php echo e($product['name']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+          <input type="hidden" id="edit_link" name="link" value="shop">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal"><i class="fa fa-close"></i> Close</button>
