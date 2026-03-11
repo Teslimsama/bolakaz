@@ -118,12 +118,13 @@
     //Initialize Select2 Elements
     $('.select2').select2()
 
-    //CK Editor
-    CKEDITOR.replace('editor1')
-    CKEDITOR.replace('short_desc')
-    CKEDITOR.replace('desc')
-    CKEDITOR.replace('editor2')
-    CKEDITOR.replace('edit_short_desc')
-    CKEDITOR.replace('edit_desc')
+    // CKEditor: only initialize editors that exist on this page.
+    if (window.CKEDITOR && typeof window.CKEDITOR.replace === 'function') {
+      ['editor1', 'short_desc', 'desc', 'editor2', 'edit_short_desc', 'edit_desc'].forEach(function(id) {
+        if (document.getElementById(id)) {
+          window.CKEDITOR.replace(id);
+        }
+      });
+    }
   });
 </script>

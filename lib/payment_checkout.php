@@ -196,3 +196,41 @@ if (!function_exists('app_finalize_paid_order')) {
         return $salesId;
     }
 }
+
+if (!function_exists('app_reconcile_sale_from_webhook')) {
+    function app_reconcile_sale_from_webhook(PDO $conn, string $txRef, string $paidStatus, ?int $gatewayTxId = null): bool
+    {
+        $txRef = trim($txRef);
+        if ($txRef === '') {
+            return false;
+        }
+
+        $normalizedStatus = strtolower(trim($paidStatus));
+        $successStates = ['success', 'successful', 'completed', 'paid'];
+        if (!in_array($normalizedStatus, $successStates, true)) {
+            return false;
+        }
+
+        $saleStmt = $conn->prepare("SELECT id, Status FROM sales WHERE tx_ref = :tx_ref LIMIT 1 FOR UPDATE");
+        $saleStmt->execute(['tx_ref' => $txRef]);
+        $sale = $saleStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$sale) {
+            return false;
+        }
+
+        $currentStatus = strtolower(trim((string)($sale['Status'] ?? '')));
+        $targetStatus = in_array($currentStatus, ['success', 'successful'], true) ? (string)$sale['Status'] : 'success';
+
+        $updateStmt = $conn->prepare("UPDATE sales
+            SET Status = :status,
+                txid = COALESCE(:txid, txid)
+            WHERE id = :id");
+        $updateStmt->execute([
+            'status' => $targetStatus,
+            'txid' => ($gatewayTxId !== null && $gatewayTxId > 0) ? $gatewayTxId : null,
+            'id' => (int)$sale['id'],
+        ]);
+
+        return true;
+    }
+}
