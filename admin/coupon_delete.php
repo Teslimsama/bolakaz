@@ -1,8 +1,13 @@
 <?php
 include 'session.php';
 
-if (isset($_POST['delete'])) {
-	$id = $_POST['id'];
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+	$id = (int)($_POST['id'] ?? 0);
+	if ($id <= 0) {
+		$_SESSION['error'] = 'Invalid coupon selected';
+		header('location: coupon.php');
+		exit;
+	}
 
 	$conn = $pdo->open();
 
@@ -27,7 +32,7 @@ if (isset($_POST['delete'])) {
 
 	$pdo->close();
 } else {
-	$_SESSION['error'] = 'Select coupon to delete first';
+	$_SESSION['error'] = 'Invalid request method';
 }
 
 header('location: coupon.php');

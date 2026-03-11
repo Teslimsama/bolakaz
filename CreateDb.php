@@ -16,6 +16,12 @@ if (file_exists(__DIR__ . '/bootstrap/error_handler.php')) {
 	}
 }
 
+$appTimezone = trim((string)($_ENV['APP_TIMEZONE'] ?? getenv('APP_TIMEZONE') ?? 'Africa/Lagos'));
+if (!in_array($appTimezone, timezone_identifiers_list(), true)) {
+	$appTimezone = 'Africa/Lagos';
+}
+date_default_timezone_set($appTimezone);
+
 class Database
 {
 
@@ -29,6 +35,8 @@ class Database
 	{
 		try {
 			$this->conn = new PDO($this->server, $this->username, $this->password, $this->options);
+			$offset = (new DateTime('now', new DateTimeZone(date_default_timezone_get())))->format('P');
+			$this->conn->exec("SET time_zone = '" . $offset . "'");
 			return $this->conn;
 		} catch (PDOException $e) {
 			throw $e;

@@ -22,12 +22,6 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="price" class="col-sm-3 control-label">Price</label>
-            <div class="col-sm-9">
-              <input type="text" class="form-control" id="price" name="price" required>
-            </div>
-          </div>
-          <div class="form-group">
             <label for="status" class="col-sm-3 control-label">Status</label>
             <div class="col-sm-9">
               <select class="form-control" id="status" name="status" required>

@@ -29,7 +29,7 @@
             <div class='alert alert-danger alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-warning'></i> Error!</h4>
-              " . $_SESSION['error'] . "
+              " . e($_SESSION['error']) . "
             </div>
           ";
           unset($_SESSION['error']);
@@ -39,7 +39,7 @@
             <div class='alert alert-success alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-check'></i> Success!</h4>
-              " . $_SESSION['success'] . "
+              " . e($_SESSION['success']) . "
             </div>
           ";
           unset($_SESSION['success']);
@@ -68,21 +68,22 @@
                       $stmt = $conn->prepare("SELECT * FROM ads");
                       $stmt->execute();
                       foreach ($stmt as $row) {
+                        $image = '../images/' . ltrim((string)($row['image_path'] ?? ''), '/');
                         echo "
                           <tr>
-                            <td>" . $row['text_align'] . "</td>
-                            <td><img src='../images/" . $row['image_path'] . "' alt='Ad Image' style='width:100px;height:auto;'></td>
-                            <td>" . $row['discount'] . "</td>
-                            <td>" . $row['collection'] . "</td>
+                            <td>" . e($row['text_align']) . "</td>
+                            <td><img src='" . e($image) . "' alt='Ad Image' style='width:100px;height:auto;' onerror=\"this.onerror=null;this.src='../images/storefront-placeholder.svg';\"></td>
+                            <td>" . e($row['discount']) . "</td>
+                            <td>" . e($row['collection']) . "</td>
                             <td>
-                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
-                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
+                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
                           </tr>
                         ";
                       }
                     } catch (PDOException $e) {
-                      echo $e->getMessage();
+                      echo 'Unable to load ads.';
                     }
 
                     $pdo->close();
@@ -130,12 +131,16 @@
         },
         dataType: 'json',
         success: function(response) {
+          if (response.error) {
+            alert(response.message || 'Unable to load ad details.');
+            return;
+          }
           $('.adid').val(response.id);
           $('#edit_text_align').val(response.text_align);
           $('#edit_discount').val(response.discount);
           $('#edit_category').val(response.category_id);
           $('#current_image').attr('src', '../images/' + response.image_path);
-          $('.adname').html(response.collection);
+          $('.adname').text(response.collection || '');
         }
       });
     }

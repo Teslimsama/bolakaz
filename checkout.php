@@ -1,8 +1,8 @@
 <?php include 'session.php';
 // Fetch shipping options from the database
 $conn = $pdo->open();
-$stmt = $conn->prepare("SELECT * FROM shippings");
-$stmt->execute();
+$stmt = $conn->prepare("SELECT * FROM shippings WHERE status = :status");
+$stmt->execute(['status' => 'active']);
 $shipping_options = $stmt->fetchAll();
 $pdo->close();
 
@@ -303,17 +303,33 @@ $checkoutUser = [
                     data: {
                         shipping_id: shippingId
                     },
+                    dataType: 'json',
                     success: function(response) {
-                        // Optionally handle the response
-                        if (window.appNotify) {
+                        if (response && response.success) {
+                            if (window.appNotify) {
+                                window.appNotify({
+                                    message: response.message || 'Shipping option updated.',
+                                    type: 'success',
+                                    title: 'Shipping Updated'
+                                });
+                            }
+                            getDetails()
+                        } else if (window.appNotify) {
                             window.appNotify({
-                                message: 'Shipping option updated.',
-                                type: 'success',
-                                title: 'Shipping Updated'
+                                message: (response && response.message) || 'Invalid shipping option.',
+                                type: 'error',
+                                title: 'Shipping Failed'
                             });
                         }
-                        // window.location.reload();
-                        getDetails()
+                    },
+                    error: function() {
+                        if (window.appNotify) {
+                            window.appNotify({
+                                message: 'Unable to update shipping right now.',
+                                type: 'error',
+                                title: 'Shipping Failed'
+                            });
+                        }
                     }
                 });
             });

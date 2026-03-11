@@ -7,9 +7,7 @@
     <?php include 'navbar.php'; ?>
     <?php include 'menubar.php'; ?>
 
-    <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
-      <!-- Content Header (Page header) -->
       <section class="content-header">
         <h1>
           Web Details
@@ -20,7 +18,6 @@
         </ol>
       </section>
 
-      <!-- Main content -->
       <section class="content">
         <?php
         if (isset($_SESSION['error'])) {
@@ -64,6 +61,27 @@
                   <tbody>
                     <?php
                     $conn = $pdo->open();
+                    $previewText = static function ($value, int $limit = 140): string {
+                      $decoded = (string)$value;
+                      for ($i = 0; $i < 3; $i++) {
+                        $next = html_entity_decode($decoded, ENT_QUOTES, 'UTF-8');
+                        if ($next === $decoded) {
+                          break;
+                        }
+                        $decoded = $next;
+                      }
+
+                      $plain = trim(preg_replace('/\s+/', ' ', strip_tags($decoded)));
+                      if ($plain === '') {
+                        return '';
+                      }
+
+                      if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+                        return mb_strlen($plain) > $limit ? mb_substr($plain, 0, $limit - 1) . '...' : $plain;
+                      }
+
+                      return strlen($plain) > $limit ? substr($plain, 0, $limit - 1) . '...' : $plain;
+                    };
 
                     try {
                       $stmt = $conn->prepare("SELECT * FROM web_details");
@@ -72,11 +90,11 @@
                         echo "
                           <tr>
                             <td>" . e($row['site_name']) . "</td>
-                            <td>" . e($row['site_address']) . "</td>
+                            <td>" . e($previewText($row['site_address'])) . "</td>
                             <td>" . e($row['site_number']) . "</td>
                             <td>" . e($row['site_email']) . "</td>
-                            <td>" . e($row['short_description']) . "</td>
-                            <td>" . e($row['description']) . "</td>
+                            <td>" . e($previewText($row['short_description'])) . "</td>
+                            <td>" . e($previewText($row['description'])) . "</td>
                             <td>
                               <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
                               <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
@@ -103,7 +121,6 @@
     <?php include 'web_details_modal.php'; ?>
 
   </div>
-  <!-- ./wrapper -->
 
   <?php include 'scripts.php'; ?>
   <script>
@@ -121,8 +138,13 @@
         var id = $(this).data('id');
         getWeb_detailsRow(id);
       });
-
     });
+
+    function decodeHtmlEntities(value) {
+      var txt = document.createElement('textarea');
+      txt.innerHTML = value || '';
+      return txt.value;
+    }
 
     function getWeb_detailsRow(id) {
       $.ajax({
@@ -133,17 +155,42 @@
         },
         dataType: 'json',
         success: function(response) {
+          if (!response || response.error || !response.id) {
+            alert((response && response.message) || 'Unable to load web details.');
+            return;
+          }
+
           $('.web_detailsid').val(response.id);
-          $('#edit_site_name').val(response.site_name);
-          $('#edit_site_email').val(response.site_email);
-          $('#edit_site_number').val(response.site_number);
-          $('.web_details_name').html(response.web_details);
-          $('#edit_short_desc').html(response.short_description);
-          $('#edit_site_address').html(response.site_address);
-          $('#edit_desc').html(response.description);
-          CKEDITOR.instances["editor2"].setData(response.site_address);
-          CKEDITOR.instances["edit_short_desc"].setData(response.short_description);
-          CKEDITOR.instances["edit_desc"].setData(response.description);
+          $('#edit_site_name').val(response.site_name || '');
+          $('#edit_site_email').val(response.site_email || '');
+          $('#edit_site_number').val(response.site_number || '');
+          $('.web_details_name').text(response.site_name || '');
+
+          var siteAddress = decodeHtmlEntities(response.site_address || '');
+          var shortDesc = decodeHtmlEntities(response.short_description || '');
+          var description = decodeHtmlEntities(response.description || '');
+
+          if (window.CKEDITOR && CKEDITOR.instances) {
+            if (CKEDITOR.instances['editor2']) {
+              CKEDITOR.instances['editor2'].setData(siteAddress);
+            } else {
+              $('#editor2').val(siteAddress);
+            }
+            if (CKEDITOR.instances['edit_short_desc']) {
+              CKEDITOR.instances['edit_short_desc'].setData(shortDesc);
+            } else {
+              $('#edit_short_desc').val(shortDesc);
+            }
+            if (CKEDITOR.instances['edit_desc']) {
+              CKEDITOR.instances['edit_desc'].setData(description);
+            } else {
+              $('#edit_desc').val(description);
+            }
+          } else {
+            $('#editor2').val(siteAddress);
+            $('#edit_short_desc').val(shortDesc);
+            $('#edit_desc').val(description);
+          }
         }
       });
     }

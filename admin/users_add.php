@@ -2,12 +2,18 @@
 	include 'session.php';
 
 	if(isset($_POST['add'])){
-		$firstname = $_POST['firstname'];
-		$lastname = $_POST['lastname'];
-		$email = $_POST['email'];
-		$password = $_POST['password'];
-		$address = $_POST['address'];
-		$contact = $_POST['contact'];
+		$firstname = trim((string)($_POST['firstname'] ?? ''));
+		$lastname = trim((string)($_POST['lastname'] ?? ''));
+		$email = trim((string)($_POST['email'] ?? ''));
+		$password = (string)($_POST['password'] ?? '');
+		$address = trim((string)($_POST['address'] ?? ''));
+		$contact = trim((string)($_POST['contact'] ?? ''));
+
+		if($firstname === '' || $lastname === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $password === ''){
+			$_SESSION['error'] = 'Please provide valid user details';
+			header('location: users.php');
+			exit;
+		}
 
 		$conn = $pdo->open();
 
@@ -20,9 +26,12 @@
 		}
 		else{
 			$password = password_hash($password, PASSWORD_DEFAULT);
-			$filename = $_FILES['photo']['name'];
+			$filename = '';
 			$now = date('Y-m-d');
-			if(!empty($filename)){
+			if(!empty($_FILES['photo']['name']) && is_uploaded_file($_FILES['photo']['tmp_name'])){
+				$ext = pathinfo((string)$_FILES['photo']['name'], PATHINFO_EXTENSION);
+				$safeExt = preg_replace('/[^a-zA-Z0-9]/', '', (string)$ext);
+				$filename = uniqid('user_', true) . ($safeExt !== '' ? '.' . strtolower($safeExt) : '');
 				move_uploaded_file($_FILES['photo']['tmp_name'], '../images/'.$filename);	
 			}
 			try{

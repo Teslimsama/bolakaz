@@ -1,9 +1,16 @@
 <?php
 include 'session.php';
 
-if (isset($_POST['add'])) {
-	$type = $_POST['type'];
-	$price = $_POST['price'];
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+	$type = trim((string)($_POST['type'] ?? ''));
+	$price = (float)($_POST['price'] ?? 0);
+	$status = trim((string)($_POST['status'] ?? 'active'));
+
+	if ($type === '' || $price < 0 || !in_array($status, ['active', 'inactive'], true)) {
+		$_SESSION['error'] = 'Please provide valid shipping details';
+		header('location: shipping.php');
+		exit;
+	}
 
 	$conn = $pdo->open();
 
@@ -17,16 +24,16 @@ if (isset($_POST['add'])) {
 	} else {
 		try {
 			// Insert new shipping method into the shippings table
-			$stmt = $conn->prepare("INSERT INTO shippings (type, price) VALUES (:type, :price)");
-			$stmt->execute(['type' => $type, 'price' => $price]);
+			$stmt = $conn->prepare("INSERT INTO shippings (type, price, status) VALUES (:type, :price, :status)");
+			$stmt->execute(['type' => $type, 'price' => $price, 'status' => $status]);
 			$_SESSION['success'] = 'Shipping method added successfully';
 		} catch (PDOException $e) {
-			$_SESSION['error'] = $e->getMessage();
+			$_SESSION['error'] = 'Unable to add shipping method';
 		}
 	}
 
 	$pdo->close();
 } else {
-	$_SESSION['error'] = 'Fill up shipping form first';
+	$_SESSION['error'] = 'Invalid request method';
 }
 header('location: shipping.php');

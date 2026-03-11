@@ -1,8 +1,13 @@
 <?php
 include 'session.php';
 
-if (isset($_POST['delete'])) {
-	$id = $_POST['id'];
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+	$id = (int)($_POST['id'] ?? 0);
+	if ($id <= 0) {
+		$_SESSION['error'] = 'Invalid shipping method selected';
+		header('location: shipping.php');
+		exit;
+	}
 
 	$conn = $pdo->open();
 
@@ -22,12 +27,12 @@ if (isset($_POST['delete'])) {
 			$_SESSION['error'] = 'Shipping method not found';
 		}
 	} catch (PDOException $e) {
-		$_SESSION['error'] = $e->getMessage();
+		$_SESSION['error'] = 'Unable to delete shipping method';
 	}
 
 	$pdo->close();
 } else {
-	$_SESSION['error'] = 'Select shipping method to delete first';
+	$_SESSION['error'] = 'Invalid request method';
 }
 
 header('location: shipping.php');

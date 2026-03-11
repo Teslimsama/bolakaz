@@ -29,7 +29,7 @@
             <div class='alert alert-danger alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-warning'></i> Error!</h4>
-              " . $_SESSION['error'] . "
+              " . e($_SESSION['error']) . "
             </div>
           ";
           unset($_SESSION['error']);
@@ -39,7 +39,7 @@
             <div class='alert alert-success alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-check'></i> Success!</h4>
-              " . $_SESSION['success'] . "
+              " . e($_SESSION['success']) . "
             </div>
           ";
           unset($_SESSION['success']);
@@ -69,18 +69,18 @@
                       foreach ($stmt as $row) {
                         echo "
                           <tr>
-                            <td>" . $row['type'] . "</td>
-                            <td>" . $row['price'] . "</td>
-                            <td>" . $row['status'] . "</td>
+                            <td>" . e($row['type']) . "</td>
+                            <td>" . app_money($row['price']) . "</td>
+                            <td>" . e(ucfirst((string)$row['status'])) . "</td>
                             <td>
-                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
-                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
+                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
                           </tr>
                         ";
                       }
                     } catch (PDOException $e) {
-                      echo $e->getMessage();
+                      echo 'Unable to load shipping methods.';
                     }
 
                     $pdo->close();
@@ -128,10 +128,15 @@
         },
         dataType: 'json',
         success: function(response) {
+          if (response.error) {
+            alert(response.message || 'Unable to load shipping method.');
+            return;
+          }
           $('.shippingid').val(response.id);
           $('#edit_type').val(response.type);
           $('#edit_price').val(response.price);
-          $('.shippingtype').html(response.type);
+          $('#edit_status').val(response.status);
+          $('.shippingtype').text(response.type || '');
         }
       });
     }

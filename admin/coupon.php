@@ -29,7 +29,7 @@
             <div class='alert alert-danger alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-warning'></i> Error!</h4>
-              " . $_SESSION['error'] . "
+              " . e($_SESSION['error']) . "
             </div>
           ";
           unset($_SESSION['error']);
@@ -39,7 +39,7 @@
             <div class='alert alert-success alert-dismissible'>
               <button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
               <h4><i class='icon fa fa-check'></i> Success!</h4>
-              " . $_SESSION['success'] . "
+              " . e($_SESSION['success']) . "
             </div>
           ";
           unset($_SESSION['success']);
@@ -71,20 +71,20 @@
                       foreach ($stmt as $row) {
                         echo "
                           <tr>
-                            <td>" . $row['code'] . "</td>
-                            <td>" . ucfirst($row['type']) . "</td>
-                            <td>" . $row['value'] . "</td>
-                            <td>" . ucfirst($row['status']) . "</td>
+                            <td>" . e($row['code']) . "</td>
+                            <td>" . e(ucfirst((string)$row['type'])) . "</td>
+                            <td>" . e($row['value']) . "</td>
+                            <td>" . e(ucfirst((string)$row['status'])) . "</td>
                             <td>" . ($row['expire_date'] ? date('M d, Y', strtotime($row['expire_date'])) : 'N/A') . "</td>
                             <td>
-                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
-                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
+                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
                           </tr>
                         ";
                       }
                     } catch (PDOException $e) {
-                      echo $e->getMessage();
+                      echo 'Unable to load coupons.';
                     }
 
                     $pdo->close();
@@ -132,14 +132,17 @@
         },
         dataType: 'json',
         success: function(response) {
+          if (response.error) {
+            alert(response.message || 'Unable to load coupon.');
+            return;
+          }
           $('.coupon_id').val(response.id);
-          $('.coupon_code').html(response.code);
+          $('.coupon_code').text(response.code || '');
           $('#edit_code').val(response.code);
           $('#edit_type').val(response.type);
           $('#edit_value').val(response.value);
           $('#edit_status').val(response.status);
-          // Format the expire date before setting it as the value
-          var expireDate = response.expire_date ? new Date(response.expire_date).toISOString().split('T')[0] : '';
+          var expireDate = response.expire_date ? String(response.expire_date).slice(0, 10) : '';
           $('#edit_expire_date').val(expireDate);
         }
       });

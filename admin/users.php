@@ -48,7 +48,26 @@
           <div class="col-xs-12">
             <div class="box">
               <div class="box-header with-border">
-                <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm btn-flat"><i class="fa fa-plus"></i> New</a>
+                <div class="pull-left">
+                  <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm btn-flat"><i class="fa fa-plus"></i> New</a>
+                </div>
+                <div class="pull-right">
+                  <div class="form-inline">
+                    <div class="form-group">
+                      <label for="filter_user_status" class="sr-only">Status</label>
+                      <select id="filter_user_status" class="form-control input-sm">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="not_verified">Not Verified</option>
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin-left:8px;">
+                      <label for="filter_user_date" class="sr-only">Date Added</label>
+                      <input type="text" id="filter_user_date" class="form-control input-sm" placeholder="Date range" style="min-width: 190px;">
+                    </div>
+                    <button type="button" id="clear_user_filters" class="btn btn-default btn-sm btn-flat" style="margin-left:8px;">Clear</button>
+                  </div>
+                </div>
               </div>
               <div class="box-body table-responsive">
                 <table id="example1" class="table table-bordered">
@@ -70,15 +89,18 @@
                       foreach ($stmt as $row) {
                         $image = (!empty($row['photo'])) ? '../images/' . $row['photo'] : '../images/profile.jpg';
                         $status = ($row['status']) ? '<span class="label label-success">active</span>' : '<span class="label label-danger">not verified</span>';
+                        $statusKey = ((int)$row['status'] === 1) ? 'active' : 'not_verified';
                         $active = (!$row['status']) ? '<span class="pull-right"><a href="#activate" class="status" data-toggle="modal" data-id="' . $row['id'] . '"><i class="fa fa-check-square-o"></i></a></span>' : '';
+                        $fullName = trim((string)$row['firstname'] . ' ' . (string)$row['lastname']);
+                        $createdRaw = !empty($row['created_on']) ? date('Y-m-d', strtotime((string)$row['created_on'])) : '';
                         echo "
-                          <tr>
+                          <tr data-status='" . e($statusKey) . "' data-created='" . e($createdRaw) . "'>
                             <td>
-                              <img src='" . $image . "' height='30px' width='30px'>
+                              <img src='" . e($image) . "' height='30px' width='30px' onerror=\"this.onerror=null;this.src='../images/profile.jpg';\">
                               <span class='pull-right'><a href='#edit_photo' class='photo' data-toggle='modal' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i></a></span>
                             </td>
-                            <td>" . $row['email'] . "</td>
-                            <td>" . $row['firstname'] . ' ' . $row['lastname'] . "</td>
+                            <td>" . e($row['email']) . "</td>
+                            <td>" . e($fullName) . "</td>
                             <td>
                               " . $status . "
                               " . $active . "
@@ -116,6 +138,80 @@
   <?php include 'scripts.php'; ?>
   <script>
     $(function() {
+      var userTable = $.fn.dataTable.isDataTable('#example1') ? $('#example1').DataTable() : null;
+      var userDateRange = { start: null, end: null };
+
+      $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        if (!userTable || settings.nTable.id !== 'example1') {
+          return true;
+        }
+
+        var rowNode = settings.aoData && settings.aoData[dataIndex] ? settings.aoData[dataIndex].nTr : null;
+        if (!rowNode) {
+          return true;
+        }
+
+        var selectedStatus = String($('#filter_user_status').val() || '').toLowerCase();
+        var rowStatus = String($(rowNode).data('status') || '').toLowerCase();
+        if (selectedStatus && rowStatus !== selectedStatus) {
+          return false;
+        }
+
+        if (userDateRange.start && userDateRange.end) {
+          var createdRaw = String($(rowNode).data('created') || '').trim();
+          if (!createdRaw) {
+            return false;
+          }
+          var created = moment(createdRaw, 'YYYY-MM-DD');
+          if (!created.isValid()) {
+            return false;
+          }
+          if (created.isBefore(userDateRange.start, 'day') || created.isAfter(userDateRange.end, 'day')) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      $('#filter_user_status').on('change', function() {
+        if (userTable) {
+          userTable.draw();
+        }
+      });
+
+      $('#filter_user_date').daterangepicker({
+        autoUpdateInput: false,
+        locale: { cancelLabel: 'Clear' }
+      });
+
+      $('#filter_user_date').on('apply.daterangepicker', function(ev, picker) {
+        userDateRange.start = picker.startDate.clone().startOf('day');
+        userDateRange.end = picker.endDate.clone().endOf('day');
+        $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+        if (userTable) {
+          userTable.draw();
+        }
+      });
+
+      $('#filter_user_date').on('cancel.daterangepicker', function() {
+        userDateRange.start = null;
+        userDateRange.end = null;
+        $(this).val('');
+        if (userTable) {
+          userTable.draw();
+        }
+      });
+
+      $('#clear_user_filters').on('click', function() {
+        $('#filter_user_status').val('');
+        $('#filter_user_date').val('');
+        userDateRange.start = null;
+        userDateRange.end = null;
+        if (userTable) {
+          userTable.draw();
+        }
+      });
 
       $(document).on('click', '.edit', function(e) {
         e.preventDefault();
@@ -154,9 +250,13 @@
         },
         dataType: 'json',
         success: function(response) {
+          if (response.error) {
+            alert(response.message || 'Unable to load user details.');
+            return;
+          }
           $('.userid').val(response.id);
           $('#edit_email').val(response.email);
-          $('#edit_password').val(response.password);
+          $('#edit_password').val('');
           $('#edit_firstname').val(response.firstname);
           $('#edit_lastname').val(response.lastname);
           $('#edit_address').val(response.address);

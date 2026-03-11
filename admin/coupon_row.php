@@ -1,16 +1,32 @@
-<?php 
-	include 'session.php';
+<?php
+include 'session.php';
 
-	if(isset($_POST['id'])){
-		$id = $_POST['id'];
-		
-		$conn = $pdo->open();
+header('Content-Type: application/json; charset=UTF-8');
 
-		$stmt = $conn->prepare("SELECT * FROM coupons WHERE id=:id");
-		$stmt->execute(['id'=>$id]);
-		$row = $stmt->fetch();
-		
-		$pdo->close();
+if (!isset($_POST['id'])) {
+	echo json_encode(['error' => true, 'message' => 'Invalid request']);
+	exit;
+}
 
-		echo json_encode($row);
+$id = (int)$_POST['id'];
+if ($id <= 0) {
+	echo json_encode(['error' => true, 'message' => 'Invalid coupon ID']);
+	exit;
+}
+
+$conn = $pdo->open();
+try {
+	$stmt = $conn->prepare("SELECT * FROM coupons WHERE id=:id LIMIT 1");
+	$stmt->execute(['id' => $id]);
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	if (!$row) {
+		echo json_encode(['error' => true, 'message' => 'Coupon not found']);
+		exit;
 	}
+	$row['error'] = false;
+	echo json_encode($row);
+} catch (Throwable $e) {
+	echo json_encode(['error' => true, 'message' => 'Unable to load coupon']);
+} finally {
+	$pdo->close();
+}

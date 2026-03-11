@@ -26,6 +26,29 @@
           <div class="col-xs-12">
             <div class="box">
               <div class="box-header with-border">
+                <div class="pull-left">
+                  <div class="form-inline">
+                    <div class="form-group">
+                      <label for="filter_status" class="sr-only">Status</label>
+                      <select id="filter_status" class="form-control input-sm">
+                        <option value="">All Statuses</option>
+                        <option value="success">Success</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin-left:8px;">
+                      <label for="filter_payment" class="sr-only">Payment Type</label>
+                      <select id="filter_payment" class="form-control input-sm">
+                        <option value="">All Payments</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="paystack">Paystack</option>
+                        <option value="flutterwave">Flutterwave</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
                 <div class="pull-right">
                   <form method="POST" class="form-inline" action="sales_print.php">
                     <div class="input-group">
@@ -54,23 +77,48 @@
                     $conn = $pdo->open();
 
                     try {
-                      $stmt = $conn->prepare("SELECT *, sales.id AS salesid FROM sales LEFT JOIN users ON users.id=sales.user_id ORDER BY sales_date DESC");
+                      $stmt = $conn->prepare("SELECT
+                          sales.id AS salesid,
+                          sales.sales_date,
+                          sales.tx_ref,
+                          sales.Status,
+                          users.firstname,
+                          users.lastname,
+                          COALESCE(SUM(details.quantity * products.price), 0) AS order_total
+                        FROM sales
+                        LEFT JOIN users ON users.id = sales.user_id
+                        LEFT JOIN details ON details.sales_id = sales.id
+                        LEFT JOIN products ON products.id = details.product_id
+                        GROUP BY sales.id, sales.sales_date, sales.tx_ref, sales.Status, users.firstname, users.lastname
+                        ORDER BY sales.sales_date DESC, sales.id DESC");
                       $stmt->execute();
+
                       foreach ($stmt as $row) {
-                        $stmt = $conn->prepare("SELECT * FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
-                        $stmt->execute(['id' => $row['salesid']]);
-                        $total = 0;
-                        foreach ($stmt as $details) {
-                          $subtotal = $details['price'] * $details['quantity'];
-                          $total += $subtotal;
+                        $status = strtolower(trim((string)($row['Status'] ?? 'pending')));
+                        if ($status === 'successful') {
+                          $status = 'success';
                         }
-                        $status = strtolower(trim((string)$row['Status']));
+
                         $txRef = (string)($row['tx_ref'] ?? '');
                         $isBankTransfer = (strpos($txRef, 'BKBTRF-') === 0);
-                        $isBankConfirmed = ($isBankTransfer && ($status == 'success' || $status == 'successful'));
-                        $statusColor = ($status == 'success' || $status == 'successful') ? 'green' : ($status == 'pending' ? 'orange' : 'red');
+                        $paymentType = 'other';
+                        if ($isBankTransfer) {
+                          $paymentType = 'bank_transfer';
+                        } elseif (strpos($txRef, 'BKPAY-') === 0) {
+                          $paymentType = 'paystack';
+                        } elseif (strpos($txRef, 'BKFLW-') === 0) {
+                          $paymentType = 'flutterwave';
+                        }
+                        $isBankConfirmed = ($isBankTransfer && $status === 'success');
+                        $statusColor = ($status === 'success') ? 'green' : ($status === 'pending' ? 'orange' : 'red');
+                        $statusLabel = ucfirst($status);
 
-                        $statusHtml = "<button class='status-toggle btn btn-sm' data-id='" . (int)$row['salesid'] . "' data-status='" . htmlspecialchars((string)$row['Status'], ENT_QUOTES, 'UTF-8') . "' style='background-color:" . $statusColor . "; color: white;'>" . ucfirst((string)$row['Status']) . "</button>";
+                        $buyerName = trim((string)($row['firstname'] ?? '') . ' ' . (string)($row['lastname'] ?? ''));
+                        if ($buyerName === '') {
+                          $buyerName = 'Guest';
+                        }
+
+                        $statusHtml = "<button class='status-toggle btn btn-sm' data-id='" . (int)$row['salesid'] . "' data-status='" . e($status) . "' style='background-color:" . $statusColor . "; color: white;'>" . e($statusLabel) . "</button>";
 
                         if ($isBankTransfer) {
                           if ($isBankConfirmed) {
@@ -86,20 +134,19 @@
                         }
 
                         echo "
-                          <tr>
+                          <tr data-status='" . e($status) . "' data-payment='" . e($paymentType) . "'>
                             <td class='hidden'></td>
                             <td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
-                            <td>" . $row['firstname'] . ' ' . $row['lastname'] . "</td>
-                            <td>" . $row['tx_ref'] . "</td>
+                            <td>" . e($buyerName) . "</td>
+                            <td>" . e($txRef) . "</td>
                             <td>" . $statusHtml . "</td>
-
-                            <td> ₦" . number_format($total, 2) . "</td>
-                            <td><button type='button' class='btn btn-info btn-sm btn-flat transact' data-id='" . $row['salesid'] . "'><i class='fa fa-search'></i> View</button></td>
+                            <td>" . app_money($row['order_total']) . "</td>
+                            <td><button type='button' class='btn btn-info btn-sm btn-flat transact' data-id='" . (int)$row['salesid'] . "'><i class='fa fa-search'></i> View</button></td>
                           </tr>
                         ";
                       }
                     } catch (PDOException $e) {
-                      echo $e->getMessage();
+                      echo e($e->getMessage());
                     }
 
                     $pdo->close();
@@ -114,7 +161,43 @@
 
     </div>
     <?php include 'footer.php'; ?>
-    <?php include '../profile_modal.php'; ?>
+    <div class="modal fade" id="transaction">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title"><b>Transaction Full Details</b></h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body table-responsive">
+            <p>
+              Date: <span id="date"></span>
+              <span class="pull-right">Transaction#: <span id="transid"></span></span>
+            </p>
+            <table class="table table-bordered">
+              <thead>
+                <th>Product</th>
+                <th width="20%">Price</th>
+                <th width="2%">Quantity</th>
+                <th width="25%">Subtotal</th>
+              </thead>
+              <tbody id="detail">
+                <tr>
+                  <td colspan="3" align="left"><b>Total</b></td>
+                  <td><span id="total"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">
+              <i class="fa fa-close"></i> Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
   <!-- ./wrapper -->
@@ -123,30 +206,26 @@
   <!-- Date Picker -->
   <script>
     $(function() {
-      //Date picker
       $('#datepicker_add').datepicker({
         autoclose: true,
         format: 'yyyy-mm-dd'
-      })
+      });
       $('#datepicker_edit').datepicker({
         autoclose: true,
         format: 'yyyy-mm-dd'
-      })
+      });
 
-      //Timepicker
       $('.timepicker').timepicker({
         showInputs: false
-      })
+      });
 
-      //Date range picker
-      $('#reservation').daterangepicker()
-      //Date range picker with time picker
+      $('#reservation').daterangepicker();
       $('#reservationtime').daterangepicker({
         timePicker: true,
         timePickerIncrement: 30,
         format: 'MM/DD/YYYY h:mm A'
-      })
-      //Date range as a button
+      });
+
       $('#daterange-btn').daterangepicker({
           ranges: {
             'Today': [moment(), moment()],
@@ -160,16 +239,19 @@
           endDate: moment()
         },
         function(start, end) {
-          $('#daterange-btn span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'))
+          $('#daterange-btn span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
         }
-      )
-
+      );
     });
   </script>
   <script>
     $(function() {
       $(document).on('click', '.transact', function(e) {
         e.preventDefault();
+        if (!$('#transaction').length) {
+          alert('Transaction modal is unavailable on this page.');
+          return;
+        }
         $('#transaction').modal('show');
         var id = $(this).data('id');
         $.ajax({
@@ -180,21 +262,56 @@
           },
           dataType: 'json',
           success: function(response) {
-            $('#date').html(response.date);
-            $('#transid').html(response.transaction);
-            $('#detail').prepend(response.list);
-            $('#total').html(response.total);
+            $('#date').html(response.date || '');
+            $('#transid').html(response.transaction || '');
+            $('#detail').prepend(response.list || '');
+            $('#total').html(response.total || '');
+          },
+          error: function() {
+            alert('Unable to load transaction details.');
           }
         });
       });
 
-      $("#transaction").on("hidden.bs.modal", function() {
+      $('#transaction').on('hidden.bs.modal', function() {
         $('.prepend_items').remove();
       });
     });
   </script>
   <script>
     $(function() {
+      var salesTable = $.fn.dataTable.isDataTable('#example1') ? $('#example1').DataTable() : null;
+
+      $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        if (!salesTable || settings.nTable.id !== 'example1') {
+          return true;
+        }
+
+        var selectedStatus = ($('#filter_status').val() || '').toLowerCase();
+        var selectedPayment = ($('#filter_payment').val() || '').toLowerCase();
+        var rowNode = settings.aoData && settings.aoData[dataIndex] ? settings.aoData[dataIndex].nTr : null;
+        if (!rowNode) {
+          return true;
+        }
+
+        var rowStatus = String($(rowNode).data('status') || '').toLowerCase();
+        var rowPayment = String($(rowNode).data('payment') || '').toLowerCase();
+
+        if (selectedStatus && rowStatus !== selectedStatus) {
+          return false;
+        }
+        if (selectedPayment && rowPayment !== selectedPayment) {
+          return false;
+        }
+        return true;
+      });
+
+      $('#filter_status, #filter_payment').on('change', function() {
+        if (salesTable) {
+          salesTable.draw();
+        }
+      });
+
       $(document).on('click', '.confirm-bank', function() {
         var button = $(this);
         var id = button.data('id');
@@ -230,11 +347,17 @@
       $(document).on('click', '.status-toggle', function() {
         var button = $(this);
         var id = button.data('id');
-        var currentStatus = button.data('status');
+        var currentStatus = String(button.data('status') || '').toLowerCase();
+        if (currentStatus === 'successful') {
+          currentStatus = 'success';
+        }
 
-        // Define the status cycle
         var statuses = ['success', 'pending', 'failed'];
-        var nextStatus = statuses[(statuses.indexOf(currentStatus) + 1) % statuses.length];
+        var currentIndex = statuses.indexOf(currentStatus);
+        if (currentIndex < 0) {
+          currentIndex = 0;
+        }
+        var nextStatus = statuses[(currentIndex + 1) % statuses.length];
 
         $.ajax({
           type: 'POST',
@@ -246,7 +369,6 @@
           dataType: 'json',
           success: function(response) {
             if (response.success) {
-              // Update the button to show the next status
               button.data('status', nextStatus);
               button.text(nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1));
               button.css('background-color', nextStatus === 'success' ? 'green' : nextStatus === 'pending' ? 'orange' : 'red');

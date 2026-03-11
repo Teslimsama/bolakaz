@@ -1,78 +1,93 @@
 <?php
 include 'session.php';
 
-if (isset($_POST['add'])) {
-	$text_align = htmlspecialchars($_POST['text_align']);
-	$discount = htmlspecialchars($_POST['discount']);
-	$category_id = htmlspecialchars($_POST['category_id']);
+function ads_upload_image(array $file, string &$error = ''): ?string
+{
+    if (empty($file['name']) || !is_uploaded_file((string)($file['tmp_name'] ?? ''))) {
+        $error = 'Please select an image.';
+        return null;
+    }
 
-	$conn = $pdo->open();
+    $tmp = (string)$file['tmp_name'];
+    $check = @getimagesize($tmp);
+    if ($check === false) {
+        $error = 'File is not an image.';
+        return null;
+    }
 
-	// Check if the category exists and fetch the slug
-	$stmt = $conn->prepare("SELECT cat_slug, name FROM category WHERE id=:id");
-	$stmt->execute(['id' => $category_id]);
-	$category = $stmt->fetch();
+    $size = (int)($file['size'] ?? 0);
+    if ($size > 5 * 1024 * 1024) {
+        $error = 'Sorry, your file is too large.';
+        return null;
+    }
 
-	if ($category) {
-		$link = $category['cat_slug'];
-		$collection = $category['name'];
+    $ext = strtolower((string)pathinfo((string)$file['name'], PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (!in_array($ext, $allowed, true)) {
+        $error = 'Sorry, only JPG, JPEG, PNG, GIF & WEBP files are allowed.';
+        return null;
+    }
 
-		// Handle file upload
-		$target_dir = "../images/";
-		$target_file = $target_dir . basename($_FILES["image_path"]["name"]);
-		$uploadOk = 1;
-		$imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $filename = uniqid('ad_', true) . '.' . $ext;
+    $target = '../images/' . $filename;
+    if (!move_uploaded_file($tmp, $target)) {
+        $error = 'Sorry, there was an error uploading your file.';
+        return null;
+    }
 
-		// Check if image file is an actual image or fake image
-		$check = getimagesize($_FILES["image_path"]["tmp_name"]);
-		if ($check !== false) {
-			$uploadOk = 1;
-		} else {
-			$_SESSION['error'] = "File is not an image.";
-			$uploadOk = 0;
-		}
-
-		// Check if file already exists
-		if (file_exists($target_file)) {
-			$_SESSION['error'] = "Sorry, file already exists.";
-			$uploadOk = 0;
-		}
-
-		// Check file size
-		if ($_FILES["image_path"]["size"] > 5000000) { // 5MB limit
-			$_SESSION['error'] = "Sorry, your file is too large.";
-			$uploadOk = 0;
-		}
-
-		// Allow certain file formats
-		if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
-			$_SESSION['error'] = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-			$uploadOk = 0;
-		}
-
-		// Check if $uploadOk is set to 0 by an error
-		if ($uploadOk == 0) {
-			$_SESSION['error'] = "Sorry, your file was not uploaded.";
-		} else {
-			if (move_uploaded_file($_FILES["image_path"]["tmp_name"], $target_file)) {
-				$image_path = htmlspecialchars(basename($_FILES["image_path"]["name"]));
-				try {
-					$stmt = $conn->prepare("INSERT INTO ads (text_align, image_path, discount, collection, link) VALUES (:text_align, :image_path, :discount, :collection, :link)");
-					$stmt->execute(['text_align' => $text_align, 'image_path' => $image_path, 'discount' => $discount, 'collection' => $collection, 'link' => $link]);
-					$_SESSION['success'] = 'Ad added successfully';
-				} catch (PDOException $e) {
-					$_SESSION['error'] = $e->getMessage();
-				}
-			} else {
-				$_SESSION['error'] = "Sorry, there was an error uploading your file.";
-			}
-		}
-	} else {
-		$_SESSION['error'] = 'Invalid category selected';
-	}
-
-	$pdo->close();
-} else {
-	$_SESSION['error'] = 'Fill up ad form first';
+    return $filename;
 }
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $textAlign = trim((string)($_POST['text_align'] ?? ''));
+    $discount = trim((string)($_POST['discount'] ?? ''));
+    $categoryId = (int)($_POST['category_id'] ?? 0);
+
+    if (!in_array($textAlign, ['text-md-right', 'text-md-left', 'text-md-center'], true) || $discount === '' || $categoryId <= 0) {
+        $_SESSION['error'] = 'Please provide valid ad details.';
+        header('location: ads.php');
+        exit;
+    }
+
+    $conn = $pdo->open();
+
+    try {
+        $stmt = $conn->prepare("SELECT cat_slug, name FROM category WHERE id=:id LIMIT 1");
+        $stmt->execute(['id' => $categoryId]);
+        $category = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$category) {
+            $_SESSION['error'] = 'Invalid category selected';
+            header('location: ads.php');
+            exit;
+        }
+
+        $uploadError = '';
+        $imagePath = ads_upload_image($_FILES['image_path'] ?? [], $uploadError);
+        if ($imagePath === null) {
+            $_SESSION['error'] = $uploadError;
+            header('location: ads.php');
+            exit;
+        }
+
+        $insert = $conn->prepare("INSERT INTO ads (text_align, image_path, discount, collection, link)
+            VALUES (:text_align, :image_path, :discount, :collection, :link)");
+        $insert->execute([
+            'text_align' => $textAlign,
+            'image_path' => $imagePath,
+            'discount' => $discount,
+            'collection' => (string)$category['name'],
+            'link' => (string)$category['cat_slug'],
+        ]);
+
+        $_SESSION['success'] = 'Ad added successfully';
+    } catch (Throwable $e) {
+        $_SESSION['error'] = 'Unable to add ad.';
+    } finally {
+        $pdo->close();
+    }
+} else {
+    $_SESSION['error'] = 'Invalid request method';
+}
+
 header('location: ads.php');
