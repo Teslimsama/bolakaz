@@ -461,10 +461,11 @@ if (!function_exists('app_statement_render_document_html')) {
         $seller = $statement['seller'] ?? [];
         $items = $statement['items'] ?? [];
         $payments = $statement['payments'] ?? [];
-        $statusLabel = app_statement_escape($statement['payment_status_label'] ?? 'Unpaid');
+        $statusLabel = ($statement['payment_status_label'] ?? 'Unpaid');
         $sellerAddress = trim((string) ($seller['site_address'] ?? ''));
         $customerAddress = trim((string) ($statement['customer_address'] ?? ''));
         $statusClass = (string) ($statement['payment_status_class'] ?? 'unpaid');
+        
         $statusBg = '#FCE7E7';
         $statusText = '#9F1D1D';
         if ($statusClass === 'paid') {
@@ -474,45 +475,51 @@ if (!function_exists('app_statement_render_document_html')) {
             $statusBg = '#FEF3C7';
             $statusText = '#92400E';
         }
+        
         $sellerName = app_statement_escape($seller['site_name'] ?? 'Bolakaz');
         $customerName = app_statement_escape($statement['customer_name'] ?? 'Guest');
         $sellerPhone = trim((string) ($seller['site_number'] ?? ''));
         $sellerEmail = trim((string) ($seller['site_email'] ?? ''));
         $customerPhone = trim((string) ($statement['customer_phone'] ?? ''));
         $customerEmail = trim((string) ($statement['customer_email'] ?? ''));
-        $metaLabelStyle = 'color:#667085;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.7px;';
+        
+        // CSS in TCPDF is limited; inline styles or simplified classes are best.
+        $metaLabelStyle = 'color:#667085;font-size:10px;font-weight:bold;';
         $metaValueStyle = 'color:#101828;font-size:12px;font-weight:bold;';
-        $sectionBarStyle = 'background-color:#111827;color:#FFFFFF;font-size:13px;font-weight:bold;letter-spacing:0.4px;';
+        $sectionBarStyle = 'background-color:#111827;color:#FFFFFF;font-size:13px;font-weight:bold;';
 
         ob_start();
         ?>
 <?php if (!$forPdf): ?>
 <style>
-  .statement-sheet{max-width:940px;margin:0 auto;background:#fff;color:#1f2937;font-family:Arial,sans-serif}
-  .statement-sheet table{width:100%;border-collapse:separate;border-spacing:0}
+  .statement-sheet { max-width: 940px; margin: 0 auto; background: #fff; color: #1f2937; font-family: Arial, sans-serif; }
+  .statement-sheet table { width: 100%; border-collapse: collapse; }
+  .statement-sheet .label-caps { text-transform: uppercase; letter-spacing: 0.7px; }
+  .statement-sheet .title-caps { text-transform: uppercase; letter-spacing: 1.2px; }
 </style>
 <?php endif; ?>
+
 <div class="statement-sheet">
-  <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #D7DEE7;<?php echo $forPdf ? '' : 'box-shadow:0 18px 48px rgba(15,23,42,0.08);'; ?>">
+  <table border="0" cellpadding="0" cellspacing="0" style="width:100%; border:1px solid #D7DEE7; <?php echo $forPdf ? '' : 'box-shadow: 0 18px 48px rgba(15,23,42,0.08);'; ?>">
     <tr>
-      <td style="padding:26px 28px 8px 28px;">
+      <td style="padding: 26px 28px 20px 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
             <td width="72%" style="vertical-align:top;">
-              <div style="color:#667085;font-size:11px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;"><?php echo $sellerName; ?></div>
-              <div style="color:#101828;font-size:28px;font-weight:bold;line-height:1.1;padding-top:8px;">Statement of Account</div>
-              <div style="color:#667085;font-size:12px;padding-top:8px;">Current balance summary for goods supplied through the offline sales flow.</div>
+              <div style="color:#667085; font-size:11px; font-weight:bold;" class="title-caps"><?php echo strtoupper($sellerName); ?></div>
+              <div style="color:#101828; font-size:28px; font-weight:bold; line-height:1.1; padding-top:8px;">Statement of Account</div>
+              <div style="color:#667085; font-size:12px; padding-top:8px;">Current balance summary for goods supplied through the offline sales flow.</div>
             </td>
             <td width="28%" style="vertical-align:top;" align="right">
               <table border="0" cellpadding="0" cellspacing="0" align="right">
                 <tr>
-                  <td bgcolor="<?php echo $statusBg; ?>" style="border:1px solid <?php echo $statusText; ?>;color:<?php echo $statusText; ?>;font-size:12px;font-weight:bold;padding:8px 14px;" align="center">
+                  <td bgcolor="<?php echo $statusBg; ?>" style="border:1px solid <?php echo $statusText; ?>; color:<?php echo $statusText; ?>; font-size:12px; font-weight:bold; padding:8px 14px;" align="center">
                     <?php echo $statusLabel; ?>
                   </td>
                 </tr>
-                <tr><td style="font-size:4px;line-height:4px;">&nbsp;</td></tr>
+                <tr><td style="font-size:2px; line-height:2px;">&nbsp;</td></tr>
                 <tr>
-                  <td style="color:#667085;font-size:11px;">Generated <?php echo app_statement_escape($statement['generated_at'] ?? ''); ?></td>
+                  <td style="color:#667085; font-size:11px;">Generated <?php echo app_statement_escape($statement['generated_at'] ?? ''); ?></td>
                 </tr>
               </table>
             </td>
@@ -522,34 +529,34 @@ if (!function_exists('app_statement_render_document_html')) {
     </tr>
 
     <tr>
-      <td style="padding:14px 28px 0 28px;">
+      <td style="padding: 0 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td width="48%" style="border:1px solid #D7DEE7;background-color:#F8FAFC;padding:14px 16px;">
-              <div style="<?php echo $metaLabelStyle; ?>">Seller</div>
-              <div style="color:#101828;font-size:15px;font-weight:bold;padding-top:8px;"><?php echo $sellerName; ?></div>
+            <td width="48%" style="border:1px solid #D7DEE7; background-color:#F8FAFC; padding:14px 16px;">
+              <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Seller'); ?></div>
+              <div style="color:#101828; font-size:15px; font-weight:bold; padding-top:8px;"><?php echo $sellerName; ?></div>
               <?php if ($sellerAddress !== ''): ?>
-              <div style="color:#344054;font-size:12px;padding-top:6px;"><?php echo app_statement_escape($sellerAddress); ?></div>
+              <div style="color:#344054; font-size:12px; padding-top:6px;"><?php echo app_statement_escape($sellerAddress); ?></div>
               <?php endif; ?>
               <?php if ($sellerPhone !== ''): ?>
-              <div style="color:#344054;font-size:12px;padding-top:6px;">Phone: <?php echo app_statement_escape($sellerPhone); ?></div>
+              <div style="color:#344054; font-size:12px; padding-top:6px;">Phone: <?php echo app_statement_escape($sellerPhone); ?></div>
               <?php endif; ?>
               <?php if ($sellerEmail !== ''): ?>
-              <div style="color:#344054;font-size:12px;padding-top:4px;">Email: <?php echo app_statement_escape($sellerEmail); ?></div>
+              <div style="color:#344054; font-size:12px; padding-top:4px;">Email: <?php echo app_statement_escape($sellerEmail); ?></div>
               <?php endif; ?>
             </td>
-            <td width="4%"></td>
-            <td width="48%" style="border:1px solid #D7DEE7;background-color:#F8FAFC;padding:14px 16px;">
-              <div style="<?php echo $metaLabelStyle; ?>">Debtor</div>
-              <div style="color:#101828;font-size:15px;font-weight:bold;padding-top:8px;"><?php echo $customerName; ?></div>
+            <td width="4%">&nbsp;</td>
+            <td width="48%" style="border:1px solid #D7DEE7; background-color:#F8FAFC; padding:14px 16px;">
+              <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Debtor'); ?></div>
+              <div style="color:#101828; font-size:15px; font-weight:bold; padding-top:8px;"><?php echo $customerName; ?></div>
               <?php if ($customerAddress !== ''): ?>
-              <div style="color:#344054;font-size:12px;padding-top:6px;"><?php echo app_statement_escape($customerAddress); ?></div>
+              <div style="color:#344054; font-size:12px; padding-top:6px;"><?php echo app_statement_escape($customerAddress); ?></div>
               <?php endif; ?>
               <?php if ($customerPhone !== ''): ?>
-              <div style="color:#344054;font-size:12px;padding-top:6px;">Phone: <?php echo app_statement_escape($customerPhone); ?></div>
+              <div style="color:#344054; font-size:12px; padding-top:6px;">Phone: <?php echo app_statement_escape($customerPhone); ?></div>
               <?php endif; ?>
               <?php if ($customerEmail !== ''): ?>
-              <div style="color:#344054;font-size:12px;padding-top:4px;">Email: <?php echo app_statement_escape($customerEmail); ?></div>
+              <div style="color:#344054; font-size:12px; padding-top:4px;">Email: <?php echo app_statement_escape($customerEmail); ?></div>
               <?php endif; ?>
             </td>
           </tr>
@@ -558,24 +565,24 @@ if (!function_exists('app_statement_render_document_html')) {
     </tr>
 
     <tr>
-      <td style="padding:18px 28px 0 28px;">
+      <td style="padding: 18px 28px 0 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td width="24%" style="border:1px solid #D7DEE7;background-color:#FFFFFF;padding:10px 12px;">
-              <div style="<?php echo $metaLabelStyle; ?>">Statement Ref</div>
-              <div style="<?php echo $metaValueStyle; ?>padding-top:4px;"><?php echo app_statement_escape($statement['tx_ref'] ?? ''); ?></div>
+            <td width="24%" style="border:1px solid #D7DEE7; background-color:#FFFFFF; padding:10px 12px;">
+              <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Statement Ref'); ?></div>
+              <div style="<?php echo $metaValueStyle; ?> padding-top:4px;"><?php echo app_statement_escape($statement['tx_ref'] ?? ''); ?></div>
             </td>
-            <td width="24%" style="border:1px solid #D7DEE7;background-color:#FFFFFF;padding:10px 12px;">
-              <div style="<?php echo $metaLabelStyle; ?>">Sale Date</div>
-              <div style="<?php echo $metaValueStyle; ?>padding-top:4px;"><?php echo app_statement_escape($statement['sales_date_formatted'] ?? ''); ?></div>
+            <td width="24%" style="border:1px solid #D7DEE7; background-color:#FFFFFF; padding:10px 12px;">
+              <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Sale Date'); ?></div>
+              <div style="<?php echo $metaValueStyle; ?> padding-top:4px;"><?php echo app_statement_escape($statement['sales_date_formatted'] ?? ''); ?></div>
             </td>
-            <td width="24%" style="border:1px solid #D7DEE7;background-color:#FFFFFF;padding:10px 12px;">
-              <div style="<?php echo $metaLabelStyle; ?>">Due Date</div>
-              <div style="<?php echo $metaValueStyle; ?>padding-top:4px;"><?php echo app_statement_escape($statement['due_date_formatted'] ?? 'Not set'); ?></div>
+            <td width="24%" style="border:1px solid #D7DEE7; background-color:#FFFFFF; padding:10px 12px;">
+              <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Due Date'); ?></div>
+              <div style="<?php echo $metaValueStyle; ?> padding-top:4px;"><?php echo app_statement_escape($statement['due_date_formatted'] ?? 'Not set'); ?></div>
             </td>
-            <td width="28%" style="border:1px solid #D7DEE7;background-color:#FFFFFF;padding:10px 12px;">
-              <div style="<?php echo $metaLabelStyle; ?>">Balance Status</div>
-              <div style="<?php echo $metaValueStyle; ?>padding-top:4px;"><?php echo $statusLabel; ?></div>
+            <td width="28%" style="border:1px solid #D7DEE7; background-color:#FFFFFF; padding:10px 12px;">
+              <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Balance Status'); ?></div>
+              <div style="<?php echo $metaValueStyle; ?> padding-top:4px;"><?php echo $statusLabel; ?></div>
             </td>
           </tr>
         </table>
@@ -583,31 +590,31 @@ if (!function_exists('app_statement_render_document_html')) {
     </tr>
 
     <tr>
-      <td style="padding:20px 28px 0 28px;">
+      <td style="padding: 20px 28px 0 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td style="<?php echo $sectionBarStyle; ?>padding:9px 12px;">Purchased Items</td>
+            <td style="<?php echo $sectionBarStyle; ?> padding:10px 12px;">Purchased Items</td>
           </tr>
         </table>
-        <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-color:#D7DEE7;">
+        <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-color:#D7DEE7;">
           <tr bgcolor="#F4F6F8">
-            <td width="46%" style="color:#344054;font-size:12px;font-weight:bold;">Product</td>
-            <td width="18%" align="right" style="color:#344054;font-size:12px;font-weight:bold;">Price</td>
-            <td width="12%" align="right" style="color:#344054;font-size:12px;font-weight:bold;">Qty</td>
-            <td width="24%" align="right" style="color:#344054;font-size:12px;font-weight:bold;">Subtotal</td>
+            <td width="46%" style="color:#344054; font-size:12px; font-weight:bold;">Product</td>
+            <td width="18%" align="right" style="color:#344054; font-size:12px; font-weight:bold;">Price</td>
+            <td width="12%" align="right" style="color:#344054; font-size:12px; font-weight:bold;">Qty</td>
+            <td width="24%" align="right" style="color:#344054; font-size:12px; font-weight:bold;">Subtotal</td>
           </tr>
           <?php if (!empty($items)): ?>
             <?php foreach ($items as $item): ?>
           <tr>
-            <td style="color:#101828;font-size:12px;"><?php echo app_statement_escape($item['name'] ?? 'Item'); ?></td>
-            <td align="right" style="color:#101828;font-size:12px;"><?php echo app_statement_escape($item['price_formatted'] ?? app_money(0)); ?></td>
-            <td align="right" style="color:#101828;font-size:12px;"><?php echo (int) ($item['quantity'] ?? 0); ?></td>
-            <td align="right" style="color:#101828;font-size:12px;"><?php echo app_statement_escape($item['subtotal_formatted'] ?? app_money(0)); ?></td>
+            <td style="color:#101828; font-size:12px;"><?php echo app_statement_escape($item['name'] ?? 'Item'); ?></td>
+            <td align="right" style="color:#101828; font-size:12px;"><?php echo app_statement_escape($item['price_formatted'] ?? app_money(0)); ?></td>
+            <td align="right" style="color:#101828; font-size:12px;"><?php echo (int) ($item['quantity'] ?? 0); ?></td>
+            <td align="right" style="color:#101828; font-size:12px;"><?php echo app_statement_escape($item['subtotal_formatted'] ?? app_money(0)); ?></td>
           </tr>
             <?php endforeach; ?>
           <?php else: ?>
           <tr>
-            <td colspan="4" style="color:#667085;font-size:12px;">No items found for this sale.</td>
+            <td colspan="4" style="color:#667085; font-size:12px;">No items found for this sale.</td>
           </tr>
           <?php endif; ?>
         </table>
@@ -615,50 +622,57 @@ if (!function_exists('app_statement_render_document_html')) {
     </tr>
 
     <tr>
-      <td style="padding:14px 28px 0 28px;">
-        <table border="0" cellpadding="0" cellspacing="0" align="right" style="width:42%;">
+      <td style="padding: 14px 28px 0 28px;">
+        <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td width="58%" style="background-color:#F8FAFC;border:1px solid #D7DEE7;color:#475467;font-size:12px;font-weight:bold;padding:10px 12px;">Total Purchase</td>
-            <td width="42%" align="right" style="border:1px solid #D7DEE7;color:#101828;font-size:12px;padding:10px 12px;"><?php echo app_statement_escape($statement['items_total_formatted'] ?? app_money(0)); ?></td>
-          </tr>
-          <tr>
-            <td width="58%" style="background-color:#F8FAFC;border:1px solid #D7DEE7;color:#475467;font-size:12px;font-weight:bold;padding:10px 12px;">Total Paid</td>
-            <td width="42%" align="right" style="border:1px solid #D7DEE7;color:#101828;font-size:12px;padding:10px 12px;"><?php echo app_statement_escape($statement['amount_paid_formatted'] ?? app_money(0)); ?></td>
-          </tr>
-          <tr>
-            <td width="58%" style="background-color:#111827;border:1px solid #111827;color:#FFFFFF;font-size:12px;font-weight:bold;padding:10px 12px;">Balance Owed</td>
-            <td width="42%" align="right" style="border:1px solid #111827;color:#101828;font-size:13px;font-weight:bold;padding:10px 12px;background-color:#F9FAFB;"><?php echo app_statement_escape($statement['balance_formatted'] ?? app_money(0)); ?></td>
+            <td width="58%">&nbsp;</td>
+            <td width="42%">
+              <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-color:#D7DEE7;">
+                <tr>
+                  <td width="58%" bgcolor="#F8FAFC" style="color:#475467; font-size:12px; font-weight:bold;">Total Purchase</td>
+                  <td width="42%" align="right" style="color:#101828; font-size:12px;"><?php echo app_statement_escape($statement['items_total_formatted'] ?? app_money(0)); ?></td>
+                </tr>
+                <tr>
+                  <td width="58%" bgcolor="#F8FAFC" style="color:#475467; font-size:12px; font-weight:bold;">Total Paid</td>
+                  <td width="42%" align="right" style="color:#101828; font-size:12px;"><?php echo app_statement_escape($statement['amount_paid_formatted'] ?? app_money(0)); ?></td>
+                </tr>
+                <tr>
+                  <td width="58%" bgcolor="#111827" style="color:#FFFFFF; font-size:12px; font-weight:bold;">Balance Owed</td>
+                  <td width="42%" align="right" bgcolor="#F9FAFB" style="color:#101828; font-size:13px; font-weight:bold;"><?php echo app_statement_escape($statement['balance_formatted'] ?? app_money(0)); ?></td>
+                </tr>
+              </table>
+            </td>
           </tr>
         </table>
       </td>
     </tr>
 
     <tr>
-      <td style="padding:20px 28px 0 28px;">
+      <td style="padding: 20px 28px 0 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td style="<?php echo $sectionBarStyle; ?>padding:9px 12px;">Payment History</td>
+            <td style="<?php echo $sectionBarStyle; ?> padding:10px 12px;">Payment History</td>
           </tr>
         </table>
         <?php if (!empty($payments)): ?>
-        <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-color:#D7DEE7;">
+        <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-color:#D7DEE7;">
           <tr bgcolor="#F4F6F8">
-            <td width="28%" style="color:#344054;font-size:12px;font-weight:bold;">Date</td>
-            <td width="44%" style="color:#344054;font-size:12px;font-weight:bold;">Method</td>
-            <td width="28%" align="right" style="color:#344054;font-size:12px;font-weight:bold;">Amount</td>
+            <td width="28%" style="color:#344054; font-size:12px; font-weight:bold;">Date</td>
+            <td width="44%" style="color:#344054; font-size:12px; font-weight:bold;">Method</td>
+            <td width="28%" align="right" style="color:#344054; font-size:12px; font-weight:bold;">Amount</td>
           </tr>
           <?php foreach ($payments as $payment): ?>
           <tr>
-            <td style="color:#101828;font-size:12px;"><?php echo app_statement_escape($payment['payment_date_formatted'] ?? ''); ?></td>
-            <td style="color:#101828;font-size:12px;"><?php echo app_statement_escape($payment['payment_method'] ?? ''); ?></td>
-            <td align="right" style="color:#101828;font-size:12px;"><?php echo app_statement_escape($payment['amount_formatted'] ?? app_money(0)); ?></td>
+            <td style="color:#101828; font-size:12px;"><?php echo app_statement_escape($payment['payment_date_formatted'] ?? ''); ?></td>
+            <td style="color:#101828; font-size:12px;"><?php echo app_statement_escape($payment['payment_method'] ?? ''); ?></td>
+            <td align="right" style="color:#101828; font-size:12px;"><?php echo app_statement_escape($payment['amount_formatted'] ?? app_money(0)); ?></td>
           </tr>
           <?php endforeach; ?>
         </table>
         <?php else: ?>
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td style="border:1px solid #D7DEE7;background-color:#F8FAFC;color:#667085;font-size:12px;padding:14px 12px;">No payments recorded yet.</td>
+            <td style="border:1px solid #D7DEE7; background-color:#F8FAFC; color:#667085; font-size:12px; padding:14px 12px;">No payments recorded yet.</td>
           </tr>
         </table>
         <?php endif; ?>
@@ -666,10 +680,10 @@ if (!function_exists('app_statement_render_document_html')) {
     </tr>
 
     <tr>
-      <td style="padding:18px 28px 26px 28px;">
+      <td style="padding: 20px 28px 26px 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td style="border-top:1px solid #D7DEE7;color:#667085;font-size:11px;padding-top:10px;">This statement summarizes the current balance for the offline sale above.</td>
+            <td style="border-top:1px solid #D7DEE7; color:#667085; font-size:11px; padding-top:12px;">This statement summarizes the current balance for the offline sale above.</td>
           </tr>
         </table>
       </td>
