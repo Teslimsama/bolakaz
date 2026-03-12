@@ -1,6 +1,7 @@
 <header class="main-header">
   <a href="home" class="logo">
-    <span class="logo-lg"><span style="display:inline-block;background:#0f766e;color:#fff;border-radius:8px;padding:4px 10px;margin-right:8px;">BK</span>Bolakaz Admin</span>
+    <span class="logo-mark">BK</span>
+    <span class="logo-text">Bolakaz <small>Admin</small></span>
   </a>
 
   <nav class="navbar navbar-static-top" role="navigation">

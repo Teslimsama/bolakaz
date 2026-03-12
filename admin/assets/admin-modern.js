@@ -49,6 +49,8 @@
       return;
     }
 
+    var STORAGE_KEY = 'admin_sidebar_collapsed';
+
     function closeSidebar() {
       document.body.classList.remove('sidebar-open');
     }
@@ -62,7 +64,13 @@
       if (shouldOverlaySidebar()) {
         document.body.classList.toggle('sidebar-open');
       } else {
-        document.body.classList.toggle('sidebar-open');
+        document.body.classList.toggle('sidebar-collapsed');
+        document.body.classList.remove('sidebar-open');
+        try {
+          localStorage.setItem(STORAGE_KEY, document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+        } catch (e) {
+          // Ignore storage failures.
+        }
       }
     });
 
@@ -82,6 +90,17 @@
         closeSidebar();
       }
     });
+
+    if (!shouldOverlaySidebar()) {
+      try {
+        var saved = localStorage.getItem(STORAGE_KEY);
+        if (saved === '1') {
+          document.body.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {
+        // Ignore storage failures.
+      }
+    }
   }
 
   function enhanceContentScaffold() {
@@ -113,6 +132,9 @@
       }
       var wrap = document.createElement('div');
       wrap.className = 'admin-table-wrap table-responsive';
+      if (table.classList.contains('legacy-mobile-table')) {
+        wrap.classList.add('legacy-table-wrap');
+      }
       table.parentNode.insertBefore(wrap, table);
       wrap.appendChild(table);
       table.classList.add('table', 'table-bordered', 'table-hover');
@@ -183,10 +205,35 @@
     qsa('.sidebar-menu a').forEach(function (link) {
       link.addEventListener('click', function () {
         if (window.innerWidth <= 991) {
-          document.body.classList.remove('sidebar-open');
+          var href = (link.getAttribute('href') || '').trim();
+          var isTreeToggle = link.parentElement && link.parentElement.classList.contains('treeview');
+          var shouldStayOpen = href === '#' || isTreeToggle;
+          if (!shouldStayOpen) {
+            document.body.classList.remove('sidebar-open');
+          }
         }
       });
     });
+  }
+
+  function initBackToTop() {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-primary admin-backtop';
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.innerHTML = '<i class="fa fa-arrow-up"></i>';
+    document.body.appendChild(btn);
+
+    function updateVisibility() {
+      btn.style.display = window.scrollY > 280 ? 'inline-flex' : 'none';
+    }
+
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.addEventListener('scroll', updateVisibility, { passive: true });
+    updateVisibility();
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -200,5 +247,6 @@
     normalizeButtons();
     improveModalUX();
     closeSidebarOnNavigation();
+    initBackToTop();
   });
 })();

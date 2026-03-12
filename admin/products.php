@@ -84,7 +84,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                 </div>
               </div>
               <div class="box-body table-responsive">
-                <table id="example1" class="table table-bordered">
+                <table id="example1" class="table table-bordered legacy-mobile-table">
                   <thead>
                     <th>Name</th>
                     <th>Photo</th>
@@ -163,8 +163,6 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                     ?>
                   </tbody>
                 </table>
-                <div id="productsMobileCards" class="products-mobile-cards"></div>
-                <div id="productsMobilePagination" class="products-mobile-pagination"></div>
               </div>
             </div>
           </div>
@@ -242,21 +240,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
         $('.append_items').remove();
       });
 
-      buildMobileProductCards();
-      if ($.fn.DataTable && $.fn.DataTable.isDataTable('#example1')) {
-        $('#example1').on('draw.dt order.dt search.dt', function() {
-          buildMobileProductCards(1);
-        });
-      }
-      $(window).on('resize', buildMobileProductCards);
-      $(document).on('click', '#productsMobilePagination .page-link', function(e) {
-        e.preventDefault();
-        var page = parseInt($(this).data('page'), 10);
-        if (!page || page < 1) {
-          return;
-        }
-        buildMobileProductCards(page);
-      });
+      // Mobile card rendering is now handled globally in admin/scripts.php.
       setupAddWizard();
       setupEditWizard();
 
@@ -361,43 +345,43 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
     }
 
     // function EditCatgory() {
-      // Handle category change
-      $('#edit_category').change(function() {
-        var selectedCategoryId = $(this).val();
-        if (selectedCategoryId) {
-          // Fetch subcategories for the selected category
-          $.ajax({
-            url: 'subcategory_fetch.php',
-            type: 'POST',
-            data: {
-              id: selectedCategoryId
-            },
-            dataType: 'json',
-            success: function(subResponse) {
-              if (subResponse.status) {
-                var subCategoryOptions = "<option value=''>--Select Subcategory--</option>";
-                $.each(subResponse.data, function(index, subcategory) {
-                  subCategoryOptions +=
-                    "<option value='" + subcategory.id + "'>" + subcategory.name + "</option>";
-                });
-                $('#edit_child_cat_id').html(subCategoryOptions);
-                $('#edit_child_cat_div').removeClass('d-none');
-              } else {
-                $('#edit_child_cat_id').html("");
-                $('#edit_child_cat_div').addClass('d-none');
-              }
-            },
-            error: function() {
-              alert('Failed to fetch subcategories. Please try again.');
+    // Handle category change
+    $('#edit_category').change(function() {
+      var selectedCategoryId = $(this).val();
+      if (selectedCategoryId) {
+        // Fetch subcategories for the selected category
+        $.ajax({
+          url: 'subcategory_fetch.php',
+          type: 'POST',
+          data: {
+            id: selectedCategoryId
+          },
+          dataType: 'json',
+          success: function(subResponse) {
+            if (subResponse.status) {
+              var subCategoryOptions = "<option value=''>--Select Subcategory--</option>";
+              $.each(subResponse.data, function(index, subcategory) {
+                subCategoryOptions +=
+                  "<option value='" + subcategory.id + "'>" + subcategory.name + "</option>";
+              });
+              $('#edit_child_cat_id').html(subCategoryOptions);
+              $('#edit_child_cat_div').removeClass('d-none');
+            } else {
+              $('#edit_child_cat_id').html("");
+              $('#edit_child_cat_div').addClass('d-none');
             }
-          });
-        } else {
-          $('#edit_child_cat_id').html("");
-          $('#edit_child_cat_div').addClass('d-none');
-        }
-      });
+          },
+          error: function() {
+            alert('Failed to fetch subcategories. Please try again.');
+          }
+        });
+      } else {
+        $('#edit_child_cat_id').html("");
+        $('#edit_child_cat_div').addClass('d-none');
+      }
+    });
 
-     
+
     // }
 
     function getImages(id) {
@@ -673,101 +657,6 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       });
     }
 
-    function buildMobileProductCards(page) {
-      var $cards = $('#productsMobileCards');
-      var $pager = $('#productsMobilePagination');
-      if (!$cards.length) {
-        return;
-      }
-      $cards.empty();
-      $pager.empty();
-
-      if (window.innerWidth > 768) {
-        $cards.hide();
-        $pager.hide();
-        return;
-      }
-
-      var rows = [];
-      if ($.fn.DataTable && $.fn.DataTable.isDataTable('#example1')) {
-        rows = $('#example1').DataTable().rows({
-          search: 'applied',
-          order: 'applied'
-        }).nodes().toArray();
-      } else {
-        rows = $('#example1 tbody tr').toArray();
-      }
-      var perPage = 8;
-      var totalRows = rows.length;
-      var totalPages = Math.max(1, Math.ceil(totalRows / perPage));
-      var currentPage = parseInt(page || $cards.data('currentPage') || 1, 10);
-      if (currentPage > totalPages) {
-        currentPage = totalPages;
-      }
-      if (currentPage < 1) {
-        currentPage = 1;
-      }
-      $cards.data('currentPage', currentPage);
-
-      var start = (currentPage - 1) * perPage;
-      var end = Math.min(start + perPage, totalRows);
-
-      $(rows.slice(start, end)).each(function() {
-        var $tr = $(this);
-        if ($tr.hasClass('child')) {
-          return;
-        }
-        var name = $.trim($tr.find('td').eq(0).text());
-        var imgSrc = $tr.find('td').eq(1).find('img').attr('src') || '../images/noimage.jpg';
-        var price = $.trim($tr.find('td').eq(2).text());
-        var status = $.trim($tr.find('td').eq(4).text());
-        var qty = $.trim($tr.find('td').eq(10).text());
-        var editId = $tr.find('.edit').data('id');
-        var deleteId = $tr.find('.delete').data('id');
-        var archived = $tr.hasClass('product-row-archived');
-
-        var card = '' +
-          '<div class="mobile-product-card ' + (archived ? 'mobile-product-card-archived' : '') + '">' +
-          '<div class="mobile-product-main">' +
-          '<img src="' + imgSrc + '" alt="' + $('<div>').text(name).html() + '" class="mobile-product-thumb">' +
-          '<div class="mobile-product-meta">' +
-          '<h5>' + $('<div>').text(name).html() + '</h5>' +
-          '<p><strong>' + $('<div>').text(price).html() + '</strong></p>' +
-          '<p>Status: ' + $('<div>').text(status).html() + '</p>' +
-          '<p>Qty: ' + $('<div>').text(qty).html() + '</p>' +
-          '</div>' +
-          '</div>' +
-          '<div class="mobile-product-actions">' +
-          '<button class="btn btn-success btn-sm edit" data-id="' + editId + '"><i class="fa fa-edit"></i> Edit</button> ' +
-          (archived
-            ? '<button class="btn btn-default btn-sm" type="button" disabled><i class="fa fa-archive"></i> Archived</button>'
-            : '<button class="btn btn-danger btn-sm delete" data-id="' + deleteId + '"><i class="fa fa-archive"></i> Archive</button>') +
-          '</div>' +
-          '</div>';
-        $cards.append(card);
-      });
-
-      if (totalRows > perPage) {
-        var paginationHtml = '<ul class="pagination justify-content-center mb-3">';
-        paginationHtml += '<li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '">';
-        paginationHtml += '<a href="#" class="page-link" data-page="' + (currentPage - 1) + '">&laquo;</a></li>';
-
-        for (var i = 1; i <= totalPages; i++) {
-          paginationHtml += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '">';
-          paginationHtml += '<a href="#" class="page-link" data-page="' + i + '">' + i + '</a></li>';
-        }
-
-        paginationHtml += '<li class="page-item ' + (currentPage === totalPages ? 'disabled' : '') + '">';
-        paginationHtml += '<a href="#" class="page-link" data-page="' + (currentPage + 1) + '">&raquo;</a></li>';
-        paginationHtml += '</ul>';
-        $pager.html(paginationHtml).show();
-      } else {
-        $pager.hide();
-      }
-
-      $cards.show();
-    }
-
     function setupAddWizard() {
       var $modal = $('#addnew');
       var $form = $modal.find('form');
@@ -777,7 +666,11 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
         return;
       }
 
-      var steps = [[], [], []];
+      var steps = [
+        [],
+        [],
+        []
+      ];
       $groups.each(function(index) {
         if ([0, 1, 4, 6].indexOf(index) !== -1) {
           steps[0].push(this);
@@ -801,6 +694,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       $body.append($controls);
 
       var currentStep = 0;
+
       function render() {
         $groups.hide();
         if ($descHeading.length) {
@@ -865,6 +759,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       $body.append($controls);
 
       var currentStep = 0;
+
       function render() {
         $groups.hide();
         if ($descHeading.length) {
@@ -903,64 +798,17 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
     }
   </script>
   <style>
-    .products-mobile-cards { display: none; }
-    .products-mobile-pagination { display: none; }
-    @media (max-width: 768px) {
-      #example1_wrapper { display: none; }
-      .products-mobile-cards { display: block; }
-      .products-mobile-pagination {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-      }
-      .products-mobile-pagination .pagination {
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .mobile-product-card {
-        border: 1px solid #e6e6e6;
-        border-radius: 8px;
-        padding: 10px;
-        margin-bottom: 10px;
-        background: #fff;
-      }
-      .mobile-product-main { display: flex; gap: 10px; }
-      .mobile-product-thumb {
-        width: 64px;
-        height: 64px;
-        border-radius: 8px;
-        object-fit: cover;
-      }
-      .mobile-product-meta h5 {
-        margin: 0 0 4px 0;
-        font-size: 14px;
-      }
-      .mobile-product-meta p {
-        margin: 0 0 2px 0;
-        font-size: 13px;
-      }
-      .mobile-product-actions {
-        margin-top: 8px;
-        display: flex;
-        gap: 8px;
-      }
-    .mobile-product-actions .btn {
-        flex: 1;
-      }
-      .mobile-product-card-archived {
-        opacity: 0.75;
-        border-style: dashed;
-      }
-    }
     .product-row-archived {
       opacity: 0.72;
       background: #fafafa;
     }
+
     .wizard-nav {
       display: flex;
       gap: 8px;
       margin-bottom: 12px;
     }
+
     .wizard-dot {
       width: 28px;
       height: 28px;
@@ -972,20 +820,24 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       color: #666;
       font-weight: 700;
     }
+
     .wizard-dot.active {
       background: #3c8dbc;
       border-color: #3c8dbc;
       color: #fff;
     }
+
     .wizard-controls {
       margin-top: 12px;
       display: flex;
       justify-content: space-between;
       gap: 8px;
     }
+
     .image-gallery-grid {
       margin-top: 12px;
     }
+
     .image-card {
       border: 1px solid #e6e6e6;
       border-radius: 8px;
@@ -993,9 +845,11 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       margin-bottom: 12px;
       background: #fff;
     }
+
     .image-card-main {
       border-style: dashed;
     }
+
     .image-card-img {
       width: 100%;
       max-width: 220px;
@@ -1005,6 +859,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       display: block;
       margin: 0 auto;
     }
+
     .image-card-meta {
       margin-top: 8px;
       text-align: center;
@@ -1014,4 +869,3 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
 </body>
 
 </html>
-
