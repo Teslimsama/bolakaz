@@ -82,18 +82,22 @@ include 'header.php';
           </form>
         </div>
 
-        <div class="admin-grid admin-grid-3" id="kpiCards">
-          <div class="kpi-card"><div class="kpi-card-label">Total Revenue</div><div class="kpi-card-value" id="kpi_total_revenue">-</div><div class="kpi-card-hint">All time</div></div>
+        <div class="admin-grid admin-grid-4" id="kpiCards">
+          <div class="kpi-card"><div class="kpi-card-label">Total Revenue</div><div class="kpi-card-value" id="kpi_total_revenue">-</div><div class="kpi-card-hint">Combined Online & Offline</div></div>
+          <div class="kpi-card"><div class="kpi-card-label">Offline Collected</div><div class="kpi-card-value" id="kpi_offline_collected" style="color: #0f766e;">-</div><div class="kpi-card-hint">Total payments received</div></div>
+          <div class="kpi-card"><div class="kpi-card-label">Outstanding Balance</div><div class="kpi-card-value" id="kpi_offline_pending" style="color: #be123c;">-</div><div class="kpi-card-hint">Total debt (Offline)</div></div>
           <div class="kpi-card"><div class="kpi-card-label">Revenue Today</div><div class="kpi-card-value" id="kpi_revenue_today">-</div><div class="kpi-card-hint">Current day</div></div>
+        </div>
+        
+        <div class="admin-grid admin-grid-3" style="margin-top:16px;">
           <div class="kpi-card"><div class="kpi-card-label">Total Orders</div><div class="kpi-card-value" id="kpi_total_orders">-</div><div class="kpi-card-hint">All placed orders</div></div>
           <div class="kpi-card"><div class="kpi-card-label">Total Products</div><div class="kpi-card-value" id="kpi_total_products">-</div><div class="kpi-card-hint">Catalog size</div></div>
           <div class="kpi-card"><div class="kpi-card-label">Total Users</div><div class="kpi-card-value" id="kpi_total_users">-</div><div class="kpi-card-hint">Registered customers</div></div>
-          <div class="kpi-card"><div class="kpi-card-label">Low Stock</div><div class="kpi-card-value" id="kpi_low_stock_count">-</div><div class="kpi-card-hint">Qty <= 5</div></div>
         </div>
 
         <div class="admin-grid admin-grid-2" style="margin-top:16px;">
           <div class="chart-card">
-            <h3 class="chart-title">Monthly Revenue Trend</h3>
+            <h3 class="chart-title">Revenue Trend: Online vs Offline</h3>
             <div id="chartMonthlyRevenue"></div>
           </div>
           <div class="chart-card">
@@ -143,7 +147,13 @@ include 'header.php';
         document.getElementById('kpi_total_orders').textContent = formatInt(cards.total_orders);
         document.getElementById('kpi_total_products').textContent = formatInt(cards.total_products);
         document.getElementById('kpi_total_users').textContent = formatInt(cards.total_users);
-        document.getElementById('kpi_low_stock_count').textContent = formatInt(cards.low_stock_count);
+        
+        if(document.getElementById('kpi_offline_collected')) {
+            document.getElementById('kpi_offline_collected').textContent = formatMoney(cards.offline_collected);
+        }
+        if(document.getElementById('kpi_offline_pending')) {
+            document.getElementById('kpi_offline_pending').textContent = formatMoney(cards.offline_pending);
+        }
       }
 
       function createOrUpdateChart(instanceKey, selector, options) {
@@ -158,9 +168,12 @@ include 'header.php';
       function renderCharts(payload) {
         createOrUpdateChart('monthlyRevenue', '#chartMonthlyRevenue', {
           chart: { type: 'area', height: 300, toolbar: { show: false } },
-          series: [{ name: 'Revenue', data: payload.monthly_revenue.series || [] }],
+          series: [
+            { name: 'Online Revenue', data: payload.monthly_revenue.series_online || [] },
+            { name: 'Offline Revenue', data: payload.monthly_revenue.series_offline || [] }
+          ],
           xaxis: { categories: payload.monthly_revenue.labels || [] },
-          colors: ['#0f766e'],
+          colors: ['#0ea5e9', '#0f766e'],
           stroke: { curve: 'smooth', width: 3 },
           dataLabels: { enabled: false },
           yaxis: {
