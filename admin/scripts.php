@@ -25,10 +25,12 @@
         }
       });
 
-      $('form').each(function() {
-        if (!$(this).find('input[name="_csrf"]').length) {
-          $(this).append('<input type="hidden" name="_csrf" value="' + token + '">');
-        }
+      $(function() {
+        $('form').each(function() {
+          if (!$(this).find('input[name="_csrf"]').length) {
+            $(this).append('<input type="hidden" name="_csrf" value="' + token + '">');
+          }
+        });
       });
 
       $(document).on('click', 'button, input[type="submit"], .btn', function(e) {

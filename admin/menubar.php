@@ -14,6 +14,7 @@
       <li class="header">Analytics</li>
       <li><a href="home"><i class="fa fa-chart-line"></i><span>Dashboard</span></a></li>
       <li><a href="sales"><i class="fa fa-money"></i><span>Sales</span></a></li>
+      <li><a href="offline_sales"><i class="fa fa-handshake-o"></i><span>Offline Sales</span></a></li>
 
       <li class="header">Commerce</li>
       <li><a href="users"><i class="fa fa-users"></i><span>Users</span></a></li>
