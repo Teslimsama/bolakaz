@@ -111,7 +111,6 @@
                           $paymentType = 'flutterwave';
                         }
                         $isBankConfirmed = ($isBankTransfer && $status === 'success');
-                        $statusColor = ($status === 'success') ? 'green' : ($status === 'pending' ? 'orange' : 'red');
                         $statusLabel = ucfirst($status);
 
                         $buyerName = trim((string)($row['firstname'] ?? '') . ' ' . (string)($row['lastname'] ?? ''));
@@ -119,15 +118,15 @@
                           $buyerName = 'Guest';
                         }
 
-                        $statusHtml = "<button class='status-toggle btn btn-sm' data-id='" . (int)$row['salesid'] . "' data-status='" . e($status) . "' style='background-color:" . $statusColor . "; color: white;'>" . e($statusLabel) . "</button>";
+                        $statusHtml = "<button class='status-toggle btn btn-sm admin-status-button' data-id='" . (int)$row['salesid'] . "' data-status='" . e($status) . "'>" . e($statusLabel) . "</button>";
 
                         if ($isBankTransfer) {
                           if ($isBankConfirmed) {
-                            $statusHtml = "<span class='btn btn-sm' style='background-color:green; color:#fff; cursor:default;'>Confirmed</span>";
+                            $statusHtml = "<span class='js-sales-status-static admin-status-pill' data-status='confirmed'>Confirmed</span>";
                           } else {
                             $statusHtml = "
-                              <div class='btn-group'>
-                                <span class='btn btn-sm' style='background-color:orange; color:#fff; cursor:default;'>Pending</span>
+                              <div class='admin-sales-bank-status'>
+                                <span class='js-sales-status-static admin-status-pill is-pending' data-status='pending'>Pending</span>
                                 <button class='btn btn-primary btn-sm confirm-bank' data-id='" . (int)$row['salesid'] . "'>Confirm Payment</button>
                               </div>
                             ";
@@ -281,6 +280,50 @@
   </script>
   <script>
     $(function() {
+      function getSalesStatusClass(status) {
+        var normalized = String(status || '').toLowerCase().replace(/\s+/g, ' ').trim();
+        if (normalized === 'successful') {
+          normalized = 'success';
+        }
+        if (normalized === 'not verified') {
+          return 'is-not-verified';
+        }
+        if (normalized === 'failed' || normalized === 'error') {
+          return 'is-failed';
+        }
+        if (normalized === 'success') {
+          return 'is-success';
+        }
+        if (normalized === 'confirmed') {
+          return 'is-confirmed';
+        }
+        if (normalized === 'pending') {
+          return 'is-pending';
+        }
+        if (normalized === 'active') {
+          return 'is-active';
+        }
+        if (normalized === 'archived') {
+          return 'is-archived';
+        }
+        return 'is-info';
+      }
+
+      function applySalesStatusPill($button, status) {
+        if (!$button || !$button.length) {
+          return;
+        }
+        var statusClass = getSalesStatusClass(status);
+        var existing = ($button.attr('class') || '').split(/\s+/);
+        existing.forEach(function(cls) {
+          if (cls.indexOf('is-') === 0) {
+            $button.removeClass(cls);
+          }
+        });
+        $button.addClass('admin-status-pill admin-status-button ' + statusClass);
+        $button.removeAttr('style');
+      }
+
       var salesTable = $.fn.dataTable.isDataTable('#example1') ? $('#example1').DataTable() : null;
 
       $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
@@ -380,7 +423,7 @@
             if (response.success) {
               button.data('status', nextStatus);
               button.text(nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1));
-              button.css('background-color', nextStatus === 'success' ? 'green' : nextStatus === 'pending' ? 'orange' : 'red');
+              applySalesStatusPill(button, nextStatus);
             } else {
               alert('Error: ' + response.message);
             }

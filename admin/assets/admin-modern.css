@@ -1,15 +1,16 @@
 :root {
-  --admin-bg: #f4f7fb;
-  --admin-surface: #ffffff;
-  --admin-surface-soft: #f8fafc;
+  --admin-bg: #f8f8f3;
+  --admin-surface: #fffef8;
+  --admin-surface-soft: #fbfbf7;
   --admin-text: #0f172a;
   --admin-muted: #64748b;
-  --admin-border: #e2e8f0;
+  --admin-border: #e5e7eb;
   --admin-primary: #0f766e;
   --admin-primary-soft: #ecfeff;
   --admin-success: #15803d;
   --admin-danger: #b91c1c;
   --admin-warning: #a16207;
+  --admin-info: #0f6d91;
   --admin-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   --admin-radius: 12px;
 }
@@ -263,13 +264,23 @@ textarea:focus-visible {
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 4px;
+  position: relative;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-menu > li > a > i.fa {
+  width: 18px;
+  text-align: center;
+  opacity: 0.9;
+  font-size: 14px;
 }
 
 .sidebar-menu > li > a:hover,
 .sidebar-menu > li.active > a,
 .sidebar-menu > li.menu-open > a {
-  background: rgba(15, 118, 110, 0.24);
+  background: rgba(15, 118, 110, 0.18);
   color: #ffffff;
+  border-left-color: #34d399;
   text-decoration: none;
 }
 
@@ -287,13 +298,22 @@ textarea:focus-visible {
 .sidebar-menu .treeview-menu a {
   color: #c4d8e5;
   display: block;
-  padding: 8px 0;
+  padding: 8px 0 8px 10px;
   font-size: 13px;
+  border-left: 2px solid transparent;
+}
+
+.sidebar-menu .treeview-menu a > i.fa {
+  width: 14px;
+  text-align: center;
+  opacity: 0.8;
 }
 
 .sidebar-menu .treeview-menu li.active > a {
   color: #8af0e3;
   font-weight: 700;
+  border-left-color: #34d399;
+  background: rgba(15, 118, 110, 0.14);
 }
 
 .content-wrapper {
@@ -422,11 +442,19 @@ body.sidebar-collapsed .main-footer {
   border-bottom-width: 1px;
   border-color: var(--admin-border);
   font-weight: 700;
+  color: #334155;
+  padding: 16px 12px;
+  line-height: 1.3;
+  text-align: left;
+  vertical-align: middle;
 }
 
 .table-bordered > tbody > tr > td {
   border-color: var(--admin-border);
   vertical-align: middle;
+  padding: 16px 12px;
+  line-height: 1.5;
+  text-align: left;
 }
 
 .admin-table-wrap {
@@ -440,6 +468,200 @@ body.sidebar-collapsed .main-footer {
 
 .admin-table-wrap .table {
   margin-bottom: 0;
+}
+
+.admin-col-money {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-col-actions {
+  white-space: nowrap;
+  min-width: 72px;
+}
+
+.admin-empty-placeholder {
+  color: #94a3b8;
+  font-style: italic;
+  text-align: center;
+  display: inline-block;
+  width: 100%;
+}
+
+.admin-table-thumb {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #fff;
+}
+
+.admin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 6px 10px;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+}
+
+.admin-status-pill.is-active,
+.admin-status-pill.is-success,
+.admin-status-pill.is-confirmed {
+  color: #166534;
+  background: rgba(22, 101, 52, 0.12);
+  border-color: rgba(22, 101, 52, 0.2);
+}
+
+.admin-status-pill.is-not-verified,
+.admin-status-pill.is-inactive,
+.admin-status-pill.is-failed,
+.admin-status-pill.is-danger {
+  color: #991b1b;
+  background: rgba(185, 28, 28, 0.1);
+  border-color: rgba(185, 28, 28, 0.2);
+}
+
+.admin-status-pill.is-pending {
+  color: #92400e;
+  background: rgba(161, 98, 7, 0.12);
+  border-color: rgba(161, 98, 7, 0.2);
+}
+
+.admin-status-pill.is-archived {
+  color: #475569;
+  background: rgba(100, 116, 139, 0.14);
+  border-color: rgba(100, 116, 139, 0.22);
+}
+
+.admin-status-pill.is-info {
+  color: #0f4c81;
+  background: rgba(15, 108, 145, 0.12);
+  border-color: rgba(15, 108, 145, 0.22);
+}
+
+.label.admin-status-pill {
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.admin-status-button {
+  border-radius: 999px !important;
+  border-width: 1px !important;
+  padding: 6px 12px;
+  min-height: 0;
+  background-image: none !important;
+}
+
+.admin-sales-bank-status {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-row-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin-row-menu-toggle {
+  min-height: 34px;
+  height: 34px;
+  min-width: 34px;
+  width: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #dbe1e8;
+  background: #fff;
+  color: #334155;
+}
+
+.admin-row-menu-toggle:hover,
+.admin-row-menu-toggle:focus {
+  border-color: #c8d0d9;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.admin-row-menu.is-open .admin-row-menu-toggle {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.admin-row-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 25;
+  min-width: 148px;
+  padding: 6px;
+  border: 1px solid #dbe1e8;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+  display: none;
+}
+
+.admin-row-menu.is-open .admin-row-menu-list {
+  display: block;
+}
+
+.admin-row-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #0f172a;
+  font-size: 13px;
+  text-align: left;
+  text-decoration: none;
+}
+
+.admin-row-menu-item i.fa {
+  width: 14px;
+  text-align: center;
+}
+
+.admin-row-menu-item:hover,
+.admin-row-menu-item:focus {
+  background: #f8fafc;
+  text-decoration: none;
+  color: #0f172a;
+}
+
+.admin-row-menu-item.is-danger {
+  color: #b91c1c;
+}
+
+.admin-row-menu-item.is-danger:hover,
+.admin-row-menu-item.is-danger:focus {
+  background: rgba(185, 28, 28, 0.08);
+  color: #991b1b;
+}
+
+.admin-action-compact {
+  min-height: 34px;
+  height: 34px;
+  min-width: 34px;
+  width: 34px;
+  padding: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .admin-card .box-header .btn,
@@ -1036,6 +1258,8 @@ body.sidebar-open .admin-sidebar-backdrop {
     width: 56px;
     height: 56px;
     border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
     object-fit: cover;
     flex-shrink: 0;
   }

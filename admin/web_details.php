@@ -74,6 +74,17 @@
                       }
 
                       $plain = trim(preg_replace('/\s+/', ' ', strip_tags($decoded)));
+                      $legacyNoise = [
+                        'error! fill up the edit form first',
+                        'fill up the edit form first',
+                      ];
+                      $plainLower = strtolower($plain);
+                      foreach ($legacyNoise as $noise) {
+                        if ($plainLower === $noise || strpos($plainLower, $noise) !== false) {
+                          return '';
+                        }
+                      }
+
                       if ($plain === '') {
                         return '';
                       }
@@ -84,19 +95,29 @@
 
                       return strlen($plain) > $limit ? substr($plain, 0, $limit - 1) . '...' : $plain;
                     };
+                    $renderPreview = static function ($value) {
+                      $clean = trim((string)$value);
+                      if ($clean === '') {
+                        return "<span class='admin-empty-placeholder'>Not provided</span>";
+                      }
+                      return e($clean);
+                    };
 
                     try {
                       $stmt = $conn->prepare("SELECT * FROM web_details");
                       $stmt->execute();
                       foreach ($stmt as $row) {
+                        $siteAddressPreview = $previewText($row['site_address']);
+                        $shortPreview = $previewText($row['short_description']);
+                        $descriptionPreview = $previewText($row['description']);
                         echo "
                           <tr>
                             <td>" . e($row['site_name']) . "</td>
-                            <td>" . e($previewText($row['site_address'])) . "</td>
+                            <td>" . $renderPreview($siteAddressPreview) . "</td>
                             <td>" . e($row['site_number']) . "</td>
                             <td>" . e($row['site_email']) . "</td>
-                            <td>" . e($previewText($row['short_description'])) . "</td>
-                            <td>" . e($previewText($row['description'])) . "</td>
+                            <td>" . $renderPreview($shortPreview) . "</td>
+                            <td>" . $renderPreview($descriptionPreview) . "</td>
                             <td>
                               <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
                               <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>

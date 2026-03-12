@@ -68,6 +68,12 @@
       });
 
       $(function() {
+        function runAdminModernEnhancement(target) {
+          if (window.AdminModernEnhanceTables && typeof window.AdminModernEnhanceTables === 'function') {
+            window.AdminModernEnhanceTables(document);
+          }
+        }
+
         function applyMobileTableLabels($table) {
           if (!$table || !$table.length) {
             return;
@@ -90,13 +96,16 @@
           if (!$(selector).length || $.fn.DataTable.isDataTable(selector)) {
             if ($(selector).length) {
               applyMobileTableLabels($(selector));
+              runAdminModernEnhancement($(selector).get(0));
             }
             return;
           }
           var table = $(selector).DataTable(options || {});
           applyMobileTableLabels($(selector));
+          runAdminModernEnhancement($(selector).get(0));
           $(selector).on('draw.dt', function() {
             applyMobileTableLabels($(selector));
+            runAdminModernEnhancement($(selector).get(0));
           });
           return table;
         }
@@ -358,6 +367,7 @@
         // Apply labels for any non-DataTable tables too.
         $('table').each(function() {
           applyMobileTableLabels($(this));
+          runAdminModernEnhancement($(this).get(0));
         });
 
         // Admin-wide mobile card renderer for primary list tables.
@@ -366,14 +376,18 @@
           var $table = $(this);
           // Products page already has custom containers; generic engine can still use them.
           renderMobileCards($table, 1, 0);
+          runAdminModernEnhancement($table.get(0));
           $table.on('init.dt draw.dt order.dt search.dt', function() {
             renderMobileCards($table, 1, 0);
+            runAdminModernEnhancement($table.get(0));
           });
         });
 
         $(window).on('resize', function() {
           $mobileTables.each(function() {
-            renderMobileCards($(this), null, 0);
+            var $table = $(this);
+            renderMobileCards($table, null, 0);
+            runAdminModernEnhancement($table.get(0));
           });
         });
 
@@ -389,6 +403,7 @@
             var $table = $(this);
             if (($table.data('mobileCardKey') || '') === key) {
               renderMobileCards($table, page, 0);
+              runAdminModernEnhancement($table.get(0));
             }
           });
         });
