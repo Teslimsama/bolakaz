@@ -74,32 +74,45 @@ $documentHtml = app_statement_render_document_html($statement);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
   <title>Statement of Account - <?php echo app_statement_escape($statement['tx_ref'] ?? ''); ?></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; background: #f3f4f6; font-family: Arial, sans-serif; color: #1f2937; }
-    .statement-page { max-width: 1040px; margin: 0 auto; padding: 24px; }
-    .statement-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    :root {
+      --sf-accent: #0f766e;
+      --sf-bg: #f5f2ec;
+      --sf-text: #171515;
+    }
+    body { margin: 0; background: var(--sf-bg); font-family: "Manrope", Arial, sans-serif; color: var(--sf-text); }
+    .statement-page { max-width: 1040px; margin: 0 auto; padding: 40px 24px; }
+    .statement-toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
     .statement-toolbar a,
     .statement-toolbar button {
       appearance: none;
       border: 0;
-      border-radius: 6px;
-      background: #111827;
+      border-radius: 999px;
+      background: var(--sf-accent);
       color: #fff;
       cursor: pointer;
       display: inline-block;
       font-size: 14px;
-      padding: 11px 16px;
+      font-weight: 700;
+      padding: 12px 24px;
       text-decoration: none;
+      transition: opacity 0.2s;
     }
-    .statement-toolbar .secondary { background: #4b5563; }
+    .statement-toolbar a:hover,
+    .statement-toolbar button:hover { opacity: 0.9; }
+    .statement-toolbar .secondary { background: #111; }
     .statement-toolbar .success { background: #166534; }
     .statement-note {
-      background: #fff7ed;
-      border: 1px solid #fdba74;
-      border-radius: 8px;
-      color: #9a3412;
-      margin-bottom: 16px;
-      padding: 12px 14px;
+      background: #fff8ee;
+      border: 1px solid #e7dfd6;
+      border-radius: 12px;
+      color: #7d644d;
+      margin-bottom: 20px;
+      padding: 14px 18px;
+      font-size: 14px;
     }
     @media print {
       body { background: #fff; }
@@ -112,7 +125,9 @@ $documentHtml = app_statement_render_document_html($statement);
 <body>
   <div class="statement-page">
     <?php if ($accessMode === 'token'): ?>
-    <div class="statement-note">This is a read-only shared statement.</div>
+    <div class="statement-note">
+        <i class="fa fa-info-circle"></i> This is a read-only shared statement for your recent purchase at Bolakaz.
+    </div>
     <?php endif; ?>
 
     <div class="statement-toolbar">
@@ -123,7 +138,7 @@ $documentHtml = app_statement_render_document_html($statement);
       <button type="button" class="secondary" onclick="window.print()">Print</button>
     </div>
 
-    <?php echo $documentHtml; ?>
+    <?php echo app_statement_render_document_html($statement, false, 'storefront'); ?>
   </div>
 </body>
 </html>

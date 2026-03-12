@@ -456,7 +456,7 @@ if (!function_exists('app_statement_whatsapp_url')) {
 }
 
 if (!function_exists('app_statement_render_document_html')) {
-    function app_statement_render_document_html(array $statement, bool $forPdf = false): string
+    function app_statement_render_document_html(array $statement, bool $forPdf = false, string $theme = 'admin'): string
     {
         $seller = $statement['seller'] ?? [];
         $items = $statement['items'] ?? [];
@@ -466,6 +466,21 @@ if (!function_exists('app_statement_render_document_html')) {
         $customerAddress = trim((string) ($statement['customer_address'] ?? ''));
         $statusClass = (string) ($statement['payment_status_class'] ?? 'unpaid');
         
+        // Theme Colors
+        $primaryAccent = '#111827'; // Admin Black
+        $sheetBg = '#FFFFFF';
+        $itemHeaderBg = '#F4F6F8';
+        $fontStack = 'Arial, sans-serif';
+        $titleFont = 'Arial, sans-serif';
+
+        if ($theme === 'storefront') {
+            $primaryAccent = '#0f766e'; // Bolakaz Teal
+            $sheetBg = '#fffdf9';
+            $itemHeaderBg = '#f5efe7';
+            $fontStack = '"Manrope", Arial, sans-serif';
+            $titleFont = '"Fraunces", Georgia, serif';
+        }
+
         $statusBg = '#FCE7E7';
         $statusText = '#9F1D1D';
         if ($statusClass === 'paid') {
@@ -484,18 +499,19 @@ if (!function_exists('app_statement_render_document_html')) {
         $customerEmail = trim((string) ($statement['customer_email'] ?? ''));
         
         // CSS in TCPDF is limited; inline styles or simplified classes are best.
-        $metaLabelStyle = 'color:#667085;font-size:10px;font-weight:bold;';
+        $metaLabelStyle = 'color:' . ($theme === 'storefront' ? $primaryAccent : '#667085') . ';font-size:10px;font-weight:bold;';
         $metaValueStyle = 'color:#101828;font-size:12px;font-weight:bold;';
-        $sectionBarStyle = 'background-color:#111827;color:#FFFFFF;font-size:13px;font-weight:bold;';
+        $sectionBarStyle = 'background-color:' . $primaryAccent . ';color:#FFFFFF;font-size:13px;font-weight:bold;';
 
         ob_start();
         ?>
 <?php if (!$forPdf): ?>
 <style>
-  .statement-sheet { max-width: 940px; margin: 0 auto; background: #fff; color: #1f2937; font-family: Arial, sans-serif; }
+  .statement-sheet { max-width: 940px; margin: 0 auto; background: <?php echo $sheetBg; ?>; color: #1f2937; font-family: <?php echo $fontStack; ?>; }
   .statement-sheet table { width: 100%; border-collapse: collapse; }
   .statement-sheet .label-caps { text-transform: uppercase; letter-spacing: 0.7px; }
   .statement-sheet .title-caps { text-transform: uppercase; letter-spacing: 1.2px; }
+  .statement-sheet .fraunces { font-family: <?php echo $titleFont; ?>; }
 </style>
 <?php endif; ?>
 
@@ -506,14 +522,14 @@ if (!function_exists('app_statement_render_document_html')) {
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
             <td width="72%" style="vertical-align:top;">
-              <div style="color:#667085; font-size:11px; font-weight:bold;" class="title-caps"><?php echo strtoupper($sellerName); ?></div>
-              <div style="color:#101828; font-size:28px; font-weight:bold; line-height:1.1; padding-top:8px;">Statement of Account</div>
+              <div style="color:<?php echo $theme === 'storefront' ? $primaryAccent : '#667085'; ?>; font-size:11px; font-weight:bold;" class="title-caps"><?php echo strtoupper($sellerName); ?></div>
+              <div style="color:#101828; font-size:28px; font-weight:bold; line-height:1.1; padding-top:8px;" class="fraunces">Statement of Account</div>
               <div style="color:#667085; font-size:12px; padding-top:8px;">Current balance summary for goods supplied through the offline sales flow.</div>
             </td>
             <td width="28%" style="vertical-align:top;" align="right">
               <table border="0" cellpadding="0" cellspacing="0" align="right">
                 <tr>
-                  <td bgcolor="<?php echo $statusBg; ?>" style="border:1px solid <?php echo $statusText; ?>; color:<?php echo $statusText; ?>; font-size:12px; font-weight:bold; padding:8px 14px;" align="center">
+                  <td bgcolor="<?php echo $statusBg; ?>" style="border:1px solid <?php echo $statusText; ?>; color:<?php echo $statusText; ?>; font-size:12px; font-weight:bold; padding:8px 14px; border-radius:<?php echo $theme === 'storefront' ? '12px' : '0'; ?>;" align="center">
                     <?php echo $statusLabel; ?>
                   </td>
                 </tr>
@@ -532,9 +548,9 @@ if (!function_exists('app_statement_render_document_html')) {
       <td style="padding: 0 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td width="48%" style="border:1px solid #D7DEE7; background-color:#F8FAFC; padding:14px 16px;">
+            <td width="48%" style="border:1px solid #D7DEE7; background-color:<?php echo $theme === 'storefront' ? '#fffdf9' : '#F8FAFC'; ?>; padding:14px 16px; border-radius:<?php echo $theme === 'storefront' ? '14px' : '0'; ?>;">
               <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Seller'); ?></div>
-              <div style="color:#101828; font-size:15px; font-weight:bold; padding-top:8px;"><?php echo $sellerName; ?></div>
+              <div style="color:#101828; font-size:15px; font-weight:bold; padding-top:8px;" class="fraunces"><?php echo $sellerName; ?></div>
               <?php if ($sellerAddress !== ''): ?>
               <div style="color:#344054; font-size:12px; padding-top:6px;"><?php echo app_statement_escape($sellerAddress); ?></div>
               <?php endif; ?>
@@ -546,9 +562,9 @@ if (!function_exists('app_statement_render_document_html')) {
               <?php endif; ?>
             </td>
             <td width="4%">&nbsp;</td>
-            <td width="48%" style="border:1px solid #D7DEE7; background-color:#F8FAFC; padding:14px 16px;">
+            <td width="48%" style="border:1px solid #D7DEE7; background-color:<?php echo $theme === 'storefront' ? '#fffdf9' : '#F8FAFC'; ?>; padding:14px 16px; border-radius:<?php echo $theme === 'storefront' ? '14px' : '0'; ?>;">
               <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Debtor'); ?></div>
-              <div style="color:#101828; font-size:15px; font-weight:bold; padding-top:8px;"><?php echo $customerName; ?></div>
+              <div style="color:#101828; font-size:15px; font-weight:bold; padding-top:8px;" class="fraunces"><?php echo $customerName; ?></div>
               <?php if ($customerAddress !== ''): ?>
               <div style="color:#344054; font-size:12px; padding-top:6px;"><?php echo app_statement_escape($customerAddress); ?></div>
               <?php endif; ?>
@@ -568,7 +584,7 @@ if (!function_exists('app_statement_render_document_html')) {
       <td style="padding: 18px 28px 0 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td width="24%" style="border:1px solid #D7DEE7; background-color:#FFFFFF; padding:10px 12px;">
+            <td width="24%" style="border:1px solid #D7DEE7; background-color:#FFFFFF; padding:10px 12px; border-radius:<?php echo $theme === 'storefront' ? '10px 0 0 10px' : '0'; ?>;">
               <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Statement Ref'); ?></div>
               <div style="<?php echo $metaValueStyle; ?> padding-top:4px;"><?php echo app_statement_escape($statement['tx_ref'] ?? ''); ?></div>
             </td>
@@ -580,7 +596,7 @@ if (!function_exists('app_statement_render_document_html')) {
               <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Due Date'); ?></div>
               <div style="<?php echo $metaValueStyle; ?> padding-top:4px;"><?php echo app_statement_escape($statement['due_date_formatted'] ?? 'Not set'); ?></div>
             </td>
-            <td width="28%" style="border:1px solid #D7DEE7; background-color:#FFFFFF; padding:10px 12px;">
+            <td width="28%" style="border:1px solid #D7DEE7; background-color:#FFFFFF; padding:10px 12px; border-radius:<?php echo $theme === 'storefront' ? '0 10px 10px 0' : '0'; ?>;">
               <div style="<?php echo $metaLabelStyle; ?>" class="label-caps"><?php echo strtoupper('Balance Status'); ?></div>
               <div style="<?php echo $metaValueStyle; ?> padding-top:4px;"><?php echo $statusLabel; ?></div>
             </td>
@@ -593,11 +609,11 @@ if (!function_exists('app_statement_render_document_html')) {
       <td style="padding: 20px 28px 0 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td style="<?php echo $sectionBarStyle; ?> padding:10px 12px;">Purchased Items</td>
+            <td style="<?php echo $sectionBarStyle; ?> padding:10px 12px; border-radius:<?php echo $theme === 'storefront' ? '14px 14px 0 0' : '0'; ?>;">Purchased Items</td>
           </tr>
         </table>
         <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-color:#D7DEE7;">
-          <tr bgcolor="#F4F6F8">
+          <tr bgcolor="<?php echo $itemHeaderBg; ?>">
             <td width="46%" style="color:#344054; font-size:12px; font-weight:bold;">Product</td>
             <td width="18%" align="right" style="color:#344054; font-size:12px; font-weight:bold;">Price</td>
             <td width="12%" align="right" style="color:#344054; font-size:12px; font-weight:bold;">Qty</td>
@@ -629,16 +645,16 @@ if (!function_exists('app_statement_render_document_html')) {
             <td width="42%">
               <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-color:#D7DEE7;">
                 <tr>
-                  <td width="58%" bgcolor="#F8FAFC" style="color:#475467; font-size:12px; font-weight:bold;">Total Purchase</td>
+                  <td width="58%" bgcolor="<?php echo $theme === 'storefront' ? '#fffdf9' : '#F8FAFC'; ?>" style="color:#475467; font-size:12px; font-weight:bold;">Total Purchase</td>
                   <td width="42%" align="right" style="color:#101828; font-size:12px;"><?php echo app_statement_escape($statement['items_total_formatted'] ?? app_money(0)); ?></td>
                 </tr>
                 <tr>
-                  <td width="58%" bgcolor="#F8FAFC" style="color:#475467; font-size:12px; font-weight:bold;">Total Paid</td>
+                  <td width="58%" bgcolor="<?php echo $theme === 'storefront' ? '#fffdf9' : '#F8FAFC'; ?>" style="color:#475467; font-size:12px; font-weight:bold;">Total Paid</td>
                   <td width="42%" align="right" style="color:#101828; font-size:12px;"><?php echo app_statement_escape($statement['amount_paid_formatted'] ?? app_money(0)); ?></td>
                 </tr>
                 <tr>
-                  <td width="58%" bgcolor="#111827" style="color:#FFFFFF; font-size:12px; font-weight:bold;">Balance Owed</td>
-                  <td width="42%" align="right" bgcolor="#F9FAFB" style="color:#101828; font-size:13px; font-weight:bold;"><?php echo app_statement_escape($statement['balance_formatted'] ?? app_money(0)); ?></td>
+                  <td width="58%" bgcolor="<?php echo $primaryAccent; ?>" style="color:#FFFFFF; font-size:12px; font-weight:bold;">Balance Owed</td>
+                  <td width="42%" align="right" bgcolor="<?php echo $theme === 'storefront' ? '#fff8ee' : '#F9FAFB'; ?>" style="color:#101828; font-size:13px; font-weight:bold;"><?php echo app_statement_escape($statement['balance_formatted'] ?? app_money(0)); ?></td>
                 </tr>
               </table>
             </td>
@@ -651,12 +667,12 @@ if (!function_exists('app_statement_render_document_html')) {
       <td style="padding: 20px 28px 0 28px;">
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td style="<?php echo $sectionBarStyle; ?> padding:10px 12px;">Payment History</td>
+            <td style="<?php echo $sectionBarStyle; ?> padding:10px 12px; border-radius:<?php echo $theme === 'storefront' ? '14px 14px 0 0' : '0'; ?>;">Payment History</td>
           </tr>
         </table>
         <?php if (!empty($payments)): ?>
         <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-color:#D7DEE7;">
-          <tr bgcolor="#F4F6F8">
+          <tr bgcolor="<?php echo $itemHeaderBg; ?>">
             <td width="28%" style="color:#344054; font-size:12px; font-weight:bold;">Date</td>
             <td width="44%" style="color:#344054; font-size:12px; font-weight:bold;">Method</td>
             <td width="28%" align="right" style="color:#344054; font-size:12px; font-weight:bold;">Amount</td>
@@ -672,7 +688,7 @@ if (!function_exists('app_statement_render_document_html')) {
         <?php else: ?>
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;">
           <tr>
-            <td style="border:1px solid #D7DEE7; background-color:#F8FAFC; color:#667085; font-size:12px; padding:14px 12px;">No payments recorded yet.</td>
+            <td style="border:1px solid #D7DEE7; background-color:<?php echo $theme === 'storefront' ? '#fffdf9' : '#F8FAFC'; ?>; color:#667085; font-size:12px; padding:14px 12px; border-radius:<?php echo $theme === 'storefront' ? '0 0 14px 14px' : '0'; ?>;">No payments recorded yet.</td>
           </tr>
         </table>
         <?php endif; ?>
