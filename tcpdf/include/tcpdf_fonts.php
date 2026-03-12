@@ -1664,6 +1664,10 @@ class TCPDF_FONTS {
 	 * @public static
 	 */
 	public static function unichr($c, $unicode=true) {
+		$c = self::sanitizeCodepoint($c);
+		if ($c === null) {
+			return '';
+		}
 		if (!$unicode) {
 			return chr($c);
 		} elseif ($c <= 0x7F) {
@@ -1681,6 +1685,28 @@ class TCPDF_FONTS {
 		} else {
 			return '';
 		}
+	}
+
+	/**
+	 * Normalize a raw codepoint value coming from legacy TCPDF text processing.
+	 * Newer PHP versions are stricter about non-integer inputs to chr().
+	 * @param mixed $value codepoint candidate
+	 * @return int|null
+	 * @protected
+	 * @since 6.0.000
+	 */
+	protected static function sanitizeCodepoint($value) {
+		if (($value === '') OR ($value === null) OR ($value === false)) {
+			return null;
+		}
+		if (is_int($value)) {
+			return ($value >= 0) ? $value : null;
+		}
+		if (is_numeric($value)) {
+			$value = intval($value);
+			return ($value >= 0) ? $value : null;
+		}
+		return null;
 	}
 
 	/**
@@ -1747,6 +1773,10 @@ class TCPDF_FONTS {
 			$outstr .= "\xFE\xFF"; // Byte Order Mark (BOM)
 		}
 		foreach ($unicode as $char) {
+			$char = self::sanitizeCodepoint($char);
+			if ($char === null) {
+				continue;
+			}
 			if ($char == 0x200b) {
 				// skip Unicode Character 'ZERO WIDTH SPACE' (DEC:8203, U+200B)
 			} elseif ($char == 0xFFFD) {
@@ -1800,6 +1830,9 @@ class TCPDF_FONTS {
 		}
 		$string = '';
 		for ($i = $start; $i < $end; ++$i) {
+			if (!isset($strarr[$i])) {
+				continue;
+			}
 			$string .= self::unichr($strarr[$i], $unicode);
 		}
 		return $string;

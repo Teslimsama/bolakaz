@@ -12,18 +12,31 @@
                 <div class="form-group">
                     <label for="customer" class="col-sm-3 control-label">Customer</label>
                     <div class="col-sm-9">
-                      <select class="form-control select2" name="user_id" style="width: 100%;">
+                      <select class="form-control select2" id="offline_customer" name="user_id" style="width: 100%;">
                         <option value="0">Guest / Manual Entry</option>
                         <?php
                           $conn = $pdo->open();
-                          $stmt = $conn->prepare("SELECT id, firstname, lastname FROM users WHERE type=0 ORDER BY firstname ASC");
+                          $stmt = $conn->prepare("SELECT id, firstname, lastname, phone FROM users WHERE type=0 ORDER BY firstname ASC");
                           $stmt->execute();
                           foreach($stmt as $urow){
-                            echo "<option value='".$urow['id']."'>".e($urow['firstname'].' '.$urow['lastname'])."</option>";
+                            $fullName = trim((string)$urow['firstname'].' '.(string)$urow['lastname']);
+                            echo "<option value='".$urow['id']."' data-fullname='".e($fullName)."' data-phone='".e((string)($urow['phone'] ?? ''))."'>".e($fullName)."</option>";
                           }
                           $pdo->close();
                         ?>
                       </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="customer_name" class="col-sm-3 control-label">Customer Name</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" id="customer_name" name="customer_name" placeholder="Debtor full name" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="customer_phone" class="col-sm-3 control-label">Customer Phone</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" id="customer_phone" name="customer_phone" placeholder="Phone number for WhatsApp follow-up">
                     </div>
                 </div>
                 <div class="form-group">
@@ -199,6 +212,26 @@
 
 <script>
 $(document).ready(function() {
+    function populateOfflineCustomerFields() {
+        var $selected = $('#offline_customer').find(':selected');
+        var fullName = $.trim($selected.data('fullname') || '');
+        var phone = $.trim($selected.data('phone') || '');
+
+        if ($('#offline_customer').val() === '0') {
+            $('#customer_name').val('');
+            $('#customer_phone').val('');
+            return;
+        }
+
+        if (fullName !== '') {
+            $('#customer_name').val(fullName);
+        }
+        $('#customer_phone').val(phone);
+    }
+
+    $('#offline_customer').on('change', populateOfflineCustomerFields);
+    populateOfflineCustomerFields();
+
     $('#btn-add-product').click(function() {
         var row = $('.product-row:first').clone();
         row.find('input').val('1');

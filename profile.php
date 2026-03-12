@@ -1,4 +1,5 @@
 <?php include 'session.php'; ?>
+<?php require_once __DIR__ . '/lib/offline_statement.php'; ?>
 <?php
 if (!isset($_SESSION['user'])) {
     header('location: index.php');
@@ -66,6 +67,7 @@ if (!isset($_SESSION['user'])) {
                         <th>Transaction#</th>
                         <th>Status</th>
                         <th>Amount</th>
+                        <th>Balance</th>
                         <th>Full Details</th>
                     </thead>
                     <tbody>
@@ -73,24 +75,42 @@ if (!isset($_SESSION['user'])) {
                         $conn = $pdo->open();
 
                         try {
-                            $stmt = $conn->prepare("SELECT * FROM sales WHERE user_id=:user_id ORDER BY id DESC");
+                            $stmt = $conn->prepare("SELECT sales.*,
+                                    (SELECT COALESCE(SUM(d.quantity * p.price), 0)
+                                        FROM details d
+                                        LEFT JOIN products p ON p.id = d.product_id
+                                        WHERE d.sales_id = sales.id) AS order_total,
+                                    (SELECT COALESCE(SUM(op.amount), 0)
+                                        FROM offline_payments op
+                                        WHERE op.sales_id = sales.id) AS amount_paid
+                                FROM sales
+                                WHERE user_id=:user_id
+                                ORDER BY id DESC");
                             $stmt->execute(['user_id' => $user['id']]);
                             foreach ($stmt as $row) {
-                                $stmt2 = $conn->prepare("SELECT * FROM details LEFT JOIN products ON products.id=details.product_id WHERE sales_id=:id");
-                                $stmt2->execute(['id' => $row['id']]);
-                                $total = 0;
-                                foreach ($stmt2 as $row2) {
-                                    $subtotal = $row2['price'] * $row2['quantity'];
-                                    $total += $subtotal;
+                                $isOffline = ((int)($row['is_offline'] ?? 0) === 1);
+                                $total = (float)($row['order_total'] ?? 0);
+                                $amountPaid = (float)($row['amount_paid'] ?? 0);
+                                $balance = $isOffline ? max(0, $total - $amountPaid) : 0;
+                                $statusText = trim((string)($row['Status'] ?? 'Pending'));
+                                if ($isOffline) {
+                                    $statusText = app_statement_status_label($row['payment_status'] ?? '');
                                 }
+
+                                $actions = "<button class='btn btn-sm btn-flat btn-primary transact' data-id='" . (int)$row['id'] . "'><i class='fa fa-search'></i> View</button>";
+                                if ($isOffline) {
+                                    $actions .= " <a class='btn btn-sm btn-flat btn-default' href='offline_statement.php?id=" . (int)$row['id'] . "' target='_blank' rel='noopener'><i class='fa fa-file-text-o'></i> Statement</a>";
+                                }
+
                                 echo "
 	        									<tr>
 	        										<td class='hidden'></td>
 	        										<td>" . date('M d, Y', strtotime($row['sales_date'])) . "</td>
-	        										<td>" . $row['tx_ref'] . "</td>
-	        										<td>" . $row['Status'] . "</td>
+	        										<td>" . e($row['tx_ref']) . "</td>
+	        										<td>" . e($statusText) . "</td>
 	        										<td>" . app_money($total) . "</td>
-	        										<td><button class='btn btn-sm btn-flat btn-primary transact' data-id='" . $row['id'] . "'><i class='fa fa-search'></i> View</button></td>
+	        										<td>" . ($isOffline ? app_money($balance) : '&mdash;') . "</td>
+	        										<td>" . $actions . "</td>
 	        									</tr>
 	        								";
                             }

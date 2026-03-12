@@ -1,4 +1,5 @@
 <?php include 'session.php'; ?>
+<?php require_once __DIR__ . '/../lib/offline_statement.php'; ?>
 <?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -71,9 +72,14 @@
                           sales.id AS salesid, 
                           sales.sales_date, 
                           sales.due_date,
+                          sales.tx_ref,
                           sales.payment_status,
+                          sales.customer_name,
+                          sales.phone,
+                          sales.statement_share_token,
                           users.firstname, 
                           users.lastname, 
+                          users.phone AS user_phone,
                           (SELECT SUM(details.quantity * products.price) FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=sales.id) AS total_amount,
                           (SELECT COALESCE(SUM(offline_payments.amount), 0) FROM offline_payments WHERE offline_payments.sales_id=sales.id) AS amount_paid
                         FROM sales 
@@ -92,8 +98,33 @@
                         elseif($row['payment_status'] == 'partial') $status_label = '<span class="label label-warning">Partial</span>';
                         else $status_label = '<span class="label label-danger">Unpaid</span>';
 
-                        $name = e($row['firstname'].' '.$row['lastname']);
-                        if(empty(trim($name))) $name = 'Guest';
+                        $name = e(app_statement_customer_name_from_row($row));
+                        $dueDateFormatted = !empty($row['due_date']) ? date('M d, Y', strtotime($row['due_date'])) : '';
+                        $publicUrl = '';
+                        if (!empty($row['statement_share_token'])) {
+                          $publicUrl = app_statement_base_url() . '/offline_statement.php?token=' . rawurlencode((string)$row['statement_share_token']);
+                        }
+
+                        $whatsAppUrl = app_statement_whatsapp_url([
+                          'customer_name' => app_statement_customer_name_from_row($row),
+                          'customer_phone_whatsapp' => app_statement_whatsapp_phone(app_statement_phone_from_row($row)),
+                          'tx_ref' => (string)($row['tx_ref'] ?? ''),
+                          'amount_paid_formatted' => app_money($paid),
+                          'balance_formatted' => app_money($balance),
+                          'due_date_formatted' => $dueDateFormatted,
+                          'public_url' => $publicUrl,
+                        ]);
+
+                        $tools = "
+                              <button class='btn btn-info btn-sm view_details btn-flat' data-id='".$row['salesid']."'><i class='fa fa-search'></i> Details</button>
+                              <button class='btn btn-success btn-sm manage_payments btn-flat' data-id='".$row['salesid']."'><i class='fa fa-money'></i> Payments</button>
+                              <a class='btn btn-default btn-sm btn-flat' href='offline_statement.php?id=".(int)$row['salesid']."' target='_blank' rel='noopener'><i class='fa fa-file-text-o'></i> Statement</a>
+                        ";
+                        if ($whatsAppUrl !== '') {
+                          $tools .= "
+                              <a class='btn btn-success btn-sm btn-flat' href='".e($whatsAppUrl)."' target='_blank' rel='noopener'><i class='fa fa-whatsapp'></i> WhatsApp</a>
+                          ";
+                        }
 
                         echo "
                           <tr>
@@ -109,10 +140,7 @@
                             <td>".app_money($paid)."</td>
                             <td>".app_money($balance)."</td>
                             <td>".$status_label."</td>
-                            <td>
-                              <button class='btn btn-info btn-sm view_details btn-flat' data-id='".$row['salesid']."'><i class='fa fa-search'></i> Details</button>
-                              <button class='btn btn-success btn-sm manage_payments btn-flat' data-id='".$row['salesid']."'><i class='fa fa-money'></i> Payments</button>
-                            </td>
+                            <td>".$tools."</td>
                           </tr>
                         ";
                       }

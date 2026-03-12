@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/offline_statement.php';
 
 if(isset($_POST['add'])){
     $user_id = (int)$_POST['user_id'];
@@ -7,6 +8,8 @@ if(isset($_POST['add'])){
     $due_date = !empty($_POST['due_date']) ? $_POST['due_date'] : NULL;
     $initial_payment = (float)($_POST['initial_payment'] ?? 0);
     $payment_method = $_POST['payment_method'];
+    $customer_name = trim((string)($_POST['customer_name'] ?? ''));
+    $customer_phone = app_statement_sanitize_phone_snapshot($_POST['customer_phone'] ?? '');
     
     $products = $_POST['products'];
     $qtys = $_POST['qty'];
@@ -23,8 +26,41 @@ if(isset($_POST['add'])){
     try{
         $conn->beginTransaction();
 
-        $stmt = $conn->prepare("INSERT INTO sales (user_id, is_offline, sales_date, due_date, tx_ref, Status, payment_status) VALUES (:user_id, 1, :sales_date, :due_date, :tx_ref, :status, :pstatus)");
-        $stmt->execute(['user_id'=>$user_id, 'sales_date'=>$sales_date, 'due_date'=>$due_date, 'tx_ref'=>$tx_ref, 'status'=>'success', 'pstatus'=>'unpaid']);
+        if ($user_id > 0) {
+            $userStmt = $conn->prepare("SELECT firstname, lastname, phone FROM users WHERE id = :id LIMIT 1");
+            $userStmt->execute(['id' => $user_id]);
+            $userRow = $userStmt->fetch();
+
+            if (!$userRow) {
+                throw new RuntimeException('Selected customer could not be found.');
+            }
+
+            if ($customer_name === '') {
+                $customer_name = trim((string)$userRow['firstname'].' '.(string)$userRow['lastname']);
+            }
+            if ($customer_phone === '') {
+                $customer_phone = app_statement_sanitize_phone_snapshot($userRow['phone'] ?? '');
+            }
+        }
+
+        if ($customer_name === '') {
+            throw new RuntimeException('Customer name is required for offline sales.');
+        }
+
+        $statementShareToken = app_statement_generate_unique_token($conn);
+
+        $stmt = $conn->prepare("INSERT INTO sales (user_id, is_offline, sales_date, due_date, tx_ref, Status, payment_status, customer_name, statement_share_token, phone) VALUES (:user_id, 1, :sales_date, :due_date, :tx_ref, :status, :pstatus, :customer_name, :statement_share_token, :phone)");
+        $stmt->execute([
+            'user_id'=>$user_id,
+            'sales_date'=>$sales_date,
+            'due_date'=>$due_date,
+            'tx_ref'=>$tx_ref,
+            'status'=>'success',
+            'pstatus'=>'unpaid',
+            'customer_name' => $customer_name,
+            'statement_share_token' => $statementShareToken,
+            'phone' => ($customer_phone !== '' ? $customer_phone : null),
+        ]);
         $sales_id = $conn->lastInsertId();
 
         $total_amount = 0;
