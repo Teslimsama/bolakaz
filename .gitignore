@@ -1,2 +1,19 @@
-/vendor
+.env
+/.idea/
+/.DS_Store
+Thumbs.db
+
+# Dependencies
+/vendor/
+/node_modules/
+/bower_components/
+
+# Build and runtime artifacts
+/storage/logs/*.log
+/storage/framework/
+/bootstrap/cache/
+
+# Local editor/OS noise
+*.swp
+*.swo
 /images

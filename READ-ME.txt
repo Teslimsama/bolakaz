@@ -1,4 +1,4 @@
-  =>  Template Name    : EShopper - Bootstrap Shop Template
+  =>  Template Name    : BolaKaz 
 
   =>  Template Link    : https://htmlcodex.com/bootstrap-shop-template
 

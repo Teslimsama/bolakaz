@@ -33,8 +33,25 @@
     });
 
 
+    function initCarousel(selector, options) {
+        if (!$.fn || typeof $.fn.owlCarousel !== 'function') {
+            return;
+        }
+
+        var $el = $(selector);
+        if (!$el.length) {
+            return;
+        }
+
+        try {
+            $el.owlCarousel(options);
+        } catch (err) {
+            console.warn('Owl init failed for', selector, err);
+        }
+    }
+
     // Vendor carousel
-    $('.vendor-carousel').owlCarousel({
+    initCarousel('.vendor-carousel', {
         loop: true,
         margin: 29,
         nav: false,
@@ -61,7 +78,7 @@
 
 
     // Related carousel
-    $('.related-carousel').owlCarousel({
+    initCarousel('.related-carousel', {
         loop: true,
         margin: 29,
         nav: false,
@@ -87,18 +104,28 @@
     // Product Quantity
     $('.quantity button').on('click', function () {
         var button = $(this);
-        var oldValue = button.parent().parent().find('input').val();
-        if (button.hasClass('btn-plus')) {
-            var newVal = parseFloat(oldValue) + 1;
-        } else {
-            if (oldValue > 0) {
-                var newVal = parseFloat(oldValue) - 1;
-            } else {
-                newVal = 0;
-            }
+        var $input = button.parent().parent().find('input');
+        var oldValue = parseInt($input.val(), 10);
+
+        if (isNaN(oldValue) || oldValue < 1) {
+            oldValue = 1;
         }
-        button.parent().parent().find('input').val(newVal);
+
+        var newVal = oldValue;
+        if (button.hasClass('btn-plus')) {
+            newVal = oldValue + 1;
+        } else {
+            newVal = Math.max(1, oldValue - 1);
+        }
+
+        $input.val(newVal);
+    });
+
+    $('.quantity input').on('input blur', function () {
+        var val = parseInt($(this).val(), 10);
+        if (isNaN(val) || val < 1) {
+            $(this).val(1);
+        }
     });
     
 })(jQuery);
-

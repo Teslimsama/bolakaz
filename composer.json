@@ -1,0 +1,10 @@
+{
+    "require": {
+        "vlucas/phpdotenv": "^5.6",
+        "phpmailer/phpmailer": "^6.9",
+        "intervention/image": "2",
+        "twilio/sdk": "^8.3",
+        "monolog/monolog": "^3.10",
+        "filp/whoops": "^2.18"
+    }
+}
