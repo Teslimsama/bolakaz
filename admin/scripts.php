@@ -325,8 +325,9 @@
 
         if ($('#example1').length && !$.fn.DataTable.isDataTable('#example1')) {
           initDataTableWithMobileLabels('#example1', {
-            responsive: true,
-            scrollX: true,
+            responsive: false,
+            scrollX: false,
+            autoWidth: false,
             pageLength: 25,
             order: [],
             language: {
@@ -349,8 +350,8 @@
             ordering: true,
             info: true,
             autoWidth: false,
-            responsive: true,
-            scrollX: true,
+            responsive: false,
+            scrollX: false,
             language: {
               search: 'Find:',
               lengthMenu: 'Show _MENU_ items',

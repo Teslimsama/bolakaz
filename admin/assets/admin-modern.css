@@ -468,6 +468,31 @@ body.sidebar-collapsed .main-footer {
 
 .admin-table-wrap .table {
   margin-bottom: 0;
+  min-width: 100% !important;
+  width: max-content;
+}
+
+.admin-table-wrap .table > thead > tr > th {
+  white-space: nowrap;
+}
+
+.admin-table-wrap .dataTables_wrapper {
+  min-width: 100%;
+}
+
+.admin-table-wrap .dataTables_wrapper table.table.dataTable {
+  min-width: 100% !important;
+  width: max-content !important;
+}
+
+.admin-table-wrap .dataTables_wrapper .dataTables_scrollBody {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-table-wrap .table.legacy-mobile-table > tbody > tr > td {
+  white-space: nowrap;
 }
 
 .admin-col-money {
