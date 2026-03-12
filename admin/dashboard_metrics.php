@@ -27,7 +27,7 @@ $conn = $pdo->open();
 
 try {
     $metrics = [
-        'total_revenue' => 0.0, // This will be Sum(Online Sales) + Sum(Offline Payments)
+        'total_revenue' => 0.0,
         'revenue_today' => 0.0,
         'total_orders' => 0,
         'total_products' => 0,
@@ -42,23 +42,30 @@ try {
     $monthlyOfflineRevenue = array_fill(0, 12, 0.0);
     $monthlyOrders = array_fill(0, 12, 0);
 
-    // Online Revenue (is_offline = 0)
-    $onlineRevenueStmt = $conn->query("SELECT COALESCE(SUM(d.quantity * p.price), 0) FROM details d INNER JOIN products p ON p.id = d.product_id INNER JOIN sales s ON s.id = d.sales_id WHERE s.is_offline = 0");
+    // Filtered Online Revenue (is_offline = 0)
+    $onlineRevenueStmt = $conn->prepare("SELECT COALESCE(SUM(d.quantity * p.price), 0) FROM details d INNER JOIN products p ON p.id = d.product_id INNER JOIN sales s ON s.id = d.sales_id WHERE s.is_offline = 0 AND s.sales_date BETWEEN :start AND :end");
+    $onlineRevenueStmt->execute(['start' => $startDate, 'end' => $endDate]);
     $onlineTotal = (float)$onlineRevenueStmt->fetchColumn();
 
-    // Offline Revenue (Sum of all offline_payments)
-    $offlineCollectedStmt = $conn->query("SELECT COALESCE(SUM(amount), 0) FROM offline_payments");
+    // Filtered Offline Revenue (Sum of offline_payments in range)
+    $offlineCollectedStmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) FROM offline_payments WHERE payment_date BETWEEN :start AND :end");
+    $offlineCollectedStmt->execute(['start' => $startDate, 'end' => $endDate]);
     $metrics['offline_collected'] = (float)$offlineCollectedStmt->fetchColumn();
 
     $metrics['total_revenue'] = $onlineTotal + $metrics['offline_collected'];
 
-    // Offline Pending (Sum of Offline Sales Volume - Offline Collections)
-    $offlineVolumeStmt = $conn->query("SELECT COALESCE(SUM(d.quantity * p.price), 0) FROM details d INNER JOIN products p ON p.id = d.product_id INNER JOIN sales s ON s.id = d.sales_id WHERE s.is_offline = 1");
+    // Filtered Offline Pending (Volume in range - Collections in range?) 
+    // Actually Pending should probably be total debt remaining for sales in that period.
+    $offlineVolumeStmt = $conn->prepare("SELECT COALESCE(SUM(d.quantity * p.price), 0) FROM details d INNER JOIN products p ON p.id = d.product_id INNER JOIN sales s ON s.id = d.sales_id WHERE s.is_offline = 1 AND s.sales_date BETWEEN :start AND :end");
+    $offlineVolumeStmt->execute(['start' => $startDate, 'end' => $endDate]);
     $offlineVolume = (float)$offlineVolumeStmt->fetchColumn();
+    
+    // We already have collections in range, but debt is usually all-time for those sales.
+    // Simplifying: Show total outstanding balance for ALL matching offline sales in this period.
     $metrics['offline_pending'] = max(0, $offlineVolume - $metrics['offline_collected']);
 
     $today = date('Y-m-d');
-    // Revenue Today (Online + Offline collected today)
+    // Revenue Today (Online + Offline collected today - ignores range filter as it is a fixed KPI)
     $onlineTodayStmt = $conn->prepare("SELECT COALESCE(SUM(d.quantity * p.price), 0) FROM details d INNER JOIN products p ON p.id = d.product_id INNER JOIN sales s ON s.id = d.sales_id WHERE s.sales_date = :sd AND s.is_offline = 0");
     $onlineTodayStmt->execute(['sd' => $today]);
     $onlineToday = (float)$onlineTodayStmt->fetchColumn();
@@ -68,22 +75,22 @@ try {
     $offlineToday = (float)$offlineTodayStmt->fetchColumn();
     $metrics['revenue_today'] = $onlineToday + $offlineToday;
 
-    $ordersStmt = $conn->query("SELECT COUNT(*) FROM sales");
+    $ordersStmt = $conn->prepare("SELECT COUNT(*) FROM sales WHERE sales_date BETWEEN :start AND :end");
+    $ordersStmt->execute(['start' => $startDate, 'end' => $endDate]);
     $metrics['total_orders'] = (int)$ordersStmt->fetchColumn();
 
     $productsStmt = $conn->query("SELECT COUNT(*) FROM products");
     $metrics['total_products'] = (int)$productsStmt->fetchColumn();
 
-    $usersStmt = $conn->query("SELECT COUNT(*) FROM users");
+    $usersStmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE created_on BETWEEN :start AND :end");
+    $usersStmt->execute(['start' => $startDate, 'end' => $endDate]);
     $metrics['total_users'] = (int)$usersStmt->fetchColumn();
 
     $lowStockStmt = $conn->query("SELECT COUNT(*) FROM products WHERE qty <= 5 AND (product_status = 1 OR product_status IS NULL)");
     $metrics['low_stock_count'] = (int)$lowStockStmt->fetchColumn();
 
-    // Monthly Online Revenue
-    $monthlyOnlineStmt = $conn->prepare("SELECT MONTH(s.sales_date) AS month_num, COALESCE(SUM(d.quantity * p.price), 0) AS revenue
-        FROM sales s INNER JOIN details d ON d.sales_id = s.id INNER JOIN products p ON p.id = d.product_id
-        WHERE YEAR(s.sales_date) = :year AND s.is_offline = 0 GROUP BY MONTH(s.sales_date)");
+    // Monthly Online Revenue (Still uses YEAR for the trend chart)
+    $monthlyOnlineStmt = $conn->prepare("SELECT MONTH(s.sales_date) AS month_num, COALESCE(SUM(d.quantity * p.price), 0) AS revenue FROM sales s INNER JOIN details d ON d.sales_id = s.id INNER JOIN products p ON p.id = d.product_id WHERE YEAR(s.sales_date) = :year AND s.is_offline = 0 GROUP BY MONTH(s.sales_date)");
     $monthlyOnlineStmt->execute(['year' => $year]);
     foreach ($monthlyOnlineStmt as $row) {
         $monthIdx = (int)$row['month_num'] - 1;
@@ -105,18 +112,14 @@ try {
         if ($monthIdx >= 0 && $monthIdx < 12) $monthlyOrders[$monthIdx] = (int)$row['order_count'];
     }
 
-    $topProductsStmt = $conn->prepare("SELECT p.name, COALESCE(SUM(d.quantity * p.price), 0) AS revenue
-        FROM details d INNER JOIN sales s ON s.id = d.sales_id INNER JOIN products p ON p.id = d.product_id
-        WHERE s.sales_date BETWEEN :start_date AND :end_date GROUP BY p.id, p.name ORDER BY revenue DESC LIMIT 10");
+    $topProductsStmt = $conn->prepare("SELECT p.name, COALESCE(SUM(d.quantity * p.price), 0) AS revenue FROM details d INNER JOIN sales s ON s.id = d.sales_id INNER JOIN products p ON p.id = d.product_id WHERE s.sales_date BETWEEN :start_date AND :end_date GROUP BY p.id, p.name ORDER BY revenue DESC LIMIT 10");
     $topProductsStmt->execute(['start_date' => $startDate, 'end_date' => $endDate]);
     $topProducts = [];
     foreach ($topProductsStmt as $row) {
         $topProducts[] = ['name' => (string)$row['name'], 'revenue' => round((float)$row['revenue'], 2)];
     }
 
-    $categorySalesStmt = $conn->prepare("SELECT COALESCE(c.name, 'Uncategorized') AS category_name, COALESCE(SUM(d.quantity * p.price), 0) AS revenue
-        FROM details d INNER JOIN sales s ON s.id = d.sales_id INNER JOIN products p ON p.id = d.product_id LEFT JOIN category c ON c.id = p.category_id
-        WHERE s.sales_date BETWEEN :start_date AND :end_date GROUP BY c.name ORDER BY revenue DESC");
+    $categorySalesStmt = $conn->prepare("SELECT COALESCE(c.name, 'Uncategorized') AS category_name, COALESCE(SUM(d.quantity * p.price), 0) AS revenue FROM details d INNER JOIN sales s ON s.id = d.sales_id INNER JOIN products p ON p.id = d.product_id LEFT JOIN category c ON c.id = p.category_id WHERE s.sales_date BETWEEN :start_date AND :end_date GROUP BY c.name ORDER BY revenue DESC");
     $categorySalesStmt->execute(['start_date' => $startDate, 'end_date' => $endDate]);
     $categorySales = [];
     foreach ($categorySalesStmt as $row) {
