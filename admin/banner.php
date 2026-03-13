@@ -173,13 +173,13 @@
         $categoryWrap.hide();
         $product.prop('required', true);
         $category.prop('required', false);
-        $link.val('detail.php?product=' + encodeURIComponent($product.val() || ''));
+        $link.val('detail?product=' + encodeURIComponent($product.val() || ''));
       } else {
         $categoryWrap.show();
         $productWrap.hide();
         $category.prop('required', true);
         $product.prop('required', false);
-        $link.val('shop.php?category=' + encodeURIComponent($category.val() || ''));
+        $link.val('shop?category=' + encodeURIComponent($category.val() || ''));
       }
     }
 

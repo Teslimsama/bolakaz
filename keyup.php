@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         </div>
                     </div>
                     <div class="card-footer d-flex justify-content-center bg-light border">
-                        <a href="detail.php?product=' . e((string)($product['slug'] ?? '')) . '" class="btn btn-sm text-dark p-0">
+                        <a href="detail?product=' . e((string)($product['slug'] ?? '')) . '" class="btn btn-sm text-dark p-0">
                             <i class="fas fa-eye text-primary mr-1"></i>View Detail
                         </a>
                     </div>

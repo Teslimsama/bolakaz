@@ -20,7 +20,7 @@ function cart_item_html(array $item): string
 	$sub = $category !== '' ? $category : 'Item';
 
 	return ''
-		. "<a class='sf-mini-cart-item' href='detail.php?product=" . e($slug) . "'>"
+		. "<a class='sf-mini-cart-item' href='detail?product=" . e($slug) . "'>"
 		. "<img src='" . e($image) . "' class='sf-mini-cart-thumb' width='56' height='56' style='width:56px;height:56px;min-width:56px;max-width:56px;min-height:56px;max-height:56px;object-fit:cover;display:block;flex:0 0 56px;' alt='Product image' onerror=\"this.onerror=null;this.src='" . e(app_placeholder_image()) . "';\">"
 		. "<div class='sf-mini-cart-meta'>"
 		. "<p class='sf-mini-cart-name'>" . e($title) . "</p>"

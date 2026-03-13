@@ -43,7 +43,7 @@ if (!function_exists('banner_parse_destination')) {
                     'type' => 'product',
                     'product_slug' => $slug,
                     'category_slug' => '',
-                    'resolved_link' => 'detail.php?product=' . rawurlencode($slug),
+                    'resolved_link' => 'detail?product=' . rawurlencode($slug),
                 ];
             }
         }
@@ -55,7 +55,7 @@ if (!function_exists('banner_parse_destination')) {
                     'type' => 'category',
                     'product_slug' => '',
                     'category_slug' => $slug,
-                    'resolved_link' => 'shop.php?category=' . rawurlencode($slug),
+                    'resolved_link' => 'shop?category=' . rawurlencode($slug),
                 ];
             }
         }
@@ -174,7 +174,7 @@ if (!function_exists('banner_build_link_from_request')) {
                 return null;
             }
 
-            return 'detail.php?product=' . rawurlencode($validSlug);
+            return 'detail?product=' . rawurlencode($validSlug);
         }
 
         if ($type === 'category') {
@@ -195,7 +195,7 @@ if (!function_exists('banner_build_link_from_request')) {
                 return null;
             }
 
-            return 'shop.php?category=' . rawurlencode($validSlug);
+            return 'shop?category=' . rawurlencode($validSlug);
         }
 
         $error = 'Please choose a valid destination type.';

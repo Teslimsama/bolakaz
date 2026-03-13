@@ -22,7 +22,7 @@
             html +="</div> ";
         html +=' <div class="card product-item border-0 mb-4">';
             html += '<div class="card-footer d-flex justify-content-between bg-light border">';
-            html += '<a href="detail.php?product=' + products[i].slug +'" class="btn btn-sm text-dark p-0" > <i class="fas fa-eye text-primary mr-1"></i>View Detail</a ></div ></div > ';
+            html += '<a href="detail?product=' + products[i].slug +'" class="btn btn-sm text-dark p-0" > <i class="fas fa-eye text-primary mr-1"></i>View Detail</a ></div ></div > ';
 
         html += "</div>";
                             }

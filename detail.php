@@ -3,6 +3,7 @@ include 'session.php';
 include 'Rating.php';
 require_once __DIR__ . '/lib/product_payload.php';
 require_once __DIR__ . '/lib/catalog_v2.php';
+require_once __DIR__ . '/lib/seo.php';
 $rating = new Rating();
 ?>
 <?php
@@ -141,6 +142,96 @@ $average = 0;
 if ($ratingNumber && $count) {
     $average = $ratingNumber / $count;
 }
+
+$productSlug = trim((string)$slug);
+$productName = trim((string)($product['prodname'] ?? 'Product'));
+$productCategory = trim((string)($product['catname'] ?? ''));
+$productSubcategory = trim((string)($product['subcatname'] ?? ''));
+$productBrand = trim((string)($product['brand'] ?? ''));
+$productDescription = seo_limit_text((string)($product['description'] ?? ''), 180);
+$productSchemaDescription = seo_limit_text((string)($product['description'] ?? ''), 5000);
+$productImageUrl = app_absolute_url(app_image_url($product['photo'] ?? ''));
+$productCanonical = app_absolute_url('detail', ['product' => $productSlug]);
+$productKeywords = array_filter([
+    $productName,
+    $productBrand,
+    $productCategory,
+    $productSubcategory,
+    'Bolakaz',
+    'Abuja',
+    'Nigeria',
+]);
+$productAvailability = ((int)($product['qty'] ?? 0) > 0)
+    ? 'https://schema.org/InStock'
+    : 'https://schema.org/OutOfStock';
+$productOffer = [
+    '@type' => 'Offer',
+    'url' => $productCanonical,
+    'priceCurrency' => 'NGN',
+    'price' => number_format((float)($product['price'] ?? 0), 2, '.', ''),
+    'availability' => $productAvailability,
+    'itemCondition' => 'https://schema.org/NewCondition',
+    'seller' => [
+        '@type' => 'Organization',
+        'name' => seo_site_name(),
+    ],
+];
+$productSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Product',
+    'name' => $productName,
+    'description' => $productSchemaDescription !== '' ? $productSchemaDescription : $productDescription,
+    'image' => [$productImageUrl],
+    'url' => $productCanonical,
+    'offers' => $productOffer,
+];
+if ($productBrand !== '') {
+    $productSchema['brand'] = [
+        '@type' => 'Brand',
+        'name' => $productBrand,
+    ];
+}
+if ($productCategory !== '') {
+    $productSchema['category'] = $productCategory;
+}
+$productSku = '';
+if (!empty($product['variants'][0]['sku'])) {
+    $productSku = trim((string)$product['variants'][0]['sku']);
+}
+if ($productSku === '' && !empty($product['prodid'])) {
+    $productSku = 'BOLAKAZ-' . (int)$product['prodid'];
+}
+if ($productSku !== '') {
+    $productSchema['sku'] = $productSku;
+}
+if ($count > 0) {
+    $productSchema['aggregateRating'] = [
+        '@type' => 'AggregateRating',
+        'ratingValue' => number_format((float)$average, 1, '.', ''),
+        'reviewCount' => $count,
+    ];
+}
+$seoMeta = [
+    'title' => $productName . ' | Bolakaz',
+    'description' => $productDescription !== '' ? $productDescription : ('Buy ' . $productName . ' online from Bolakaz.'),
+    'keywords' => implode(', ', $productKeywords),
+    'canonical' => $productCanonical,
+    'url' => $productCanonical,
+    'image' => $productImageUrl,
+    'image_alt' => $productName,
+    'type' => 'product',
+    'price' => (float)($product['price'] ?? 0),
+    'currency' => 'NGN',
+    'jsonLd' => [
+        seo_store_schema(),
+        seo_breadcrumb_schema([
+            ['name' => 'Home', 'url' => app_home_url()],
+            ['name' => 'Shop', 'url' => app_absolute_url('shop')],
+            ['name' => $productName, 'url' => $productCanonical],
+        ]),
+        $productSchema,
+    ],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -376,20 +467,20 @@ if ($ratingNumber && $count) {
                 <div class="d-flex pt-2">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
                     <div class="d-inline-flex">
-                        <a class="text-dark px-2" href="https://www.facebook.com/sharer/sharer.php?u=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>">
+                        <a class="text-dark px-2" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo rawurlencode($productCanonical); ?>">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a class="text-dark px-2" href="https://twitter.com/intent/tweet?url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&text=">
+                        <a class="text-dark px-2" href="https://twitter.com/intent/tweet?url=<?php echo rawurlencode($productCanonical); ?>&text=<?php echo rawurlencode($productName); ?>">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a class="text-dark px-2" href="https://www.linkedin.com/shareArticle?mini=true&url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>">
+                        <a class="text-dark px-2" href="https://www.linkedin.com/shareArticle?mini=true&url=<?php echo rawurlencode($productCanonical); ?>">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
-                        <a class="text-dark px-2" href="https://pinterest.com/pin/create/button/?url=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&media=&description=">
+                        <a class="text-dark px-2" href="https://pinterest.com/pin/create/button/?url=<?php echo rawurlencode($productCanonical); ?>&media=<?php echo rawurlencode($productImageUrl); ?>&description=<?php echo rawurlencode($productName); ?>">
                             <i class="fab fa-pinterest"></i>
                         </a>
-                        <a class="text-dark px-2" href="https://wa.me/?text=https://bolakaz.unibooks.com.ng/detail.php?product=<?php echo $slug; ?>&media=&description=">
-                            <i class="fab fa-pinterest"></i>
+                        <a class="text-dark px-2" href="https://wa.me/?text=<?php echo rawurlencode($productName . ' ' . $productCanonical); ?>">
+                            <i class="fab fa-whatsapp"></i>
                         </a>
                     </div>
                 </div>

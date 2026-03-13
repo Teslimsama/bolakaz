@@ -1,6 +1,7 @@
 <?php include 'session.php'; ?>
 <?php
 require_once __DIR__ . '/lib/catalog_v2.php';
+require_once __DIR__ . '/lib/seo.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postedKeyword = trim((string)($_POST['keyword'] ?? $_POST['search'] ?? ''));
     header('location: search?q=' . urlencode($postedKeyword));
@@ -8,6 +9,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $keyword = trim((string)($_GET['q'] ?? ''));
+$searchCanonical = ($keyword !== '')
+    ? app_absolute_url('search', ['q' => $keyword])
+    : app_absolute_url('search');
+$seoMeta = [
+    'title' => ($keyword !== '')
+        ? ('Search results for ' . $keyword . ' | Bolakaz')
+        : 'Search Products | Bolakaz',
+    'description' => ($keyword !== '')
+        ? ('Internal search results for ' . $keyword . ' on Bolakaz.')
+        : 'Search the Bolakaz product catalog.',
+    'canonical' => $searchCanonical,
+    'url' => $searchCanonical,
+    'robots' => 'noindex,follow',
+    'jsonLd' => [seo_store_schema()],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -97,7 +113,7 @@ $keyword = trim((string)($_GET['q'] ?? ''));
                                                         </div>
                                                     </div>
                                                     <div class='card-footer d-flex justify-content-center bg-light border'>
-                                                        <a href='detail.php?product=" . e((string)$row['slug']) . "' class='btn btn-sm text-dark p-0'><i class='fas fa-eye text-primary mr-1'></i>View Detail</a>
+                                                        <a href='detail?product=" . e((string)$row['slug']) . "' class='btn btn-sm text-dark p-0'><i class='fas fa-eye text-primary mr-1'></i>View Detail</a>
                                                     </div>
                                                 </div>
                                             </div>

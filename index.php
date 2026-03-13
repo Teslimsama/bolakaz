@@ -110,7 +110,7 @@ $pdo->close();
     <div class='col-lg-3 col-md-4 col-sm-6 pb-1'>
         <div class='cat-item d-flex flex-column border mb-4' style='padding: 30px;'>
             <p class='text-right'>" . e(ucwords((string)$row['name'])) . "</p>
-            <a href='shop.php?category=" . $row['cat_slug'] . "' class='cat-img position-relative overflow-hidden mb-3'>
+            <a href='shop?category=" . $row['cat_slug'] . "' class='cat-img position-relative overflow-hidden mb-3'>
                 <div class='sf-media sf-media-category'>
                   <img class='img-fluid category-image' src='" . e(app_image_url($row['cat_image'] ?? '')) . "' alt='" . e(ucwords((string)$row['name'])) . "' onerror=\"this.onerror=null;this.src='" . e(app_placeholder_image()) . "';\">
                 </div>
@@ -184,7 +184,7 @@ $pdo->close();
                         <div class="position-relative" style="z-index: 1;">
                             <h5 class="text-uppercase text-primary mb-3"><?php echo e($offer['discount']); ?>% off the all order</h5>
                             <h1 class="mb-4 font-weight-semi-bold"><?php echo e(ucwords((string)$offer['collection'])); ?></h1>
-                            <a href="shop.php?category=<?php echo e($offer['link']); ?>" class="btn btn-outline-primary py-md-2 px-md-3">Shop Now</a>
+                            <a href="shop?category=<?php echo e($offer['link']); ?>" class="btn btn-outline-primary py-md-2 px-md-3">Shop Now</a>
                         </div>
                     </div>
                 </div>
@@ -223,7 +223,7 @@ $pdo->close();
                             </div>
                         </div>
                         <div class="card-footer d-flex justify-content-center bg-light border">
-                            <a href="detail.php?product=' . e($row['slug']) . '" class="btn btn-sm text-dark p-0">
+                            <a href="detail?product=' . e($row['slug']) . '" class="btn btn-sm text-dark p-0">
                                 <i class="fas fa-eye text-primary mr-1"></i>View Detail
                             </a>
                         </div>
@@ -286,7 +286,7 @@ $pdo->close();
                             </div>
                         </div>
                         <div class="card-footer d-flex justify-content-center bg-light border">
-                            <a href="detail.php?product=' . e($row['slug']) . '" class="btn btn-sm text-dark p-0">
+                            <a href="detail?product=' . e($row['slug']) . '" class="btn btn-sm text-dark p-0">
                                 <i class="fas fa-eye text-primary mr-1"></i>View Detail
                             </a>
                         </div>

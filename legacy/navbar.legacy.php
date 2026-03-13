@@ -16,7 +16,7 @@
                                 $stmt->execute();
                                 foreach ($stmt as $row) {
                                     echo "
-    <a class='nav-item nav-link' href='shop.php?category=" . urlencode($row['cat_slug']) . "'>" .
+    <a class='nav-item nav-link' href='shop?category=" . urlencode($row['cat_slug']) . "'>" .
                                         htmlspecialchars(ucwords($row['name'])) .
                                         "</a>
 ";

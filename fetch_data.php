@@ -175,7 +175,7 @@ if (!empty($result)) {
                     </div>
                 </div>
                 <div class="card-footer d-flex justify-content-center bg-light border">
-                    <a href="detail.php?product=' . $slug . '" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
+                    <a href="detail?product=' . $slug . '" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
                 </div>
             </div>
         </div>';

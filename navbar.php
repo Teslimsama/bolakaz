@@ -22,7 +22,7 @@ if (!storefront_use_v2()) {
               $stmt = $conn->prepare("SELECT name, cat_slug FROM category WHERE status = :status ORDER BY name ASC");
               $stmt->execute(['status' => 'active']);
               foreach ($stmt as $row) {
-                echo "<a class='nav-link' href='shop.php?category=" . urlencode((string)$row['cat_slug']) . "'>" . htmlspecialchars(ucwords((string)$row['name']), ENT_QUOTES, 'UTF-8') . "</a>";
+                echo "<a class='nav-link' href='shop?category=" . urlencode((string)$row['cat_slug']) . "'>" . htmlspecialchars(ucwords((string)$row['name']), ENT_QUOTES, 'UTF-8') . "</a>";
               }
             } catch (PDOException $e) {
               echo "<span class='nav-link'>Unable to load categories</span>";

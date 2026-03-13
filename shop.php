@@ -1,6 +1,56 @@
 <?php
 include 'session.php';
 require_once __DIR__ . '/lib/catalog_v2.php';
+require_once __DIR__ . '/lib/seo.php';
+
+$categorySlug = trim((string)($_GET['category'] ?? ''));
+$categoryName = '';
+if ($categorySlug !== '') {
+    try {
+        $categoryStmt = $conn->prepare("SELECT name FROM category WHERE cat_slug = :slug LIMIT 1");
+        $categoryStmt->execute(['slug' => $categorySlug]);
+        $categoryName = trim((string)$categoryStmt->fetchColumn());
+    } catch (PDOException $e) {
+        $categoryName = '';
+    }
+}
+
+$shopCanonical = ($categorySlug !== '')
+    ? app_absolute_url('shop', ['category' => $categorySlug])
+    : app_absolute_url('shop');
+$shopTitle = ($categoryName !== '')
+    ? ($categoryName . ' | Shop Bolakaz')
+    : 'Shop Fashion, Clothing and Accessories | Bolakaz';
+$shopDescription = ($categoryName !== '')
+    ? ('Browse ' . $categoryName . ' at Bolakaz, including curated fashion essentials and accessories available for delivery in Nigeria.')
+    : 'Browse premium fashion, clothing, shoes, bags, and accessories at Bolakaz.';
+$shopJsonLd = [
+    seo_store_schema(),
+    seo_breadcrumb_schema(array_filter([
+        ['name' => 'Home', 'url' => app_home_url()],
+        ['name' => 'Shop', 'url' => app_absolute_url('shop')],
+        ($categoryName !== '' ? ['name' => $categoryName, 'url' => $shopCanonical] : null),
+    ])),
+];
+if ($categoryName !== '') {
+    $shopJsonLd[] = [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => $categoryName . ' | ' . seo_site_name(),
+        'url' => $shopCanonical,
+        'description' => $shopDescription,
+    ];
+}
+$seoMeta = [
+    'title' => $shopTitle,
+    'description' => $shopDescription,
+    'keywords' => ($categoryName !== '')
+        ? ($categoryName . ', fashion, clothing, accessories, Abuja, Nigeria, Bolakaz')
+        : 'fashion, clothing, accessories, shoes, bags, Abuja, Nigeria, Bolakaz',
+    'canonical' => $shopCanonical,
+    'url' => $shopCanonical,
+    'jsonLd' => $shopJsonLd,
+];
 
 ?>
 <!DOCTYPE html>

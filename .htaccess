@@ -1,3 +1,6 @@
 RewriteEngine On
+RewriteRule ^robots\.txt$ robots.php [NC,L]
+RewriteRule ^sitemap\.xml$ sitemap.php [NC,L]
+RewriteRule ^robot\.txt$ robots.txt [NC,R=301,L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^([^\.]+)$ $1.php [NC,L]
