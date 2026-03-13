@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 	if (!isset($_SESSION['error'])) {
 		$_SESSION['error'] = 'Fill up signup form first';
 	}
-	header('location: ../signup.php');
+	header('location: ../signup');
 	exit();
 }
 
@@ -22,13 +22,13 @@ $repassword = (string)($_POST['repassword'] ?? '');
 
 if ($firstname === '' || $lastname === '' || $email === '' || $phone === '' || $gender === '' || $password === '' || $repassword === '') {
 	$_SESSION['error'] = 'Please complete all signup fields.';
-	header('location: ../signup.php');
+	header('location: ../signup');
 	exit();
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	$_SESSION['error'] = 'Enter a valid email address.';
-	header('location: ../signup.php');
+	header('location: ../signup');
 	exit();
 }
 
@@ -48,7 +48,7 @@ if (!isset($_SESSION['captcha'])) {
 			$_SESSION['captcha'] = time() + (10 * 60);
 		} else {
 			$_SESSION['error'] = 'Please answer recaptcha correctly';
-			header('location: ../signup.php');
+			header('location: ../signup');
 			exit();
 		}
 	}
@@ -56,7 +56,7 @@ if (!isset($_SESSION['captcha'])) {
 
 if ($password !== $repassword) {
 	$_SESSION['error'] = 'Passwords did not match';
-	header('location: ../signup.php');
+	header('location: ../signup');
 	exit();
 }
 
@@ -68,7 +68,7 @@ try {
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 	if ((int)($row['numrows'] ?? 0) > 0) {
 		$_SESSION['error'] = 'Email already taken';
-		header('location: ../signup.php');
+		header('location: ../signup');
 		exit();
 	}
 
@@ -95,7 +95,7 @@ try {
 	]);
 	$userid = $conn->lastInsertId();
 
-	$activateUrl = app_base_url() . '/activate.php?code=' . urlencode($code) . '&user=' . urlencode((string)$userid);
+	$activateUrl = app_base_url() . '/activate?code=' . urlencode($code) . '&user=' . urlencode((string)$userid);
 	$subject = 'Activate your Bolakaz account';
 	$contentHtml = '
 		<p>Welcome to Bolakaz, ' . e($firstname) . '.</p>
@@ -130,5 +130,5 @@ try {
 	$pdo->close();
 }
 
-header('location: ../signup.php');
+header('location: ../signup');
 exit();

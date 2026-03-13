@@ -86,6 +86,8 @@ i.text-primary,
   background: rgba(255, 252, 247, 0.9);
   backdrop-filter: blur(9px);
   border-bottom: 1px solid rgba(204, 193, 179, 0.55);
+  position: relative;
+  z-index: 30;
 }
 
 .sf-header {
@@ -144,6 +146,8 @@ i.text-primary,
 .sf-nav-wrap {
   border-bottom: 1px solid rgba(204, 193, 179, 0.45);
   background: rgba(255, 253, 250, 0.92);
+  position: relative;
+  z-index: 20;
 }
 
 .sf-nav-container {
@@ -362,10 +366,17 @@ i.text-primary,
   gap: 0.35rem;
 }
 
+.sf-cart-dropdown {
+  position: relative;
+  z-index: 1400;
+}
+
 .sf-cart-menu {
   width: min(420px, 92vw);
   border-radius: 16px;
   overflow: hidden;
+  z-index: 1401;
+  margin-top: 0.55rem;
 }
 
 .sf-cart-head {
@@ -531,6 +542,57 @@ i.text-primary,
     padding: 0.9rem 1rem;
   }
 
+  .sf-nav-container {
+    padding: 0 1rem;
+  }
+
+  .sf-nav {
+    min-height: 58px;
+  }
+
+  .sf-nav .navbar-toggler {
+    display: none;
+  }
+
+  .sf-nav .navbar-collapse {
+    display: block !important;
+    width: 100%;
+  }
+
+  .sf-nav .navbar-nav {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.6rem 0 0.75rem;
+    scrollbar-width: none;
+  }
+
+  .sf-nav .navbar-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sf-nav .nav-link {
+    flex: 0 0 auto;
+    border: 1px solid var(--sf-border);
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    background: rgba(255, 255, 255, 0.75);
+    white-space: nowrap;
+  }
+
+  .sf-nav .nav-link.is-active::after,
+  .sf-nav .nav-link:hover::after {
+    display: none;
+  }
+
+  .sf-nav .nav-link.is-active {
+    background: linear-gradient(135deg, var(--sf-accent), #13857b);
+    border-color: transparent;
+    color: #fff;
+  }
+
   .sf-cookie {
     right: 0.75rem;
     bottom: 0.75rem;
@@ -539,6 +601,11 @@ i.text-primary,
 }
 
 @media (max-width: 768px) {
+  .sf-announcement {
+    position: relative;
+    z-index: 10;
+  }
+
   .sf-header-actions-wrap {
     margin-top: 0.35rem;
     text-align: center !important;
@@ -587,6 +654,8 @@ i.text-primary,
 
   .sf-cart-menu {
     width: min(95vw, 420px);
+    right: -0.35rem;
+    left: auto;
   }
 
   .sf-mini-cart-item {

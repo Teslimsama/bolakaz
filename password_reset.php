@@ -5,7 +5,7 @@ $userId = (int)($_GET['user'] ?? 0);
 
 if ($token === '' || $userId <= 0) {
     $_SESSION['error'] = 'Invalid or expired reset link.';
-    header('location: password_forgot.php');
+    header('location: password_forgot');
     exit();
 }
 
@@ -16,7 +16,7 @@ try {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$row || !app_validate_reset_code((string)($row['reset_code'] ?? ''), $token)) {
         $_SESSION['error'] = 'Invalid or expired reset link.';
-        header('location: password_forgot.php');
+        header('location: password_forgot');
         exit();
     }
 } finally {
@@ -62,7 +62,7 @@ try {
           }
           ?>
 
-          <form class="row g-3" action="password_new.php?code=<?php echo urlencode($token); ?>&user=<?php echo $userId; ?>" method="POST">
+          <form class="row g-3" action="password_new?code=<?php echo urlencode($token); ?>&user=<?php echo $userId; ?>" method="POST">
             <div class="col-12">
               <label class="form-label" for="new-password">New password</label>
               <input id="new-password" type="password" class="form-control" name="password" minlength="8" required>

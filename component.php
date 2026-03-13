@@ -7,7 +7,7 @@ function cartElement($productimg, $productname, $productprice, $productid)
 {
     $element = "
     <tr>
-        <form action='cart.php?action=remove&id=$productid' method='post' class='cart-items'>
+        <form action='cart?action=remove&id=$productid' method='post' class='cart-items'>
                             <td class='align-middle'><img src='$productimg' alt='' style='width: 50px;'>$productname</td>
                             <td class='align-middle'>$$productprice</td>
                             <td class='align-middle'>
@@ -39,7 +39,7 @@ function trendElement($productname, $productprice, $productimg,  $productid)
     $element = "
     <div class='col-lg-3 col-md-6 col-sm-12 pb-1'>
         <div class='card product-item border-0 mb-4'>
-    <form action='index.php' method='post'>
+    <form action='index' method='post'>
             <div class='card-header product-img position-relative overflow-hidden bg-transparent border p-0'>
                 <img class='img-fluid w-100' src='$productimg' alt=''>
             </div>

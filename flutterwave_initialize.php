@@ -48,7 +48,7 @@ try {
         'tx_ref' => $txRef,
         'amount' => $amountMajor,
         'currency' => 'NGN',
-        'redirect_url' => app_payment_base_url() . '/sales.php',
+        'redirect_url' => app_payment_base_url() . '/sales',
         'payment_options' => 'card,mobilemoney,ussd',
         'customer' => [
             'email' => $email,

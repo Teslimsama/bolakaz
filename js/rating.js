@@ -38,7 +38,7 @@ $(function () {
     $.ajax({
       type: "POST",
       dataType: "json",
-      url: "action.php",
+      url: "action",
       data: $form.serialize(),
     })
       .done(function (response) {

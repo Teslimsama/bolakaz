@@ -19,7 +19,7 @@ $(document).ready(function () {
 		}
 
 		$.ajax({
-			url: "fetch_data.php",
+			url: "fetch_data",
 			method: "POST",
 			data: {
 				action: "filter_data",

@@ -64,7 +64,7 @@ $documentHtml = app_statement_render_document_html($statement);
   <div class="statement-page">
     <div class="statement-toolbar">
       <a class="secondary" href="offline_sales.php">Back to Offline Sales</a>
-      <a href="offline_statement.php?id=<?php echo (int)$statement['sale_id']; ?>&amp;format=pdf" target="_blank" rel="noopener">Download PDF</a>
+      <a href="offline_statement?id=<?php echo (int)$statement['sale_id']; ?>&amp;format=pdf" target="_blank" rel="noopener">Download PDF</a>
       <button type="button" class="secondary" onclick="window.print()">Print</button>
       <?php if (!empty($statement['public_url'])): ?>
       <a class="secondary" href="<?php echo app_statement_escape($statement['public_url']); ?>" target="_blank" rel="noopener">Open Public View</a>

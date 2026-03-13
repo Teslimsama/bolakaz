@@ -160,7 +160,7 @@ if (!empty($result)) {
         $discount = $price * 1.15;
 
         $output .= '
-        <div class="col-lg-4 col-md-6 col-sm-12 pb-1">
+        <div class="col-lg-4 col-md-6 col-6 pb-1">
             <div class="card product-item border-0 mb-4">
                 <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
                     <div class="sf-media sf-media-product">

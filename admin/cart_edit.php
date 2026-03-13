@@ -20,5 +20,5 @@
 		
 		$pdo->close();
 
-		header('location: cart.php?user='.$userid);
+		header('location: cart?user='.$userid);
 	}

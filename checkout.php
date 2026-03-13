@@ -299,7 +299,7 @@ $checkoutUser = [
                 var shippingId = $(this).val();
                 $.ajax({
                     type: 'POST',
-                    url: 'shipping.php',
+                    url: 'shipping',
                     data: {
                         shipping_id: shippingId
                     },

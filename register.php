@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 				try {
-					$activateUrl = app_base_url() . '/activate.php?code=' . urlencode($code) . '&user=' . urlencode((string)$userid);
+					$activateUrl = app_base_url() . '/activate?code=' . urlencode($code) . '&user=' . urlencode((string)$userid);
 					$subject = 'Activate your Bolakaz account';
 					$contentHtml = '
 						<p>Welcome to Bolakaz, ' . e($firstname) . '.</p>

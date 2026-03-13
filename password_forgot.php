@@ -38,7 +38,7 @@
           }
           ?>
 
-          <form class="row g-3" action="reset.php" method="POST">
+          <form class="row g-3" action="reset" method="POST">
             <div class="col-12">
               <label class="form-label" for="reset-email">Email</label>
               <input id="reset-email" type="email" class="form-control" name="email" required>

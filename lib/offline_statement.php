@@ -129,7 +129,7 @@ if (!function_exists('app_statement_public_url')) {
             return '';
         }
 
-        return app_statement_base_url() . '/offline_statement.php?token=' . rawurlencode($token);
+        return app_statement_base_url() . '/offline_statement?token=' . rawurlencode($token);
     }
 }
 

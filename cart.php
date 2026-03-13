@@ -79,7 +79,7 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
                     unset($_SESSION['success']);
                 }
                 ?>
-                <form class="mb-5" method="POST" action="coupon.php">
+                <form class="mb-5" method="POST" action="coupon">
                     <div class="input-group">
                         <input type="text" class="form-control p-4" name="coupon_code" placeholder="Coupon Code" required>
                         <!-- <input type="hidden" class="form-control p-4" name="user_id" value="<?php echo $user['id'] ?>" placeholder="Coupon Code" required> -->
@@ -88,7 +88,7 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
                         </div>
                     </div>
                 </form>
-                <form action="checkout.php" method="post">
+                <form action="checkout" method="post">
                     <div id="checkout" class="card border-secondary mb-5">
                         <div class="card-header bg-secondary border-0">
                             <h4 class="font-weight-semi-bold m-0">Cart Summary</h4>
@@ -169,8 +169,8 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
                             </div>
                             <?php
                             echo ($userId > 0) ?
-                                '<a href="checkout.php" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>' :
-                                '<a href="signin.php" class="btn btn-primary px-3">Proceed To Checkout</a>';
+                                '<a href="checkout" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</a>' :
+                                '<a href="signin" class="btn btn-primary px-3">Proceed To Checkout</a>';
                             ?>
                         </div>
                     </div>
@@ -202,7 +202,7 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
                 var id = $(this).data('id');
                 $.ajax({
                     type: 'POST',
-                    url: 'cart_delete.php',
+                    url: 'cart_delete',
                     data: {
                         id: id
                     },
@@ -227,7 +227,7 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
                 $('#qty_' + id).val(qty);
                 $.ajax({
                     type: 'POST',
-                    url: 'cart_update.php',
+                    url: 'cart_update',
                     data: {
                         id: id,
                         qty: qty,
@@ -252,7 +252,7 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
                 $('#qty_' + id).val(qty);
                 $.ajax({
                     type: 'POST',
-                    url: 'cart_update.php',
+                    url: 'cart_update',
                     data: {
                         id: id,
                         qty: qty,
@@ -278,7 +278,7 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
         function getDetails() {
             $.ajax({
                 type: 'POST',
-                url: 'cart_details.php',
+                url: 'cart_details',
                 dataType: 'json',
                 success: function(response) {
                     $('#cart').html(response);
@@ -291,7 +291,7 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
         function getTotal() {
             $.ajax({
                 type: 'POST',
-                url: 'cart_total.php',
+                url: 'cart_total',
                 dataType: 'json',
                 success: function(response) {
                     total = response;

@@ -102,7 +102,7 @@
                         $dueDateFormatted = !empty($row['due_date']) ? date('M d, Y', strtotime($row['due_date'])) : '';
                         $publicUrl = '';
                         if (!empty($row['statement_share_token'])) {
-                          $publicUrl = app_statement_base_url() . '/offline_statement.php?token=' . rawurlencode((string)$row['statement_share_token']);
+                          $publicUrl = app_statement_base_url() . '/offline_statement?token=' . rawurlencode((string)$row['statement_share_token']);
                         }
 
                         $whatsAppUrl = app_statement_whatsapp_url([
@@ -118,7 +118,7 @@
                         $tools = "
                               <button class='btn btn-info btn-sm view_details btn-flat' data-id='".$row['salesid']."'><i class='fa fa-search'></i> Details</button>
                               <button class='btn btn-success btn-sm manage_payments btn-flat' data-id='".$row['salesid']."'><i class='fa fa-money'></i> Payments</button>
-                              <a class='btn btn-default btn-sm btn-flat' href='offline_statement.php?id=".(int)$row['salesid']."' target='_blank' rel='noopener'><i class='fa fa-file-text-o'></i> Statement</a>
+                              <a class='btn btn-default btn-sm btn-flat' href='offline_statement?id=".(int)$row['salesid']."' target='_blank' rel='noopener'><i class='fa fa-file-text-o'></i> Statement</a>
                         ";
                         if ($whatsAppUrl !== '') {
                           $tools .= "

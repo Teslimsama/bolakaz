@@ -3,14 +3,14 @@ include 'session.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST' || !isset($_POST['coupon_code'])) {
     $_SESSION['error'] = 'Invalid request';
-    header('Location: cart.php');
+    header('Location: cart');
     exit;
 }
 
 $couponCode = trim((string)$_POST['coupon_code']);
 if ($couponCode === '') {
     $_SESSION['error'] = 'Please enter a coupon code';
-    header('Location: cart.php');
+    header('Location: cart');
     exit;
 }
 
@@ -22,13 +22,13 @@ try {
 
     if (!$coupon || strtolower((string)$coupon['status']) !== 'active') {
         $_SESSION['error'] = 'Invalid or inactive coupon code. Please try again.';
-        header('Location: cart.php');
+        header('Location: cart');
         exit;
     }
 
     if (!empty($coupon['expire_date']) && strtotime((string)$coupon['expire_date']) < strtotime(date('Y-m-d'))) {
         $_SESSION['error'] = 'This coupon has expired. Please try another one.';
-        header('Location: cart.php');
+        header('Location: cart');
         exit;
     }
 
@@ -65,7 +65,7 @@ try {
 
     if ($subtotal <= 0) {
         $_SESSION['error'] = 'Your cart is empty.';
-        header('Location: cart.php');
+        header('Location: cart');
         exit;
     }
 
@@ -92,11 +92,11 @@ try {
     ];
 
     $_SESSION['success'] = 'Coupon successfully applied';
-    header('Location: cart.php');
+    header('Location: cart');
     exit;
 } catch (Throwable $e) {
     $_SESSION['error'] = 'Unable to apply coupon right now.';
-    header('Location: cart.php');
+    header('Location: cart');
     exit;
 } finally {
     $pdo->close();

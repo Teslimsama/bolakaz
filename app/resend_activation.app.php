@@ -26,7 +26,7 @@ try {
         $update = $conn->prepare("UPDATE users SET activate_code = :code WHERE id = :id");
         $update->execute(['code' => $code, 'id' => (int)$user['id']]);
 
-        $activateUrl = app_base_url() . '/activate.php?code=' . urlencode($code) . '&user=' . urlencode((string)$user['id']);
+        $activateUrl = app_base_url() . '/activate?code=' . urlencode($code) . '&user=' . urlencode((string)$user['id']);
         $subject = 'Activate your Bolakaz account';
         $contentHtml = '
             <p>Hi ' . e((string)($user['firstname'] ?? 'there')) . ',</p>

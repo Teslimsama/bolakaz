@@ -210,7 +210,7 @@ $pdo->close();
 
                 $discount = $row['price'] * 15;
                 echo '
-                <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                <div class="col-lg-3 col-md-6 col-6 pb-1">
                     <div class="card product-item border-0 mb-4">
                         <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
                             <div class="sf-media sf-media-product"><img class="img-fluid w-100" src="' . e(app_image_url($row['photo'] ?? '')) . '" alt="' . e($row['name']) . '" onerror="this.onerror=null;this.src=\'' . e(app_placeholder_image()) . '\';"></div>
@@ -273,7 +273,7 @@ $pdo->close();
             foreach ($result as $row) {
                 $discount = $row['price'] * 15;
                 echo '
-                <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                <div class="col-lg-3 col-md-6 col-6 pb-1">
                     <div class="card product-item border-0 mb-4">
                         <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
                             <div class="sf-media sf-media-product"><img class="img-fluid w-100" src="' . e(app_image_url($row['photo'] ?? '')) . '" alt="' . e($row['name']) . '" onerror="this.onerror=null;this.src=\'' . e(app_placeholder_image()) . '\';"></div>

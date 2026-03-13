@@ -105,7 +105,6 @@ if (isset($_SESSION['user']) && isset($user['id'])) {
             }
 
             $subtotal = $linePrice * (int)$row['quantity'];
-            $rowId = 's' . (string)$sessionKey;
             $output .= "
                 <tr>
                     <td class='align-middle'><img src='" . e($image) . "' alt='" . e($row['name']) . "' style='width: 50px; height: 50px; object-fit: cover; border-radius: 6px;' onerror=\"this.onerror=null;this.src='" . e(app_placeholder_image()) . "';\">" . e($row['name']) . $variantLabel . "</td>
@@ -135,7 +134,7 @@ if (isset($_SESSION['user']) && isset($user['id'])) {
     }
 } else {
     if (!empty($_SESSION['cart']) && is_array($_SESSION['cart'])) {
-        foreach ($_SESSION['cart'] as $row) {
+        foreach ($_SESSION['cart'] as $sessionKey => $row) {
             $productId = (int)($row['productid'] ?? 0);
             if ($productId <= 0) {
                 continue;
@@ -159,6 +158,7 @@ if (isset($_SESSION['user']) && isset($user['id'])) {
 
             $image = app_image_url($product['photo'] ?? '');
             $subtotal = $linePrice * max(1, (int)($row['quantity'] ?? 1));
+            $rowId = 's' . (string)$sessionKey;
             $output .= "
                 <tr>
                     <td class='align-middle'><img src='" . e($image) . "' alt='" . e($product['prodname']) . "' style='width: 50px; height: 50px; object-fit: cover; border-radius: 6px;' onerror=\"this.onerror=null;this.src='" . e(app_placeholder_image()) . "';\">" . e($product['prodname']) . "</td>

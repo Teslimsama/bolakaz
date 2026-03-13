@@ -9,7 +9,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
 	if ($id <= 0 || $type === '' || $price < 0 || !in_array($status, ['active', 'inactive'], true)) {
 		$_SESSION['error'] = 'Please provide valid shipping details';
-		header('location: shipping.php');
+		header('location: shipping');
 		exit;
 	}
 
@@ -28,4 +28,4 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 	$_SESSION['error'] = 'Invalid request method';
 }
 
-header('location: shipping.php');
+header('location: shipping');

@@ -6,7 +6,7 @@
 	app_require_csrf_for_mutations();
 
 	if(!isset($_SESSION['admin']) || trim($_SESSION['admin']) == ''){
-		header('location: ../index.php');
+		header('location: ../index');
 		exit();
 	}
 

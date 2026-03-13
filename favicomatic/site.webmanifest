@@ -3,7 +3,7 @@
   "name": "Bolakaz Enterprises",
   "short_name": "Bolakaz",
   "description": "Premium fashion essentials and accessories from Bolakaz.",
-  "start_url": "../index.php",
+  "start_url": "../index",
   "scope": "../",
   "display": "standalone",
   "orientation": "portrait",

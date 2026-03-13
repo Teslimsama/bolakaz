@@ -1,7 +1,7 @@
 <?php include 'session.php'; ?>
 <?php
 if (isset($_SESSION['user'])) {
-    header('location: cart.php');
+    header('location: cart');
     exit;
 }
 

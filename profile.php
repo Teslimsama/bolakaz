@@ -2,7 +2,7 @@
 <?php require_once __DIR__ . '/lib/offline_statement.php'; ?>
 <?php
 if (!isset($_SESSION['user'])) {
-    header('location: index.php');
+    header('location: index');
 }
 ?>
 <!DOCTYPE html>
@@ -99,7 +99,7 @@ if (!isset($_SESSION['user'])) {
 
                                 $actions = "<button class='btn btn-sm btn-flat btn-primary transact' data-id='" . (int)$row['id'] . "'><i class='fa fa-search'></i> View</button>";
                                 if ($isOffline) {
-                                    $actions .= " <a class='btn btn-sm btn-flat btn-default' href='offline_statement.php?id=" . (int)$row['id'] . "' target='_blank' rel='noopener'><i class='fa fa-file-text-o'></i> Statement</a>";
+                                    $actions .= " <a class='btn btn-sm btn-flat btn-default' href='offline_statement?id=" . (int)$row['id'] . "' target='_blank' rel='noopener'><i class='fa fa-file-text-o'></i> Statement</a>";
                                 }
 
                                 echo "
@@ -141,7 +141,7 @@ if (!isset($_SESSION['user'])) {
                 var id = $(this).data('id');
                 $.ajax({
                     type: 'POST',
-                    url: 'transaction.php',
+                    url: 'transaction',
                     data: {
                         id: id
                     },

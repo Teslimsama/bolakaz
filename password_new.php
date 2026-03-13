@@ -3,9 +3,9 @@ include 'session.php';
 
 $token = trim((string)($_GET['code'] ?? ''));
 $userId = (int)($_GET['user'] ?? 0);
-$path = 'password_reset.php?code=' . urlencode($token) . '&user=' . $userId;
+$path = 'password_reset?code=' . urlencode($token) . '&user=' . $userId;
 
-if (!isset($_POST['reset'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     $_SESSION['error'] = 'Set your new password first.';
     header('location: ' . $path);
     exit();
@@ -28,7 +28,7 @@ if ($password !== $repassword) {
 
 if ($token === '' || $userId <= 0) {
     $_SESSION['error'] = 'Invalid or expired reset link.';
-    header('location: password_forgot.php');
+    header('location: password_forgot');
     exit();
 }
 
@@ -41,7 +41,7 @@ try {
 
     if (!$row || !app_validate_reset_code((string)($row['reset_code'] ?? ''), $token)) {
         $_SESSION['error'] = 'Invalid or expired reset link.';
-        header('location: password_forgot.php');
+        header('location: password_forgot');
         exit();
     }
 

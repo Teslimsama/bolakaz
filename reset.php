@@ -2,16 +2,16 @@
 include 'session.php';
 require_once __DIR__ . '/lib/mailer.php';
 
-if (!isset($_POST['reset'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     $_SESSION['error'] = 'Enter your email address to continue.';
-    header('location: password_forgot.php');
+    header('location: password_forgot');
     exit();
 }
 
 $email = trim((string)($_POST['email'] ?? ''));
 if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $_SESSION['error'] = 'Enter a valid email address.';
-    header('location: password_forgot.php');
+    header('location: password_forgot');
     exit();
 }
 
@@ -29,7 +29,7 @@ try {
 
         $token = explode('.', $resetCode, 2)[0];
         $baseUrl = app_base_url();
-        $resetUrl = $baseUrl . '/password_reset.php?code=' . urlencode($token) . '&user=' . urlencode((string)$user['id']);
+        $resetUrl = $baseUrl . '/password_reset?code=' . urlencode($token) . '&user=' . urlencode((string)$user['id']);
 
         $subject = 'Reset your Bolakaz password';
         $contentHtml = '<p>We received a request to reset your password.</p>
@@ -57,5 +57,5 @@ try {
 }
 
 $pdo->close();
-header('location: password_forgot.php');
+header('location: password_forgot');
 exit();

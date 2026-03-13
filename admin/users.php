@@ -107,7 +107,7 @@
                             </td>
                             <td>" . date('M d, Y', strtotime($row['created_on'])) . "</td>
                             <td>
-                              <a href='cart.php?user=" . $row['id'] . "' class='btn btn-info btn-sm btn-flat'><i class='fa fa-search'></i> Cart</a>
+                              <a href='cart?user=" . $row['id'] . "' class='btn btn-info btn-sm btn-flat'><i class='fa fa-search'></i> Cart</a>
                               <button class='btn btn-info btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
                               <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>

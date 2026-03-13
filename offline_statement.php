@@ -36,7 +36,7 @@ try {
         $accessMode = 'owner';
         if (empty($user['id'])) {
             $_SESSION['error'] = 'Please sign in to view this statement.';
-            header('location: signin.php');
+            header('location: signin');
             exit();
         }
 
@@ -132,9 +132,9 @@ $documentHtml = app_statement_render_document_html($statement);
 
     <div class="statement-toolbar">
       <?php if ($accessMode === 'owner'): ?>
-      <a class="secondary" href="profile.php#trans">Back to Profile</a>
+      <a class="secondary" href="profile#trans">Back to Profile</a>
       <?php endif; ?>
-      <a href="<?php echo app_statement_escape($accessMode === 'token' ? ('offline_statement.php?token=' . rawurlencode($token) . '&format=pdf') : ('offline_statement.php?id=' . (int)$statement['sale_id'] . '&format=pdf')); ?>" target="_blank" rel="noopener">Download PDF</a>
+      <a href="<?php echo app_statement_escape($accessMode === 'token' ? ('offline_statement?token=' . rawurlencode($token) . '&format=pdf') : ('offline_statement?id=' . (int)$statement['sale_id'] . '&format=pdf')); ?>" target="_blank" rel="noopener">Download PDF</a>
       <button type="button" class="secondary" onclick="window.print()">Print</button>
     </div>
 

@@ -5,7 +5,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 	$id = (int)($_POST['id'] ?? 0);
 	if ($id <= 0) {
 		$_SESSION['error'] = 'Invalid shipping method selected';
-		header('location: shipping.php');
+		header('location: shipping');
 		exit;
 	}
 
@@ -35,4 +35,4 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 	$_SESSION['error'] = 'Invalid request method';
 }
 
-header('location: shipping.php');
+header('location: shipping');
