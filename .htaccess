@@ -1,4 +1,15 @@
 RewriteEngine On
+
+# Force the production host onto HTTPS, but leave localhost/dev hosts alone.
+RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:\d+)?$ [NC]
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
+
+# Redirect explicit .php requests to the clean extensionless route.
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php(?:[?\s]|$) [NC]
+RewriteCond %1 !^(robots|sitemap)$ [NC]
+RewriteRule ^ %1 [R=301,L,NE]
+
 RewriteRule ^robots\.txt$ robots.php [NC,L]
 RewriteRule ^sitemap\.xml$ sitemap.php [NC,L]
 RewriteRule ^robot\.txt$ robots.txt [NC,R=301,L]
