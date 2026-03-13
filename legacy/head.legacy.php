@@ -3,6 +3,9 @@
     <meta name="description" content="Bolakaz Enterprises offers a wide range of men's, women's, and children's clothing, jewelry, accessories, watches, bags, shoes, underwear, and back-to-school items in Abuja, Nigeria.">
     <meta name="keywords" content="clothing, men clothing, women clothing, children clothing, jewelry, accessories, watches, bags, shoes, underwear, back to school items, Abuja, Nigeria">
     <meta name="author" content="Bolakaz Enterprises">
+    <meta name="theme-color" content="#111827">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Bolakaz">
     <title>Bolakaz Enterprises - Quality Clothing and Accessories in Kubwa, Abuja, Nigeria</title>
 
     <!-- Apple Touch Icons -->
@@ -21,6 +24,7 @@
     <link rel="icon" type="image/png" href="favicomatic/favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="favicomatic/favicon-16x16.png" sizes="16x16" />
     <link rel="icon" type="image/png" href="favicomatic/favicon-128.png" sizes="128x128" />
+    <link rel="manifest" href="favicomatic/site.webmanifest" />
 
     <!-- Microsoft Tiles -->
     <meta name="application-name" content="Bolakaz Enterprises" />

@@ -13,6 +13,7 @@ if (!storefront_use_v2()) {
 <script src="magnify/magnify.min.js"></script>
 <script src="js/main.js"></script>
 <script src="js/storefront-v2.js"></script>
+<script src="js/pwa-register.js"></script>
 
 <script>
   (function () {

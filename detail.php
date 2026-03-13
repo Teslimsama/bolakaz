@@ -24,6 +24,7 @@ try {
         $product = [
             'prodid' => ($legacyProductId > 0 ? $legacyProductId : (int)$v2Product['id']),
             'product_v2_id' => (int)$v2Product['id'],
+            'legacy_product_id' => ($legacyProductId > 0 ? $legacyProductId : null),
             'prodname' => (string)$v2Product['name'],
             'catname' => (string)($v2Product['catname'] ?? ''),
             'subcatname' => (string)($v2Product['subcatname'] ?? ''),
@@ -50,6 +51,8 @@ try {
         if ($product) {
             $product['is_v2'] = 0;
             $product['variants'] = [];
+            $product['product_v2_id'] = null;
+            $product['legacy_product_id'] = (int)($product['prodid'] ?? 0);
         }
     }
 } catch (PDOException $e) {
@@ -65,12 +68,15 @@ if (!$product) {
 
 //page view
 $now = date('Y-m-d');
-if ($product['date_view'] == $now) {
-    $stmt = $conn->prepare("UPDATE products SET counter=counter+1 WHERE id=:id");
-    $stmt->execute(['id' => $product['prodid']]);
-} else {
-    $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
-    $stmt->execute(['id' => $product['prodid'], 'now' => $now]);
+$legacyPageViewId = (int)($product['legacy_product_id'] ?? 0);
+if ($legacyPageViewId > 0) {
+    if ($product['date_view'] == $now) {
+        $stmt = $conn->prepare("UPDATE products SET counter=counter+1 WHERE id=:id");
+        $stmt->execute(['id' => $legacyPageViewId]);
+    } else {
+        $stmt = $conn->prepare("UPDATE products SET counter=1, date_view=:now WHERE id=:id");
+        $stmt->execute(['id' => $legacyPageViewId, 'now' => $now]);
+    }
 }
 
 ?>
@@ -106,7 +112,9 @@ if (!empty($product['is_v2'])) {
     $materialOptions = array_values($materialMap);
 }
 
-$itemRating = $rating->getItemRating($product['prodid']);
+$reviewLegacyProductId = (int)($product['legacy_product_id'] ?? 0);
+$reviewProductV2Id = (int)($product['product_v2_id'] ?? 0);
+$itemRating = $rating->getItemRating($reviewLegacyProductId, $reviewProductV2Id > 0 ? $reviewProductV2Id : null);
 $ratingNumber = 0;
 $count = 0;
 $fiveStarRating = 0;
@@ -436,7 +444,7 @@ if ($ratingNumber && $count) {
                             <div class="col-md-6">
                                 <h4 class="mb-4">Reviews for "<?php echo $product['prodname']; ?> "</h4>
                                 <?php
-                                $itemRating = $rating->getItemRating($product['prodid']);
+                                $itemRating = $rating->getItemRating($reviewLegacyProductId, $reviewProductV2Id > 0 ? $reviewProductV2Id : null);
                                 if (empty($itemRating)) {
                                     echo '<p class="text-muted">No reviews yet. Be the first to review this product.</p>';
                                 }
@@ -502,7 +510,10 @@ if ($ratingNumber && $count) {
                                             <textarea id="comment" name="comment" cols="30" rows="5" class="form-control" maxlength="3000" required></textarea>
                                         </div>
 
-                                        <input type="hidden" value="<?php echo (int)$product['prodid']; ?>" id="itemid" name="itemid">
+                                        <input type="hidden" value="<?php echo $reviewLegacyProductId; ?>" id="itemid" name="itemid">
+                                        <?php if ($reviewProductV2Id > 0) { ?>
+                                            <input type="hidden" value="<?php echo $reviewProductV2Id; ?>" name="product_v2_id">
+                                        <?php } ?>
                                         <input type="hidden" class="form-control" id="rating" name="rating" value="1">
                                         <input type="hidden" name="_csrf" value="<?php echo e(app_get_csrf_token()); ?>">
                                         <input type="hidden" name="action" value="saveRating">

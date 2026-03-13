@@ -62,6 +62,7 @@
 </script>
 <!--Magnify -->
 <script src="magnify/magnify.min.js"></script>
+<script src="js/pwa-register.js"></script>
 <script>
 	$(function() {
 		$('.zoom').magnify();

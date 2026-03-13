@@ -11,6 +11,9 @@ if (!storefront_use_v2()) {
 <meta name="description" content="Bolakaz delivers premium fashion essentials and curated accessories across Abuja, Nigeria.">
 <meta name="keywords" content="fashion store, premium clothing, accessories, Abuja, Nigeria, Bolakaz">
 <meta name="author" content="Bolakaz">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bolakaz">
 <title><?php echo storefront_title('Bolakaz | Premium Fashion Storefront'); ?></title>
 
 <link rel="apple-touch-icon" sizes="180x180" href="favicomatic/apple-touch-icon.png">
