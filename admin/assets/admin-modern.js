@@ -184,6 +184,9 @@
       if (table.closest('.admin-table-wrap')) {
         return;
       }
+      if (!table.classList.contains('legacy-mobile-table')) {
+        table.classList.add('mobile-stack-table');
+      }
       var wrap = document.createElement('div');
       wrap.className = 'admin-table-wrap table-responsive';
       if (table.classList.contains('legacy-mobile-table')) {

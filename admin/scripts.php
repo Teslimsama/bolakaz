@@ -262,7 +262,8 @@
           }
 
           var rows = [];
-          if ($.fn.DataTable && $.fn.DataTable.isDataTable('#' + $table.attr('id'))) {
+          var tableId = $table.attr('id');
+          if (tableId && $.fn.DataTable && $.fn.DataTable.isDataTable('#' + tableId)) {
             rows = $table.DataTable().rows({
               search: 'applied',
               order: 'applied'
@@ -374,7 +375,7 @@
         });
 
         // Admin-wide mobile card renderer for primary list tables.
-        var $mobileTables = $('table#example1');
+        var $mobileTables = $('table#example1, table#example2');
         $mobileTables.each(function() {
           var $table = $(this);
           // Products page already has custom containers; generic engine can still use them.
@@ -392,6 +393,10 @@
             renderMobileCards($table, null, 0);
             runAdminModernEnhancement($table.get(0));
           });
+        });
+
+        $('.content table').not('.legacy-mobile-table').each(function() {
+          $(this).addClass('mobile-stack-table');
         });
 
         $(document).on('click', '.admin-mobile-pagination .page-link', function(e) {

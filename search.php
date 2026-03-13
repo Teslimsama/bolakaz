@@ -3,12 +3,12 @@
 require_once __DIR__ . '/lib/catalog_v2.php';
 require_once __DIR__ . '/lib/seo.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $postedKeyword = trim((string)($_POST['keyword'] ?? $_POST['search'] ?? ''));
+    $postedKeyword = trim((string)($_POST['q'] ?? $_POST['keyword'] ?? $_POST['search'] ?? ''));
     header('location: search?q=' . urlencode($postedKeyword));
     exit();
 }
 
-$keyword = trim((string)($_GET['q'] ?? ''));
+$keyword = trim((string)($_GET['q'] ?? $_GET['keyword'] ?? $_GET['search'] ?? ''));
 $searchCanonical = ($keyword !== '')
     ? app_absolute_url('search', ['q' => $keyword])
     : app_absolute_url('search');
