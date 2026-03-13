@@ -6,6 +6,7 @@
   var STYLE_ID = "pwaInstallPromptStyles";
   var DISMISS_KEY = "bolakaz:pwa-install-dismissed-at";
   var INSTALLED_KEY = "bolakaz:pwa-installed";
+  var CACHE_PREFIXES = ["bolakaz-static-", "bolakaz-pages-"];
   var DISMISS_TTL = 7 * 24 * 60 * 60 * 1000;
   var deferredPrompt = null;
 
@@ -46,6 +47,28 @@
     }
 
     window.localStorage.removeItem(key);
+  }
+
+  function clearLegacyPwaCaches() {
+    if (!("caches" in window)) {
+      return Promise.resolve();
+    }
+
+    return window.caches.keys().then(function (keys) {
+      return Promise.all(
+        keys.map(function (key) {
+          var shouldDelete = CACHE_PREFIXES.some(function (prefix) {
+            return key.indexOf(prefix) === 0;
+          });
+
+          if (!shouldDelete) {
+            return Promise.resolve(false);
+          }
+
+          return window.caches.delete(key);
+        }),
+      );
+    });
   }
 
   function isStandalone() {
@@ -280,11 +303,18 @@
     }
 
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("sw.js").catch(function (error) {
-        if (window.console && typeof window.console.warn === "function") {
-          window.console.warn("PWA registration failed", error);
-        }
-      });
+      clearLegacyPwaCaches()
+        .catch(function () {
+          return Promise.resolve();
+        })
+        .then(function () {
+          return navigator.serviceWorker.register("sw.js");
+        })
+        .catch(function (error) {
+          if (window.console && typeof window.console.warn === "function") {
+            window.console.warn("PWA registration failed", error);
+          }
+        });
     });
   }
 

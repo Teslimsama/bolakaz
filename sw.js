@@ -1,4 +1,4 @@
-const VERSION = "20260313-1";
+const VERSION = "20260313-2";
 const STATIC_CACHE = "bolakaz-static-" + VERSION;
 const PAGE_CACHE = "bolakaz-pages-" + VERSION;
 const OFFLINE_URL = "./offline.html";
@@ -87,6 +87,17 @@ function isBypassedPath(pathname) {
   }
 
   return [
+    "/signin",
+    "/signup",
+    "/logout",
+    "/profile",
+    "/checkout",
+    "/cart",
+    "/password_forgot",
+    "/password_reset",
+    "/password_new",
+    "/reset",
+    "/activate",
     "/action.php",
     "/cart_add.php",
     "/cart_delete.php",
@@ -104,8 +115,10 @@ function isBypassedPath(pathname) {
 async function handleNavigationRequest(request) {
   try {
     const response = await fetch(request);
-    const cache = await caches.open(PAGE_CACHE);
-    cache.put(request, response.clone());
+    if (response && response.ok && !response.redirected) {
+      const cache = await caches.open(PAGE_CACHE);
+      cache.put(request, response.clone());
+    }
     return response;
   } catch (error) {
     const cached = await caches.match(request);
