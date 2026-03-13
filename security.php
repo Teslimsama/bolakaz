@@ -1,12 +1,35 @@
 <?php
 
+function app_request_is_secure(): bool
+{
+    if (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off') {
+        return true;
+    }
+
+    $forwardedProto = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+    if ($forwardedProto === 'https') {
+        return true;
+    }
+
+    $frontEndHttps = strtolower((string) ($_SERVER['HTTP_FRONT_END_HTTPS'] ?? ''));
+    if ($frontEndHttps === 'on') {
+        return true;
+    }
+
+    if (!empty($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443) {
+        return true;
+    }
+
+    return false;
+}
+
 function app_start_session(): void
 {
     if (session_status() === PHP_SESSION_ACTIVE) {
         return;
     }
 
-    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    $isSecure = app_request_is_secure();
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
