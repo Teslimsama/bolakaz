@@ -1,19 +1,25 @@
+# Environment and secrets
 .env
-/.idea/
-/.DS_Store
-Thumbs.db
+.env.*
+!.env.example
 
 # Dependencies
 /vendor/
 /node_modules/
 /bower_components/
 
+# IDE and OS files
+/.idea/
+/.vscode/
+/.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
 # Build and runtime artifacts
 /storage/logs/*.log
 /storage/framework/
 /bootstrap/cache/
 
-# Local editor/OS noise
-*.swp
-*.swo
+# Local generated assets
 /images

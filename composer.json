@@ -6,5 +6,9 @@
         "twilio/sdk": "^8.3",
         "monolog/monolog": "^3.10",
         "filp/whoops": "^2.18"
+    },
+    "require-dev": {
+        "doctrine/migrations": "^3.9",
+        "doctrine/dbal": "^4.0"
     }
 }
