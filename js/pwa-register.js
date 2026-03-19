@@ -206,13 +206,30 @@
     return wrapper;
   }
 
+  function syncBodyPadding() {
+    var prompt = document.getElementById(PROMPT_ID);
+    if (!document.body) {
+      return;
+    }
+
+    if (!prompt || !prompt.classList.contains("is-visible")) {
+      document.body.style.removeProperty("padding-bottom");
+      return;
+    }
+
+    var promptHeight = Math.ceil(prompt.getBoundingClientRect().height);
+    document.body.style.paddingBottom = String(promptHeight + 24) + "px";
+  }
+
   function hidePrompt() {
     var prompt = document.getElementById(PROMPT_ID);
     if (!prompt) {
+      syncBodyPadding();
       return;
     }
 
     prompt.classList.remove("is-visible");
+    syncBodyPadding();
   }
 
   function dismissPrompt() {
@@ -258,6 +275,7 @@
     }
 
     prompt.classList.add("is-visible");
+    syncBodyPadding();
   }
 
   function handleInstall() {
@@ -349,5 +367,13 @@
 
   ready(function () {
     window.setTimeout(renderPrompt, 1800);
+  });
+
+  window.addEventListener("resize", function () {
+    if (!document.getElementById(PROMPT_ID)) {
+      return;
+    }
+
+    syncBodyPadding();
   });
 })();

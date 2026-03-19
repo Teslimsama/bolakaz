@@ -84,7 +84,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                 </div>
               </div>
               <div class="box-body table-responsive">
-                <table id="example1" class="table table-bordered legacy-mobile-table">
+                <table id="example1" class="table table-bordered">
                   <thead>
                     <th>Name</th>
                     <th>Photo</th>

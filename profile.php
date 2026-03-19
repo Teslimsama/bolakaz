@@ -1,8 +1,9 @@
 <?php include 'session.php'; ?>
 <?php require_once __DIR__ . '/lib/offline_statement.php'; ?>
 <?php
-if (!isset($_SESSION['user'])) {
+if (empty($user['id'])) {
     header('location: index');
+    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -12,7 +13,7 @@ if (!isset($_SESSION['user'])) {
     <?php $pageTitle = "Bolakaz | Profile"; include "head.php"; ?>
 </head>
 
-<body>
+<body class="sf-page sf-page-profile">
 
     <?php
     include "header.php"; ?>
@@ -30,28 +31,28 @@ if (!isset($_SESSION['user'])) {
     </div>
     <!-- Page Header End -->
     <div class="container-fluid pt-5">
-        <div class="card card-body mx-3 mx-md-4 mt-n6 shadow-sm vw-80">
+        <div class="card card-body mx-3 mx-md-4 mt-n6 shadow-sm sf-profile-card">
             <div class="row gx-4 mb-2">
                 <div class="col-auto ">
-                    <div class="" style=" width: 110px !important; height: 210px !important;">
+                    <div class="sf-profile-photo" style=" width: 110px !important; height: 210px !important;">
                         <img src="<?php echo e(app_image_url($user['photo'] ?? '')); ?>" style=" border-radius: 8px; object-fit: cover; height: 100%;" width="100%" onerror="this.onerror=null;this.src='<?php echo e(app_placeholder_image()); ?>';">
                     </div>
 
                 </div>
                 <div class="col-sm-9">
-                    <div class="float-end">
+                    <div class="float-end sf-profile-actions">
                         <span class="">
                             <a href="#edit" class="btn btn-primary btn-flat btn-sm" data-toggle="modal"><i class="fa fa-edit"></i> Edit</a>
                         </span>
                     </div>
-                    <ul class="list-group">
+                    <ul class="list-group sf-profile-list">
 
-                        <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; <?php echo e(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')); ?>
+                        <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; <?php echo e(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')); ?></li>
                         <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Mobile:</strong> &nbsp; <?php echo e($user['phone'] ?? ''); ?></li>
                         <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Email:</strong> &nbsp; <?php echo e($user['email'] ?? ''); ?></li>
                         <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Address:</strong> &nbsp; <?php echo e(!empty($user['address']) ? $user['address'] : 'N/a'); ?></li>
                         <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Member since:</strong> &nbsp;<?php echo e(date('M d, Y', strtotime($user['created_on']))); ?></li>
-
+                    </ul>
                 </div>
             </div>
         </div>

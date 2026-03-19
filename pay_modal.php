@@ -1,3 +1,14 @@
+<?php
+$payModalUser = [];
+if (isset($checkoutUser) && is_array($checkoutUser)) {
+    $payModalUser = $checkoutUser;
+} elseif (isset($user) && is_array($user)) {
+    $payModalUser = $user;
+}
+
+$payModalName = trim((string)($payModalUser['firstname'] ?? '') . ' ' . (string)($payModalUser['lastname'] ?? ''));
+$payModalAddress = trim((string)($payModalUser['address'] ?? ''));
+?>
 <!-- Button trigger modal -->
 <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
     Launch static backdrop modal
@@ -26,8 +37,10 @@
                     <div class="invoice-col">
                         <strong>Invoiced To</strong>
                         <address class="small-text">
-                            <?php echo $user['firstname'] . " " . $user['lastname'] ?><br />
-                            <?php echo $user['address'] ?> <br />
+                            <?php echo e($payModalName !== '' ? $payModalName : 'Customer details will appear here after checkout details are filled.'); ?><br />
+                            <?php if ($payModalAddress !== '') { ?>
+                                <?php echo e($payModalAddress); ?> <br />
+                            <?php } ?>
 
                         </address>
                     </div>

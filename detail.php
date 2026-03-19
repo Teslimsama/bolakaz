@@ -240,7 +240,7 @@ $seoMeta = [
     <?php $pageTitle = "Bolakaz | Product Detail"; include "head.php"; ?>
 </head>
 
-<body>
+<body class="sf-page sf-page-detail">
     <!-- Topbar Start -->
     <?php include 'header.php'; ?>
 
@@ -352,8 +352,8 @@ $seoMeta = [
                     </div>
                 </div>
                 <h3 class="font-weight-semi-bold mb-4"><?php echo app_money($product['price']); ?></h3>
-                <p class="mb-4"><?php echo $product['description']; ?></p>
-                <form id="productForm">
+                <p class="mb-4 sf-product-copy"><?php echo $product['description']; ?></p>
+                <form id="productForm" class="sf-product-form">
                     <?php if (!empty($product['is_v2']) && !empty($product['variants'])) { ?>
                         <div class="mb-3">
                             <p class="text-dark font-weight-medium mb-2">Variant:</p>
@@ -384,7 +384,7 @@ $seoMeta = [
                     <?php } ?>
                     <!-- Display Sizes -->
                     <?php if (empty($product['is_v2']) && !empty($sizeOptions)) { ?>
-                        <div class="d-flex mb-3">
+                        <div class="d-flex mb-3 sf-product-option-group">
                             <p class="text-dark font-weight-medium mb-0 mr-3">Sizes:</p>
                             <?php
                             $n = 1;
@@ -403,7 +403,7 @@ $seoMeta = [
 
                     <!-- Display Colors -->
                     <?php if (empty($product['is_v2']) && !empty($colorOptions)) { ?>
-                        <div class="d-flex mb-4">
+                        <div class="d-flex mb-4 sf-product-option-group">
                             <p class="text-dark font-weight-medium mb-0 mr-3">Colors:</p>
                             <?php
                             $n = 1;
@@ -422,7 +422,7 @@ $seoMeta = [
 
                     <input type="hidden" name="catalog_mode" value="<?php echo !empty($product['is_v2']) ? 'v2' : 'legacy'; ?>">
 
-                    <div class="d-flex align-items-center mb-4 pt-2">
+                    <div class="d-flex align-items-center mb-4 pt-2 sf-product-purchase">
                         <div class="input-group quantity mr-3" style="width: 130px;">
                             <div class="input-group-btn">
                                 <button id="minus" type="button" class="btn btn-primary btn-minus">
@@ -436,37 +436,42 @@ $seoMeta = [
                                     <i class="fa fa-plus"></i>
                                 </button>
                             </div>
-                        </div> <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
-                        <?php echo (!empty($user['id'])) ? '<button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart </button>'  : '<a href="signin" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>'; ?>
+                        </div>
+                        <input type="hidden" value="<?php echo $product['prodid']; ?>" name="id">
+                        <?php if (!empty($user['id'])) { ?>
+                            <button type="submit" class="btn btn-primary px-3 sf-product-action"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart </button>
+                        <?php } else { ?>
+                            <a href="signin" class="btn btn-primary px-3 sf-product-action"><i class="fa fa-shopping-cart mr-1"></i> Add To Cart</a>
+                        <?php } ?>
                     </div>
                 </form>
-                <div class="d-flex mb-3">
+                <div class="d-flex mb-3 sf-product-meta-row">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Caterory:</p>
-                    <?php echo e(ucwords((string)($product['catname'] ?? 'Uncategorized'))); ?>
+                    <span><?php echo e(ucwords((string)($product['catname'] ?? 'Uncategorized'))); ?></span>
                 </div>
-                <div class="d-flex mb-3">
+                <div class="d-flex mb-3 sf-product-meta-row">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Sub Caterory:</p>
-                    <?php echo e(ucwords((string)($product['subcatname'] ?? 'N/A'))); ?>
+                    <span><?php echo e(ucwords((string)($product['subcatname'] ?? 'N/A'))); ?></span>
                 </div>
                 <?php if (!empty($product['brand'])) { ?>
-                    <div class="d-flex mb-3">
+                    <div class="d-flex mb-3 sf-product-meta-row">
                         <p class="text-dark font-weight-medium mb-0 mr-3">Brand:</p>
-                        <?php echo e((string)$product['brand']); ?>
+                        <span><?php echo e((string)$product['brand']); ?></span>
                     </div>
                 <?php } ?>
                 <?php if (!empty($materialOptions)) { ?>
-                    <div class="d-flex mb-3">
+                    <div class="d-flex mb-3 sf-product-meta-row">
                         <p class="text-dark font-weight-medium mb-0 mr-3">Material:</p>
-                        <?php echo e(implode(', ', $materialOptions)); ?>
+                        <span><?php echo e(implode(', ', $materialOptions)); ?></span>
                     </div>
                 <?php } ?>
-                <div class="d-flex mb-3">
+                <div class="d-flex mb-3 sf-product-meta-row">
                     <p class="text-dark font-weight-medium mb-0 mr-3">Availability:</p>
-                    <?php echo ((int)($product['qty'] ?? 0) > 0) ? 'In stock' : 'Out of stock'; ?>
+                    <span><?php echo ((int)($product['qty'] ?? 0) > 0) ? 'In stock' : 'Out of stock'; ?></span>
                 </div>
-                <div class="d-flex pt-2">
+                <div class="d-flex pt-2 sf-product-meta-row sf-product-share">
                     <p class="text-dark font-weight-medium mb-0 mr-2">Share on:</p>
-                    <div class="d-inline-flex">
+                    <div class="d-inline-flex sf-product-share-links">
                         <a class="text-dark px-2" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo rawurlencode($productCanonical); ?>">
                             <i class="fab fa-facebook-f"></i>
                         </a>
@@ -488,7 +493,7 @@ $seoMeta = [
         </div>
         <div class="row px-xl-5">
             <div class="col">
-                <div class="nav nav-tabs justify-content-center border-secondary mb-4">
+                <div class="nav nav-tabs justify-content-center border-secondary mb-4 sf-product-tabs">
                     <a class="nav-item nav-link active" data-toggle="tab" data-bs-toggle="tab" href="#tab-pane-1">Description</a>
                     <a class="nav-item nav-link" data-toggle="tab" data-bs-toggle="tab" href="#tab-pane-2">Information</a>
                     <a class="nav-item nav-link" id="total_review" data-toggle="tab" data-bs-toggle="tab" href="#tab-pane-3">Reviews</a>
@@ -496,7 +501,7 @@ $seoMeta = [
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="tab-pane-1">
                         <h4 class="mb-3">Product Description</h4>
-                        <p><?php echo $product['description']; ?></p>
+                        <p class="sf-product-copy"><?php echo $product['description']; ?></p>
                     </div>
                     <div class="tab-pane fade" id="tab-pane-2">
                         <h4 class="mb-3">Additional Information</h4>
@@ -518,7 +523,7 @@ $seoMeta = [
                                                 continue;
                                             }
                                         ?>
-                                            <li class="list-group-item px-0 d-flex justify-content-between align-items-start">
+                                            <li class="list-group-item px-0 d-flex justify-content-between align-items-start sf-product-spec-row">
                                                 <strong><?php echo e($specLabel); ?></strong>
                                                 <span class="text-muted"><?php echo e($additionalInfo[$specKey]); ?></span>
                                             </li>
@@ -570,7 +575,7 @@ $seoMeta = [
                                         <h4 class="mb-4">Leave a review</h4>
                                         <small>Required fields are marked *</small>
                                         <div id="reviewFeedback" class="alert d-none mt-3 mb-3" role="alert"></div>
-                                        <div class="d-flex my-3">
+                                        <div class="d-flex my-3 sf-product-rating-row">
                                             <p class="mb-0 mr-2">Your Rating * :</p>
                                             <div class="text-primary">
                                                 <button type="button" class="btn btn-primary btn-sm rateButton" aria-label="1 star">

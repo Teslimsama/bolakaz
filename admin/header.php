@@ -28,12 +28,13 @@
   <?php
     $adminPage = basename((string)($_SERVER['SCRIPT_NAME'] ?? ''));
     $needsBootstrapSelect = in_array($adminPage, ['products.php', 'test_image.php'], true);
+    $adminModernCssVersion = (string) (@filemtime(__DIR__ . '/assets/admin-modern.css') ?: '1');
     if ($needsBootstrapSelect):
   ?>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select/dist/css/bootstrap-select.min.css">
   <?php endif; ?>
 
-  <link rel="stylesheet" href="assets/admin-modern.css">
+  <link rel="stylesheet" href="assets/admin-modern.css?v=<?php echo e($adminModernCssVersion); ?>">
 
   <style>
     .d-none { display: none !important; }

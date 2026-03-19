@@ -1,3 +1,4 @@
+<?php $adminModernJsVersion = (string) (@filemtime(__DIR__ . '/assets/admin-modern.js') ?: '1'); ?>
 <meta name="csrf-token" content="<?php echo function_exists('app_get_csrf_token') ? htmlspecialchars(app_get_csrf_token(), ENT_QUOTES, 'UTF-8') : ''; ?>">
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
 <script src="../bower_components/jquery-ui/jquery-ui.min.js"></script>
@@ -11,7 +12,7 @@
 <script src="../plugins/timepicker/bootstrap-timepicker.min.js"></script>
 <script src="../bower_components/ckeditor/ckeditor.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="assets/admin-modern.js"></script>
+<script src="assets/admin-modern.js?v=<?php echo e($adminModernJsVersion); ?>"></script>
 
 <script>
   (function() {

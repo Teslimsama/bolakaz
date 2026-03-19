@@ -2,6 +2,60 @@
 <?php
 require_once __DIR__ . '/lib/catalog_v2.php';
 $userId = isset($user['id']) ? (int)$user['id'] : 0;
+$cartSummaryTotal = 0.0;
+$cartDiscount = isset($_SESSION['coupon']) ? (float)($_SESSION['coupon']['value'] ?? 0) : 0.0;
+
+$conn = $pdo->open();
+if ($userId > 0) {
+    $stmt = $conn->prepare("SELECT cart.quantity, cart.variant_id, products.price FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
+    $stmt->execute(['user_id' => $userId]);
+
+    foreach ($stmt as $row) {
+        $linePrice = (float)($row['price'] ?? 0);
+        if (catalog_v2_ready($conn) && (int)($row['variant_id'] ?? 0) > 0) {
+            $vpStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
+            $vpStmt->execute(['id' => (int)$row['variant_id']]);
+            $variantPrice = $vpStmt->fetchColumn();
+            if ($variantPrice !== false) {
+                $linePrice = (float)$variantPrice;
+            }
+        }
+        $cartSummaryTotal += $linePrice * (int)($row['quantity'] ?? 0);
+    }
+} else {
+    $sessionCart = $_SESSION['cart'] ?? [];
+    if (is_array($sessionCart)) {
+        foreach ($sessionCart as $row) {
+            $productId = (int)($row['productid'] ?? 0);
+            $variantId = (int)($row['variant_id'] ?? 0);
+            $quantity = max(1, (int)($row['quantity'] ?? 1));
+            if ($productId <= 0) {
+                continue;
+            }
+
+            $priceStmt = $conn->prepare("SELECT price FROM products WHERE id = :id LIMIT 1");
+            $priceStmt->execute(['id' => $productId]);
+            $product = $priceStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$product) {
+                continue;
+            }
+
+            $linePrice = (float)($product['price'] ?? 0);
+            if (catalog_v2_ready($conn) && $variantId > 0) {
+                $vpStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
+                $vpStmt->execute(['id' => $variantId]);
+                $variantPrice = $vpStmt->fetchColumn();
+                if ($variantPrice !== false) {
+                    $linePrice = (float)$variantPrice;
+                }
+            }
+
+            $cartSummaryTotal += $linePrice * $quantity;
+        }
+    }
+}
+$pdo->close();
+$cartGrandTotal = max(0, $cartSummaryTotal - $cartDiscount);
 ?>
 
 <!DOCTYPE html>
@@ -97,74 +151,19 @@ $userId = isset($user['id']) ? (int)$user['id'] : 0;
                             <div class="d-flex justify-content-between mb-3 pt-1">
                                 <h6 class="font-weight-medium">Subtotal</h6>
                                 <h6 class="font-weight-medium">
-                                    <?php
-                                        if ($userId > 0) {
-                                            $conn = $pdo->open();
-                                            $stmt = $conn->prepare("SELECT cart.quantity, cart.variant_id, products.price FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
-                                            $stmt->execute(['user_id' => $userId]);
-
-                                            $total = 0;
-                                            foreach ($stmt as $row) {
-                                                $linePrice = (float)($row['price'] ?? 0);
-                                                if (catalog_v2_ready($conn) && (int)($row['variant_id'] ?? 0) > 0) {
-                                                    $vpStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
-                                                    $vpStmt->execute(['id' => (int)$row['variant_id']]);
-                                                    $variantPrice = $vpStmt->fetchColumn();
-                                                    if ($variantPrice !== false) {
-                                                        $linePrice = (float)$variantPrice;
-                                                    }
-                                                }
-                                                $subtotal = $linePrice * (int)$row['quantity'];
-                                                $total += $subtotal;
-                                            }
-
-                                            $pdo->close();
-                                            echo app_money($total);
-                                        } else {
-                                            echo app_money(0);
-                                        }
-                                        ?>
+                                    <?php echo app_money($cartSummaryTotal); ?>
                                 </h6>
                             </div>
                             <div class='d-flex justify-content-between'>
                                 <h6 class='font-weight-medium'>Discount</h6>
                                 <h6 class='font-weight-medium'>
-                                     <?php echo app_money(isset($_SESSION['coupon']) ? (float)$_SESSION['coupon']['value'] : 0); ?>
+                                     <?php echo app_money($cartDiscount); ?>
                                 </h6>
                             </div>
                             <div class="d-flex justify-content-between mt-2">
                                 <h5 class="font-weight-bold">Total</h5>
                                 <h5 class="font-weight-bold">
-                                    <?php
-                                        if ($userId > 0) {
-                                            $conn = $pdo->open();
-                                            $stmt = $conn->prepare("SELECT cart.quantity, cart.variant_id, products.price FROM cart LEFT JOIN products on products.id=cart.product_id WHERE user_id=:user_id");
-                                            $stmt->execute(['user_id' => $userId]);
-
-                                            $total = 0;
-                                            foreach ($stmt as $row) {
-                                                $linePrice = (float)($row['price'] ?? 0);
-                                                if (catalog_v2_ready($conn) && (int)($row['variant_id'] ?? 0) > 0) {
-                                                    $vpStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
-                                                    $vpStmt->execute(['id' => (int)$row['variant_id']]);
-                                                    $variantPrice = $vpStmt->fetchColumn();
-                                                    if ($variantPrice !== false) {
-                                                        $linePrice = (float)$variantPrice;
-                                                    }
-                                                }
-                                                $subtotal = $linePrice * (int)$row['quantity'];
-                                                $total += $subtotal;
-                                            }
-
-                                            $discount = isset($_SESSION['coupon']) ? $_SESSION['coupon']['value'] : 0;
-                                            $total -= $discount;
-
-                                            $pdo->close();
-                                            echo app_money($total);
-                                        } else {
-                                            echo app_money(0);
-                                        }
-                                        ?>
+                                    <?php echo app_money($cartGrandTotal); ?>
                                 </h5>
                             </div>
                             <?php
