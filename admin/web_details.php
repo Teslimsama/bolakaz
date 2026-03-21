@@ -49,90 +49,92 @@
                   <a href="#addWeb_details" data-toggle="modal" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> Add Web Detail</a>
                 </div>
               </div>
-              <div class="box-body table-responsive">
-                <table id="example1" class="table table-bordered">
-                  <thead>
-                    <th>Site Name</th>
-                    <th>Site Address</th>
-                    <th>Site Number</th>
-                    <th>Site Email</th>
-                    <th>Site Short Description</th>
-                    <th>Site Description</th>
-                    <th>Tools</th>
-                  </thead>
-                  <tbody>
-                    <?php
-                    $conn = $pdo->open();
-                    $previewText = static function ($value, int $limit = 140): string {
-                      $decoded = (string)$value;
-                      for ($i = 0; $i < 3; $i++) {
-                        $next = html_entity_decode($decoded, ENT_QUOTES, 'UTF-8');
-                        if ($next === $decoded) {
-                          break;
+              <div class="box-body">
+                <div class="table-responsive admin-table-wrap">
+                  <table id="example1" class="table table-bordered">
+                    <thead>
+                      <th>Site Name</th>
+                      <th>Site Address</th>
+                      <th>Site Number</th>
+                      <th>Site Email</th>
+                      <th>Site Short Description</th>
+                      <th>Site Description</th>
+                      <th>Tools</th>
+                    </thead>
+                    <tbody>
+                      <?php
+                      $conn = $pdo->open();
+                      $previewText = static function ($value, int $limit = 140): string {
+                        $decoded = (string)$value;
+                        for ($i = 0; $i < 3; $i++) {
+                          $next = html_entity_decode($decoded, ENT_QUOTES, 'UTF-8');
+                          if ($next === $decoded) {
+                            break;
+                          }
+                          $decoded = $next;
                         }
-                        $decoded = $next;
-                      }
 
-                      $plain = trim(preg_replace('/\s+/', ' ', strip_tags($decoded)));
-                      $legacyNoise = [
-                        'error! fill up the edit form first',
-                        'fill up the edit form first',
-                      ];
-                      $plainLower = strtolower($plain);
-                      foreach ($legacyNoise as $noise) {
-                        if ($plainLower === $noise || strpos($plainLower, $noise) !== false) {
+                        $plain = trim(preg_replace('/\s+/', ' ', strip_tags($decoded)));
+                        $legacyNoise = [
+                          'error! fill up the edit form first',
+                          'fill up the edit form first',
+                        ];
+                        $plainLower = strtolower($plain);
+                        foreach ($legacyNoise as $noise) {
+                          if ($plainLower === $noise || strpos($plainLower, $noise) !== false) {
+                            return '';
+                          }
+                        }
+
+                        if ($plain === '') {
                           return '';
                         }
+
+                        if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+                          return mb_strlen($plain) > $limit ? mb_substr($plain, 0, $limit - 1) . '...' : $plain;
+                        }
+
+                        return strlen($plain) > $limit ? substr($plain, 0, $limit - 1) . '...' : $plain;
+                      };
+                      $renderPreview = static function ($value) {
+                        $clean = trim((string)$value);
+                        if ($clean === '') {
+                          return "<span class='admin-empty-placeholder'>Not provided</span>";
+                        }
+                        return e($clean);
+                      };
+
+                      try {
+                        $stmt = $conn->prepare("SELECT * FROM web_details");
+                        $stmt->execute();
+                        foreach ($stmt as $row) {
+                          $siteAddressPreview = $previewText($row['site_address']);
+                          $shortPreview = $previewText($row['short_description']);
+                          $descriptionPreview = $previewText($row['description']);
+                          echo "
+                            <tr>
+                              <td>" . e($row['site_name']) . "</td>
+                              <td>" . $renderPreview($siteAddressPreview) . "</td>
+                              <td>" . e($row['site_number']) . "</td>
+                              <td>" . e($row['site_email']) . "</td>
+                              <td>" . $renderPreview($shortPreview) . "</td>
+                              <td>" . $renderPreview($descriptionPreview) . "</td>
+                              <td>
+                                <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                                <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
+                              </td>
+                            </tr>
+                          ";
+                        }
+                      } catch (PDOException $e) {
+                        echo 'Unable to load web details.';
                       }
 
-                      if ($plain === '') {
-                        return '';
-                      }
-
-                      if (function_exists('mb_strlen') && function_exists('mb_substr')) {
-                        return mb_strlen($plain) > $limit ? mb_substr($plain, 0, $limit - 1) . '...' : $plain;
-                      }
-
-                      return strlen($plain) > $limit ? substr($plain, 0, $limit - 1) . '...' : $plain;
-                    };
-                    $renderPreview = static function ($value) {
-                      $clean = trim((string)$value);
-                      if ($clean === '') {
-                        return "<span class='admin-empty-placeholder'>Not provided</span>";
-                      }
-                      return e($clean);
-                    };
-
-                    try {
-                      $stmt = $conn->prepare("SELECT * FROM web_details");
-                      $stmt->execute();
-                      foreach ($stmt as $row) {
-                        $siteAddressPreview = $previewText($row['site_address']);
-                        $shortPreview = $previewText($row['short_description']);
-                        $descriptionPreview = $previewText($row['description']);
-                        echo "
-                          <tr>
-                            <td>" . e($row['site_name']) . "</td>
-                            <td>" . $renderPreview($siteAddressPreview) . "</td>
-                            <td>" . e($row['site_number']) . "</td>
-                            <td>" . e($row['site_email']) . "</td>
-                            <td>" . $renderPreview($shortPreview) . "</td>
-                            <td>" . $renderPreview($descriptionPreview) . "</td>
-                            <td>
-                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
-                              <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
-                            </td>
-                          </tr>
-                        ";
-                      }
-                    } catch (PDOException $e) {
-                      echo 'Unable to load web details.';
-                    }
-
-                    $pdo->close();
-                    ?>
-                  </tbody>
-                </table>
+                      $pdo->close();
+                      ?>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>

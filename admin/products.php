@@ -83,86 +83,88 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                   </form>
                 </div>
               </div>
-              <div class="box-body table-responsive">
-                <table id="example1" class="table table-bordered">
-                  <thead>
-                    <th>Name</th>
-                    <th>Photo</th>
-                    <th>Price</th>
-                    <th>Views Today</th>
-                    <th>Status</th>
-                    <th>Tools</th>
-                    <th>Color</th>
-                    <th>Brand</th>
-                    <th>Size</th>
-                    <th>Material</th>
-                    <th>Quantity</th>
-                  </thead>
-                  <tbody>
-                    <?php
-                    $conn = $pdo->open();
+              <div class="box-body">
+                <div class="table-responsive admin-table-wrap">
+                  <table id="example1" class="table table-bordered">
+                    <thead>
+                      <th>Name</th>
+                      <th>Photo</th>
+                      <th>Price</th>
+                      <th>Views Today</th>
+                      <th>Status</th>
+                      <th>Tools</th>
+                      <th>Color</th>
+                      <th>Brand</th>
+                      <th>Size</th>
+                      <th>Material</th>
+                      <th>Quantity</th>
+                    </thead>
+                    <tbody>
+                      <?php
+                      $conn = $pdo->open();
 
-                    try {
-                      $now = date('Y-m-d');
-                      $sql = "SELECT * FROM products";
-                      if ($catid !== null) {
-                        $sql .= " WHERE category_id = :category_id";
+                      try {
+                        $now = date('Y-m-d');
+                        $sql = "SELECT * FROM products";
+                        if ($catid !== null) {
+                          $sql .= " WHERE category_id = :category_id";
+                        }
+                        $stmt = $conn->prepare($sql);
+                        $stmt->execute($catid !== null ? ['category_id' => $catid] : []);
+                        foreach ($stmt as $row) {
+                          $image = (!empty($row['photo'])) ? '../images/' . $row['photo'] : '../images/noimage.jpg';
+                          $counter = ($row['date_view'] == $now) ? $row['counter'] : 0;
+                          $isArchived = ((int)($row['product_status'] ?? 1) === 0);
+                          $statusBadge = $isArchived
+                            ? "<span class='label label-default'>Archived</span>"
+                            : "<span class='label label-success'>Active</span>";
+                          $archiveBtn = $isArchived
+                            ? "<button class='btn btn-default btn-sm btn-flat' type='button' disabled><i class='fa fa-archive'></i> Archived</button>"
+                            : "<button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-archive'></i> Archive</button>";
+                          echo "
+                            <tr class='" . ($isArchived ? "product-row-archived" : "") . "'>
+                              <td>" . e($row['name']) . "</td>
+                              <td>
+                                  <!-- Image Thumbnail -->
+                                  <img src='" . e($image) . " ' height='30px' width='30px' alt='Product Image' class='img-thumbnail' onerror=\"this.onerror=null;this.src='../images/storefront-placeholder.svg';\">
+                              
+                                  <!-- Action Links -->
+                                  <div class='action-links text-right'>
+                                      <!-- Single Edit Link -->
+                                      <a href='#edit_photo' class='photo btn btn-sm btn-link' data-toggle='modal' data-id='" . (int)$row['id'] . "'>
+                                          Single <i class='fa fa-edit'></i>
+                                      </a>
+                              
+                                      <!-- Multiple Edit Link -->
+                                      <a href='#image_edit' class='photo image btn btn-sm btn-link' data-id='" . (int)$row['id'] . "'>
+                                          Multiple <i class='fa fa-edit'></i>
+                                      </a>
+                                  </div>
+                              </td>
+                              <td>" . app_money($row['price']) . "</td>
+                              <td>" . $counter . "</td>
+                              <td>" . $statusBadge . "</td>
+                              <td>
+                                <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                                " . $archiveBtn . "
+                              </td>
+                              <td>" . e($row['color']) . "</td>
+                              <td>" . e($row['brand']) . "</td>
+                              <td>" . e($row['size']) . "</td>
+                              <td>" . e($row['material']) . "</td>
+                              <td>" . (int)$row['qty'] . "</td>
+                            </tr>
+                          ";
+                        }
+                      } catch (PDOException $e) {
+                        echo 'Unable to load products.';
                       }
-                      $stmt = $conn->prepare($sql);
-                      $stmt->execute($catid !== null ? ['category_id' => $catid] : []);
-                      foreach ($stmt as $row) {
-                        $image = (!empty($row['photo'])) ? '../images/' . $row['photo'] : '../images/noimage.jpg';
-                        $counter = ($row['date_view'] == $now) ? $row['counter'] : 0;
-                        $isArchived = ((int)($row['product_status'] ?? 1) === 0);
-                        $statusBadge = $isArchived
-                          ? "<span class='label label-default'>Archived</span>"
-                          : "<span class='label label-success'>Active</span>";
-                        $archiveBtn = $isArchived
-                          ? "<button class='btn btn-default btn-sm btn-flat' type='button' disabled><i class='fa fa-archive'></i> Archived</button>"
-                          : "<button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-archive'></i> Archive</button>";
-                        echo "
-                          <tr class='" . ($isArchived ? "product-row-archived" : "") . "'>
-                            <td>" . e($row['name']) . "</td>
-                            <td>
-                                <!-- Image Thumbnail -->
-                                <img src='" . e($image) . " ' height='30px' width='30px' alt='Product Image' class='img-thumbnail' onerror=\"this.onerror=null;this.src='../images/storefront-placeholder.svg';\">
-                            
-                                <!-- Action Links -->
-                                <div class='action-links text-right'>
-                                    <!-- Single Edit Link -->
-                                    <a href='#edit_photo' class='photo btn btn-sm btn-link' data-toggle='modal' data-id='" . (int)$row['id'] . "'>
-                                        Single <i class='fa fa-edit'></i>
-                                    </a>
-                            
-                                    <!-- Multiple Edit Link -->
-                                    <a href='#image_edit' class='photo image btn btn-sm btn-link' data-id='" . (int)$row['id'] . "'>
-                                        Multiple <i class='fa fa-edit'></i>
-                                    </a>
-                                </div>
-                            </td>
-                            <td>" . app_money($row['price']) . "</td>
-                            <td>" . $counter . "</td>
-                            <td>" . $statusBadge . "</td>
-                            <td>
-                              <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
-                              " . $archiveBtn . "
-                            </td>
-                            <td>" . e($row['color']) . "</td>
-                            <td>" . e($row['brand']) . "</td>
-                            <td>" . e($row['size']) . "</td>
-                            <td>" . e($row['material']) . "</td>
-                            <td>" . (int)$row['qty'] . "</td>
-                          </tr>
-                        ";
-                      }
-                    } catch (PDOException $e) {
-                      echo 'Unable to load products.';
-                    }
 
-                    $pdo->close();
-                    ?>
-                  </tbody>
-                </table>
+                      $pdo->close();
+                      ?>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>

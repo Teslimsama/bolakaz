@@ -147,10 +147,84 @@
       });
 
       $(function() {
+        var $mobileTables = $();
+        var desktopAdjustTimer = null;
+
         function runAdminModernEnhancement(target) {
           if (window.AdminModernEnhanceTables && typeof window.AdminModernEnhanceTables === 'function') {
             window.AdminModernEnhanceTables(document);
           }
+        }
+
+        function getDesktopScrollHost($table) {
+          var $wrapper = $table.closest('.dataTables_wrapper');
+          if ($wrapper.length) {
+            var $scrollBody = $wrapper.find('.dataTables_scrollBody').first();
+            if ($scrollBody.length) {
+              return $scrollBody;
+            }
+            return $wrapper;
+          }
+          var $tableWrap = $table.closest('.admin-table-wrap');
+          return $tableWrap.length ? $tableWrap : $table.parent();
+        }
+
+        function ensureDesktopScrollHint($table) {
+          var $tableWrap = $table.closest('.admin-table-wrap');
+          if (!$tableWrap.length) {
+            return $();
+          }
+          var $hint = $tableWrap.children('.admin-table-scroll-hint');
+          if (!$hint.length) {
+            $hint = $('<div class="admin-table-scroll-hint" aria-hidden="true"><i class="fa fa-arrows-h"></i><span>Scroll sideways to see more columns</span></div>');
+            $tableWrap.prepend($hint);
+          }
+          return $hint;
+        }
+
+        function syncDesktopOverflowState($table) {
+          if (!$table || !$table.length) {
+            return;
+          }
+          var $tableWrap = $table.closest('.admin-table-wrap');
+          if (!$tableWrap.length) {
+            return;
+          }
+          ensureDesktopScrollHint($table);
+          if (window.innerWidth <= 767) {
+            $tableWrap.removeClass('is-overflowing');
+            return;
+          }
+          var $host = getDesktopScrollHost($table);
+          var host = $host.get(0);
+          var hasOverflow = false;
+          if (host) {
+            hasOverflow = (host.scrollWidth - host.clientWidth) > 4;
+          }
+          $tableWrap.toggleClass('is-overflowing', hasOverflow);
+        }
+
+        function adjustDesktopTable($table) {
+          if (!$table || !$table.length) {
+            return;
+          }
+          var tableId = $table.attr('id');
+          if (tableId && $.fn.DataTable && $.fn.DataTable.isDataTable('#' + tableId)) {
+            $table.DataTable().columns.adjust();
+          }
+          syncDesktopOverflowState($table);
+        }
+
+        function scheduleDesktopTableAdjust(delay) {
+          window.clearTimeout(desktopAdjustTimer);
+          desktopAdjustTimer = window.setTimeout(function() {
+            $mobileTables.each(function() {
+              var $table = $(this);
+              adjustDesktopTable($table);
+              renderMobileCards($table, null, 0);
+              runAdminModernEnhancement($table.get(0));
+            });
+          }, delay || 0);
         }
 
         function applyMobileTableLabels($table) {
@@ -175,15 +249,18 @@
           if (!$(selector).length || $.fn.DataTable.isDataTable(selector)) {
             if ($(selector).length) {
               applyMobileTableLabels($(selector));
+              syncDesktopOverflowState($(selector));
               runAdminModernEnhancement($(selector).get(0));
             }
             return;
           }
           var table = $(selector).DataTable(options || {});
           applyMobileTableLabels($(selector));
+          syncDesktopOverflowState($(selector));
           runAdminModernEnhancement($(selector).get(0));
-          $(selector).on('draw.dt', function() {
+          $(selector).on('draw.dt column-sizing.dt', function() {
             applyMobileTableLabels($(selector));
+            syncDesktopOverflowState($(selector));
             runAdminModernEnhancement($(selector).get(0));
           });
           return table;
@@ -406,7 +483,8 @@
         if ($('#example1').length && !$.fn.DataTable.isDataTable('#example1')) {
           initDataTableWithMobileLabels('#example1', {
             responsive: false,
-            scrollX: false,
+            scrollX: true,
+            scrollCollapse: true,
             autoWidth: false,
             pageLength: 25,
             order: [],
@@ -431,7 +509,8 @@
             info: true,
             autoWidth: false,
             responsive: false,
-            scrollX: false,
+            scrollX: true,
+            scrollCollapse: true,
             language: {
               search: 'Find:',
               lengthMenu: 'Show _MENU_ items',
@@ -452,14 +531,16 @@
         });
 
         // Admin-wide mobile card renderer for primary list tables.
-        var $mobileTables = $('table#example1, table#example2');
+        $mobileTables = $('table#example1, table#example2');
         $mobileTables.each(function() {
           var $table = $(this);
           // Products page already has custom containers; generic engine can still use them.
           renderMobileCards($table, 1, 0);
+          syncDesktopOverflowState($table);
           runAdminModernEnhancement($table.get(0));
           $table.on('init.dt draw.dt order.dt search.dt', function() {
             renderMobileCards($table, 1, 0);
+            syncDesktopOverflowState($table);
             runAdminModernEnhancement($table.get(0));
           });
         });
@@ -468,8 +549,10 @@
           $mobileTables.each(function() {
             var $table = $(this);
             renderMobileCards($table, null, 0);
+            syncDesktopOverflowState($table);
             runAdminModernEnhancement($table.get(0));
           });
+          scheduleDesktopTableAdjust(160);
         });
 
         $('.content table').not('.legacy-mobile-table').each(function() {
@@ -488,10 +571,37 @@
             var $table = $(this);
             if (($table.data('mobileCardKey') || '') === key) {
               renderMobileCards($table, page, 0);
+              syncDesktopOverflowState($table);
               runAdminModernEnhancement($table.get(0));
             }
           });
         });
+
+        if (window.MutationObserver && document.body) {
+          var bodyClassObserver = new MutationObserver(function(mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+              if (mutations[i].attributeName === 'class') {
+                scheduleDesktopTableAdjust(260);
+                break;
+              }
+            }
+          });
+          bodyClassObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class']
+          });
+        }
+
+        $(window).on('load pageshow', function() {
+          scheduleDesktopTableAdjust(100);
+        });
+
+        $(document).on('click', '[data-admin-sidebar-toggle]', function() {
+          scheduleDesktopTableAdjust(260);
+          scheduleDesktopTableAdjust(420);
+        });
+
+        scheduleDesktopTableAdjust(120);
 
         $('.select2').select2();
 

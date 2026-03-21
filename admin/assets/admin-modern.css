@@ -327,6 +327,7 @@ textarea:focus-visible {
   min-height: calc(100vh - 64px);
   background: var(--admin-bg);
   padding: 20px 22px 30px;
+  min-width: 0;
 }
 
 .content-header {
@@ -382,6 +383,11 @@ body.sidebar-collapsed .main-footer {
 .admin-page-content {
   display: grid;
   gap: 14px;
+  min-width: 0;
+}
+
+.admin-page-content > * {
+  min-width: 0;
 }
 
 .box-title {
@@ -390,6 +396,7 @@ body.sidebar-collapsed .main-footer {
 
 .box-body {
   border-radius: 0 0 var(--admin-radius) var(--admin-radius);
+  min-width: 0;
 }
 
 .btn {
@@ -469,10 +476,12 @@ body.sidebar-collapsed .main-footer {
   -webkit-overflow-scrolling: touch;
   overflow-x: auto;
   overflow-y: visible;
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
 }
 
-.admin-table-wrap .table {
+.admin-table-wrap > .table {
   margin-bottom: 0;
   min-width: 100% !important;
   width: max-content;
@@ -483,18 +492,72 @@ body.sidebar-collapsed .main-footer {
 }
 
 .admin-table-wrap .dataTables_wrapper {
+  width: 100%;
   min-width: 100%;
+  position: relative;
+  max-width: 100%;
 }
 
 .admin-table-wrap .dataTables_wrapper table.table.dataTable {
-  min-width: 100% !important;
-  width: max-content !important;
+  min-width: 100%;
+}
+
+.admin-table-wrap .dataTables_scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .admin-table-wrap .dataTables_wrapper .dataTables_scrollBody {
+  width: 100% !important;
+  max-width: 100%;
   overflow-x: auto !important;
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: auto;
+  scrollbar-color: #94a3b8 #e2e8f0;
+  padding-bottom: 4px;
+  scrollbar-gutter: stable both-edges;
+}
+
+.admin-table-wrap .dataTables_wrapper .dataTables_scrollBody::-webkit-scrollbar {
+  height: 12px;
+}
+
+.admin-table-wrap .dataTables_wrapper .dataTables_scrollBody::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+
+.admin-table-wrap .dataTables_wrapper .dataTables_scrollBody::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 999px;
+  border: 2px solid #e2e8f0;
+}
+
+.admin-table-scroll-hint {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-table-wrap.is-overflowing .admin-table-scroll-hint {
+  display: inline-flex;
+}
+
+@media (min-width: 768px) {
+  .admin-table-wrap .dataTables_wrapper table.table.dataTable > thead > tr > th,
+  .admin-table-wrap .dataTables_wrapper table.table.dataTable > tbody > tr > td {
+    white-space: nowrap;
+  }
 }
 
 .admin-table-wrap .table.legacy-mobile-table > tbody > tr > td {
