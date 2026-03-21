@@ -97,6 +97,22 @@ function absolute_url(string $baseUrl, string $path, array $query = []): string
     return $url;
 }
 
+function base_url_host(string $baseUrl): string
+{
+    $host = (string)(parse_url($baseUrl, PHP_URL_HOST) ?? '');
+    return strtolower(trim($host));
+}
+
+function format_redirect_detail(array $response): string
+{
+    $location = trim((string)($response['headers']['location'] ?? ''));
+    if ($location === '') {
+        return '';
+    }
+
+    return ' redirect=' . $location;
+}
+
 function request_web(
     string $baseUrl,
     string $cookieFile,
@@ -242,6 +258,44 @@ function build_sample_ids(): array
     }
 }
 
+function admin_login_diagnostics(string $email, string $password): string
+{
+    global $pdo;
+
+    if ($email === '') {
+        return '';
+    }
+
+    $conn = $pdo->open();
+    try {
+        $stmt = $conn->prepare("SELECT id, email, password, status, type FROM users WHERE email = :email LIMIT 1");
+        $stmt->execute(['email' => $email]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return 'No user was found for that email address.';
+        }
+
+        if (!password_verify($password, (string)($row['password'] ?? ''))) {
+            return 'The user exists, but the password did not match.';
+        }
+
+        if ((int)($row['status'] ?? 0) !== 1) {
+            return 'The credentials matched, but the account is not activated.';
+        }
+
+        if ((int)($row['type'] ?? 0) !== 1) {
+            return 'The credentials matched, but this account is not an admin account.';
+        }
+
+        return 'The credentials matched an active admin account, but the admin session did not persist.';
+    } catch (Throwable $e) {
+        return 'Unable to inspect the admin account after login failure.';
+    } finally {
+        $pdo->close();
+    }
+}
+
 function seed_admin_session(int $adminId): array
 {
     global $seededSessionId, $seededSessionName;
@@ -288,7 +342,18 @@ function login_admin(string $baseUrl, string $cookieFile, string $email, string 
 
     $location = (string)($response['headers']['location'] ?? '');
     if ($response['status'] !== 302 || stripos($location, 'admin/home') === false) {
-        throw new RuntimeException('Admin login did not redirect to admin/home');
+        $detail = 'Admin login did not redirect to admin/home';
+        $redirectDetail = format_redirect_detail($response);
+        if ($redirectDetail !== '') {
+            $detail .= ';' . ltrim($redirectDetail);
+        }
+
+        $diagnostic = admin_login_diagnostics($email, $password);
+        if ($diagnostic !== '') {
+            $detail .= '; ' . $diagnostic;
+        }
+
+        throw new RuntimeException($detail);
     }
 
     return [
@@ -449,7 +514,16 @@ echo '[PASS] Admin authentication - ' . $auth['detail'] . PHP_EOL;
 
 $bootstrap = request_web($baseUrl, $cookieFile, 'GET', 'admin/home', [], [], $auth['default_headers']);
 if ($bootstrap['status'] !== 200) {
-    fwrite(STDERR, '[FAIL] Admin bootstrap - Unexpected status ' . $bootstrap['status'] . PHP_EOL);
+    $detail = 'Unexpected status ' . $bootstrap['status'] . format_redirect_detail($bootstrap);
+    if (($auth['mode'] ?? '') === 'seed') {
+        $host = base_url_host($baseUrl);
+        $detail .= '; seeded CLI sessions are not always shared with the web server';
+        if ($host !== '' && $host !== 'localhost' && $host !== '127.0.0.1') {
+            $detail .= ' on remote/shared hosting';
+        }
+        $detail .= '. Try --admin-email=... --admin-password=...';
+    }
+    fwrite(STDERR, '[FAIL] Admin bootstrap - ' . $detail . PHP_EOL);
     exit(1);
 }
 
