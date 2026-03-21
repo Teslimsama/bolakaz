@@ -236,7 +236,7 @@ include 'header.php';
       }
 
       function fetchMetrics(params) {
-        return fetch(buildAdminUrl('dashboard_metrics.php', params).toString(), {
+        return fetch(buildAdminUrl('dashboard_metrics', params).toString(), {
           credentials: 'same-origin'
         }).then(function(resp) {
           return resp.json();
@@ -252,7 +252,7 @@ include 'header.php';
       }
 
       function syncUrl(filters) {
-        window.history.replaceState({}, '', buildAdminUrl('home.php', filters).toString());
+        window.history.replaceState({}, '', buildAdminUrl('home', filters).toString());
       }
 
       function loadDashboard() {

@@ -9,6 +9,16 @@ RewriteCond %{HTTP:Front-End-Https} !on [NC]
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
 
 # Redirect explicit .php requests to the clean extensionless route.
+# Preserve HTTPS when the request is already secure, including proxy headers
+# commonly used on shared hosting.
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+([^\s?]+?)\.php(?:[?\s]|$) [NC]
+RewriteCond %1 !(^|/)(robots|sitemap)$ [NC]
+RewriteCond %{HTTPS} =on [OR]
+RewriteCond %{HTTP:X-Forwarded-Proto} https [NC,OR]
+RewriteCond %{HTTP:Front-End-Https} on [NC]
+RewriteRule ^ https://%{HTTP_HOST}/%1 [R=301,L,NE]
+
 RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
 RewriteCond %{THE_REQUEST} \s/+([^\s?]+?)\.php(?:[?\s]|$) [NC]
 RewriteCond %1 !(^|/)(robots|sitemap)$ [NC]

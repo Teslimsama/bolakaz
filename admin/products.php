@@ -217,14 +217,14 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       $('#select_category').change(function() {
         var val = $(this).val();
         if (val == 0) {
-          window.location = 'products.php';
+          window.location = 'products';
         } else {
-          window.location = 'products.php?category=' + val;
+          window.location = 'products?category=' + val;
         }
       });
 
       $('#clear_product_filters').on('click', function() {
-        window.location = 'products.php';
+        window.location = 'products';
       });
 
       $('#addproduct').click(function(e) {

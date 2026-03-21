@@ -6,7 +6,7 @@
 		
 	}
 	else{
-		$return = 'home.php';
+		$return = 'home';
 	}
 
 	if(isset($_POST['save'])){
