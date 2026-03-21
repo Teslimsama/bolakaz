@@ -136,7 +136,6 @@ $cartGrandTotal = max(0, $cartSummaryTotal - $cartDiscount);
                 <form class="mb-5" method="POST" action="coupon">
                     <div class="input-group">
                         <input type="text" class="form-control p-4" name="coupon_code" placeholder="Coupon Code" required>
-                        <!-- <input type="hidden" class="form-control p-4" name="user_id" value="<?php echo $user['id'] ?>" placeholder="Coupon Code" required> -->
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-primary">Apply Coupon</button>
                         </div>
