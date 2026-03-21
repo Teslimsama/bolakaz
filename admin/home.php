@@ -128,6 +128,18 @@ include 'header.php';
         topProducts: null,
         categoryShare: null
       };
+      var buildAdminUrl = function(path, params) {
+        var target = (window.adminUrl && typeof window.adminUrl === 'function')
+          ? window.adminUrl(path)
+          : path;
+        var url = new URL(target, window.location.origin);
+        if (params && typeof params === 'object') {
+          Object.keys(params).forEach(function(key) {
+            url.searchParams.set(key, params[key]);
+          });
+        }
+        return url;
+      };
 
       function formatMoney(value) {
         var amount = Number(value || 0);
@@ -224,8 +236,7 @@ include 'header.php';
       }
 
       function fetchMetrics(params) {
-        var query = new URLSearchParams(params);
-        return fetch('dashboard_metrics.php?' + query.toString(), {
+        return fetch(buildAdminUrl('dashboard_metrics.php', params).toString(), {
           credentials: 'same-origin'
         }).then(function(resp) {
           return resp.json();
@@ -241,8 +252,7 @@ include 'header.php';
       }
 
       function syncUrl(filters) {
-        var q = new URLSearchParams(filters);
-        window.history.replaceState({}, '', 'home.php?' + q.toString());
+        window.history.replaceState({}, '', buildAdminUrl('home.php', filters).toString());
       }
 
       function loadDashboard() {

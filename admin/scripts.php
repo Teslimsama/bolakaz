@@ -18,12 +18,41 @@
   (function() {
     var csrfToken = document.querySelector('meta[name="csrf-token"]');
     var token = csrfToken ? csrfToken.getAttribute('content') : '';
+    var adminBaseUrl = null;
+
+    try {
+      adminBaseUrl = new URL(
+        window.location.pathname.replace(/[^/]*$/, ''),
+        window.location.origin
+      );
+    } catch (error) {
+      adminBaseUrl = null;
+    }
+
+    window.AdminBaseUrl = adminBaseUrl ? adminBaseUrl.toString() : '';
+    window.adminUrl = function(path) {
+      var target = String(path || '').trim();
+      if (!target || !adminBaseUrl) {
+        return target;
+      }
+      if (/^[a-z]+:/i.test(target) || target.indexOf('//') === 0) {
+        return target;
+      }
+      return new URL(target, adminBaseUrl).toString();
+    };
 
     if (window.jQuery) {
       $.ajaxSetup({
         headers: {
           'X-CSRF-Token': token
         }
+      });
+
+      $.ajaxPrefilter(function(options) {
+        if (!options || typeof options.url !== 'string') {
+          return;
+        }
+        options.url = window.adminUrl(options.url);
       });
 
       $(function() {
