@@ -19,27 +19,74 @@
     var csrfToken = document.querySelector('meta[name="csrf-token"]');
     var token = csrfToken ? csrfToken.getAttribute('content') : '';
     var adminBaseUrl = null;
+    var currentOrigin = window.location.origin || '';
 
     try {
       adminBaseUrl = new URL(
         window.location.pathname.replace(/[^/]*$/, ''),
-        window.location.origin
+        currentOrigin
       );
     } catch (error) {
       adminBaseUrl = null;
+    }
+
+    function normalizeRequestUrl(path) {
+      var target = String(path || '').trim();
+      if (!target) {
+        return target;
+      }
+
+      try {
+        var parsed = new URL(target, currentOrigin || window.location.href);
+        if (currentOrigin) {
+          var current = new URL(currentOrigin);
+          if (
+            parsed.protocol === 'http:' &&
+            current.protocol === 'https:' &&
+            parsed.host === current.host
+          ) {
+            parsed.protocol = 'https:';
+          }
+        }
+        return parsed.toString();
+      } catch (error) {
+        return target;
+      }
     }
 
     window.AdminBaseUrl = adminBaseUrl ? adminBaseUrl.toString() : '';
     window.adminUrl = function(path) {
       var target = String(path || '').trim();
       if (!target || !adminBaseUrl) {
-        return target;
+        return normalizeRequestUrl(target);
       }
       if (/^[a-z]+:/i.test(target) || target.indexOf('//') === 0) {
-        return target;
+        return normalizeRequestUrl(target);
       }
-      return new URL(target, adminBaseUrl).toString();
+      return normalizeRequestUrl(new URL(target, adminBaseUrl).toString());
     };
+
+    if (window.fetch && !window.__adminFetchUpgraded) {
+      var originalFetch = window.fetch.bind(window);
+      window.fetch = function(input, init) {
+        if (typeof input === 'string') {
+          input = window.adminUrl(input);
+        } else if (input && typeof input.url === 'string') {
+          input = new Request(window.adminUrl(input.url), input);
+        }
+        return originalFetch(input, init);
+      };
+      window.__adminFetchUpgraded = true;
+    }
+
+    if (window.XMLHttpRequest && !window.__adminXhrUpgraded) {
+      var originalOpen = window.XMLHttpRequest.prototype.open;
+      window.XMLHttpRequest.prototype.open = function(method, url) {
+        var nextUrl = (typeof url === 'string') ? window.adminUrl(url) : url;
+        return originalOpen.apply(this, [method, nextUrl].concat(Array.prototype.slice.call(arguments, 2)));
+      };
+      window.__adminXhrUpgraded = true;
+    }
 
     if (window.jQuery) {
       $.ajaxSetup({
