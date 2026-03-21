@@ -4,6 +4,30 @@
 	require_once __DIR__ . '/../vendor/autoload.php';
 	use Intervention\Image\ImageManagerStatic as Image;
 
+	if (!function_exists('admin_uploaded_image_is_valid')) {
+		function admin_uploaded_image_is_valid(string $path, array $allowMime): bool
+		{
+			if ($path === '' || !is_file($path)) {
+				return false;
+			}
+
+			$mime = '';
+			if (function_exists('finfo_open')) {
+				$finfo = finfo_open(FILEINFO_MIME_TYPE);
+				if ($finfo) {
+					$mime = (string)finfo_file($finfo, $path);
+					finfo_close($finfo);
+				}
+			}
+
+			if ($mime !== '' && !in_array($mime, $allowMime, true)) {
+				return false;
+			}
+
+			return @getimagesize($path) !== false;
+		}
+	}
+
 	if(isset($_POST['upload'])){
 		$id = (int)($_POST['id'] ?? 0);
 		$filename = (string)($_FILES['photo']['name'] ?? '');
@@ -22,6 +46,8 @@
 
 		$new_filename = (string)($row['photo'] ?? '');
 		$allowTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+		$allowMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+		$photoOptimizationWarning = '';
 
 		if(!empty($filename)){
 			$ext = strtolower((string)pathinfo($filename, PATHINFO_EXTENSION));
@@ -47,11 +73,22 @@
 					$constraint->upsize();
 				})->save($targetFile, 80);
 			} catch (Throwable $e) {
-				@unlink($targetFile);
-				$_SESSION['error'] = 'Photo processing failed.';
-				$pdo->close();
-				header('location: products.php');
-				exit();
+				if (!admin_uploaded_image_is_valid($targetFile, $allowMime)) {
+					@unlink($targetFile);
+					$_SESSION['error'] = 'Photo processing failed.';
+					$pdo->close();
+					header('location: products.php');
+					exit();
+				}
+
+				$photoOptimizationWarning = ' Photo was uploaded without optimization due to server image-processing limits.';
+				if (function_exists('app_log')) {
+					app_log('warning', 'Product photo optimization failed; falling back to original upload.', [
+						'product_id' => $id,
+						'file' => $filename,
+						'error' => $e->getMessage(),
+					]);
+				}
 			}
 		}
 		
@@ -67,7 +104,7 @@
 					catalog_v2_sync_product_from_legacy($conn, $row);
 				}
 			}
-			$_SESSION['success'] = 'Product photo updated successfully';
+			$_SESSION['success'] = 'Product photo updated successfully.' . $photoOptimizationWarning;
 		}
 		catch(PDOException $e){
 			$_SESSION['error'] = $e->getMessage();

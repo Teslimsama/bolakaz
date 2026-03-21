@@ -96,6 +96,14 @@ if (!function_exists('app_render_error_page')) {
     }
 }
 
+if (!function_exists('app_is_vendor_path')) {
+    function app_is_vendor_path(string $file): bool
+    {
+        $normalized = str_replace('\\', '/', $file);
+        return strpos($normalized, '/vendor/') !== false;
+    }
+}
+
 if (!function_exists('app_register_error_handlers')) {
     function app_register_error_handlers(): void
     {
@@ -118,6 +126,10 @@ if (!function_exists('app_register_error_handlers')) {
             // PHP 8.1+ emits many vendor deprecations (e.g. return type compatibility)
             // for older packages. Log but do not escalate to exceptions.
             if (in_array($severity, [E_DEPRECATED, E_USER_DEPRECATED], true)) {
+                if (app_is_vendor_path($file)) {
+                    return true;
+                }
+
                 try {
                     app_logger()->notice($message, [
                         'severity' => $severity,
