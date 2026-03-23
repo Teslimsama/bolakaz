@@ -2,6 +2,7 @@
 include 'session.php';
 include 'slugify.php';
 require_once __DIR__ . '/../lib/image_tools.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 $redirectUrl = 'category';
 
@@ -50,6 +51,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             exit;
         }
 
+        $conn->beginTransaction();
         $insert = $conn->prepare("INSERT INTO category (name, cat_slug, cat_image, is_parent, parent_id, status)
             VALUES (:name, :cat_slug, :cat_image, :is_parent, :parent_id, :status)");
         $insert->execute([
@@ -60,9 +62,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             'parent_id' => $isParent ? null : $parentId,
             'status' => $status,
         ]);
+        $categoryId = (int) $conn->lastInsertId();
+        sync_enqueue_or_fail($conn, 'category', $categoryId);
+        $conn->commit();
 
         $_SESSION['success'] = 'Category added successfully';
     } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = 'Unable to add category';
         if ($catImage !== '') {
             @unlink(__DIR__ . '/../images/' . $catImage);

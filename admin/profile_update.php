@@ -1,5 +1,6 @@
 <?php
 	include 'session.php';
+	require_once __DIR__ . '/../lib/sync.php';
 
 	if(isset($_GET['return'])){
 		$return = $_GET['return'];
@@ -35,12 +36,21 @@
 			$conn = $pdo->open();
 
 			try{
+				$conn->beginTransaction();
 				$stmt = $conn->prepare("UPDATE users SET email=:email, password=:password, firstname=:firstname, lastname=:lastname, photo=:photo WHERE id=:id");
 				$stmt->execute(['email'=>$email, 'password'=>$password, 'firstname'=>$firstname, 'lastname'=>$lastname, 'photo'=>$filename, 'id'=>$admin['id']]);
+				sync_enqueue_or_fail($conn, 'users', (int) $admin['id']);
+				$conn->commit();
 
 				$_SESSION['success'] = 'Account updated successfully';
 			}
-			catch(PDOException $e){
+			catch(Throwable $e){
+				if ($conn->inTransaction()) {
+					$conn->rollBack();
+				}
+				if (!empty($photo) && $filename !== ($admin['photo'] ?? '')) {
+					@unlink(__DIR__ . '/../images/' . $filename);
+				}
 				$_SESSION['error'] = $e->getMessage();
 			}
 

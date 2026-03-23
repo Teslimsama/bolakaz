@@ -1,6 +1,7 @@
 <?php
 include 'session.php';
 require_once __DIR__ . '/../lib/image_tools.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 $redirectUrl = 'ads';
 
@@ -42,6 +43,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             exit;
         }
 
+        $conn->beginTransaction();
         $insert = $conn->prepare("INSERT INTO ads (text_align, image_path, discount, collection, link)
             VALUES (:text_align, :image_path, :discount, :collection, :link)");
         $insert->execute([
@@ -51,9 +53,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             'collection' => (string)$category['name'],
             'link' => (string)$category['cat_slug'],
         ]);
+        $adId = (int) $conn->lastInsertId();
+        sync_enqueue_or_fail($conn, 'ads', $adId);
+        $conn->commit();
 
         $_SESSION['success'] = 'Ad added successfully';
     } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = 'Unable to add ad.';
         if ($imagePath !== '') {
             @unlink(__DIR__ . '/../images/' . $imagePath);

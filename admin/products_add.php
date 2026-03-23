@@ -4,6 +4,7 @@ include 'slugify.php';
 require_once __DIR__ . '/../lib/image_tools.php';
 require_once __DIR__ . '/../lib/product_payload.php';
 require_once __DIR__ . '/../lib/catalog_v2.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 if (!isset($_POST['add'])) {
     $_SESSION['error'] = 'Fill up the product form first.';
@@ -74,6 +75,7 @@ $allowTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 $allowMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 $errorUpload = '';
 $galleryOptimizationWarnings = [];
+$uploadedGalleryFiles = [];
 
 $conn = $pdo->open();
 
@@ -117,6 +119,8 @@ try {
         }
     }
 
+    $conn->beginTransaction();
+
     $insert = $conn->prepare(
         "INSERT INTO products (category_id, subcategory_id, category_name, name, description, additional_info, slug, price, color, size, brand, material, qty, photo, product_status)
          VALUES (:category, :subcategory, :category_name, :name, :description, :additional_info, :slug, :price, :color, :size, :brand, :material, :qty, :photo, :product_status)"
@@ -140,6 +144,7 @@ try {
     ]);
 
     $productID = (int)$conn->lastInsertId();
+    sync_enqueue_or_fail($conn, 'products', $productID);
 
     $fileImages = isset($_FILES['images']['name']) && is_array($_FILES['images']['name']) ? array_filter($_FILES['images']['name']) : [];
     if (!empty($fileImages)) {
@@ -156,6 +161,7 @@ try {
                 $errorUpload .= $val . ' | Upload failed. ';
                 continue;
             }
+            $uploadedGalleryFiles[] = $targetFilePath;
 
             $optimizationError = '';
             $optimized = app_optimize_image($targetFilePath, 1200, 80, $optimizationError);
@@ -189,6 +195,8 @@ try {
                 'file_name' => $newFileName,
                 'uploaded_on' => date('Y-m-d H:i:s'),
             ]);
+            $galleryImageId = (int) $conn->lastInsertId();
+            sync_enqueue_or_fail($conn, 'gallery_images', $galleryImageId);
 
             if (!$optimized) {
                 $galleryOptimizationWarnings[] = $val;
@@ -226,7 +234,20 @@ try {
         ];
         catalog_v2_sync_product_from_legacy($conn, $syncSource);
     }
+
+    $conn->commit();
 } catch (Throwable $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    if ($productPhoto !== '') {
+        @unlink($uploadDir . $productPhoto);
+    }
+    foreach ($uploadedGalleryFiles as $uploadedGalleryFile) {
+        if (is_string($uploadedGalleryFile) && is_file($uploadedGalleryFile)) {
+            @unlink($uploadedGalleryFile);
+        }
+    }
     error_log('Product add failed: ' . $e->getMessage());
     $_SESSION['error'] = 'Unable to add product right now.';
 }

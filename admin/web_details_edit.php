@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 function normalize_rich_text(string $value): string
 {
@@ -40,7 +41,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         if (!$row) {
             $_SESSION['error'] = 'Web details not found';
         } else {
-            // Update web details in the database
+            $conn->beginTransaction();
             $stmt = $conn->prepare("UPDATE web_details 
                                     SET site_name=:site_name, site_number=:site_number, site_email=:site_email, 
                                         site_address=:site_address, short_description=:short_description, description=:description 
@@ -54,9 +55,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 'description' => $desc,
                 'id' => $id,
             ]);
+            sync_enqueue_or_fail($conn, 'web_details', $id);
+            $conn->commit();
             $_SESSION['success'] = 'Web details updated successfully';
         }
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = $e->getMessage();
     }
 

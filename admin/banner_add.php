@@ -2,6 +2,7 @@
 include 'session.php';
 require_once __DIR__ . '/../lib/banner_links.php';
 require_once __DIR__ . '/../lib/image_tools.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 $redirectUrl = 'banner';
 
@@ -40,6 +41,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             exit;
         }
 
+        $conn->beginTransaction();
         $stmt = $conn->prepare("INSERT INTO banner (name, image_path, caption_heading, caption_text, link)
             VALUES (:name, :image_path, :caption_heading, :caption_text, :link)");
         $stmt->execute([
@@ -49,8 +51,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             'caption_text' => $captionText,
             'link' => $link,
         ]);
+        $bannerId = (int) $conn->lastInsertId();
+        sync_enqueue_or_fail($conn, 'banner', $bannerId);
+        $conn->commit();
         $_SESSION['success'] = 'Banner item added successfully';
     } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = 'Unable to add banner item.';
         if ($imagePath !== '') {
             @unlink(__DIR__ . '/../images/' . $imagePath);

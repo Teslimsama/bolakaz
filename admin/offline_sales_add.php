@@ -1,6 +1,7 @@
 <?php
 include 'session.php';
 require_once __DIR__ . '/../lib/offline_statement.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 if(isset($_POST['add'])){
     $user_id = (int)$_POST['user_id'];
@@ -25,6 +26,8 @@ if(isset($_POST['add'])){
 
     try{
         $conn->beginTransaction();
+        $detailIds = [];
+        $initialPaymentId = 0;
 
         if ($user_id > 0) {
             $userStmt = $conn->prepare("SELECT firstname, lastname, phone FROM users WHERE id = :id LIMIT 1");
@@ -78,22 +81,34 @@ if(isset($_POST['add'])){
 
             $stmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
             $stmt->execute(['sales_id'=>$sales_id, 'product_id'=>$p_id, 'quantity'=>$qty]);
+            $detailIds[] = (int) $conn->lastInsertId();
         }
 
         if($initial_payment > 0){
             $stmt = $conn->prepare("INSERT INTO offline_payments (sales_id, amount, payment_method, payment_date, note) VALUES (:sales_id, :amount, :method, :date, :note)");
             $stmt->execute(['sales_id'=>$sales_id, 'amount'=>$initial_payment, 'method'=>$payment_method, 'date'=>$sales_date, 'note'=>'Initial payment']);
+            $initialPaymentId = (int) $conn->lastInsertId();
 
             $pstatus = ($initial_payment >= $total_amount) ? 'paid' : 'partial';
             $stmt = $conn->prepare("UPDATE sales SET payment_status=:pstatus WHERE id=:id");
             $stmt->execute(['pstatus'=>$pstatus, 'id'=>$sales_id]);
         }
 
+        sync_enqueue_or_fail($conn, 'sales', (int) $sales_id);
+        foreach ($detailIds as $detailId) {
+            sync_enqueue_or_fail($conn, 'details', $detailId);
+        }
+        if ($initialPaymentId > 0) {
+            sync_enqueue_or_fail($conn, 'offline_payments', $initialPaymentId);
+        }
+
         $conn->commit();
         $_SESSION['success'] = 'Offline sale added successfully.';
     }
-    catch(PDOException $e){
-        $conn->rollBack();
+    catch(Throwable $e){
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = $e->getMessage();
     }
 

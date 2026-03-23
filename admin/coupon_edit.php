@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 	$id = (int)($_POST['id'] ?? 0);
@@ -19,6 +20,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 	$conn = $pdo->open();
 
 	try {
+		$conn->beginTransaction();
 		$stmt = $conn->prepare("UPDATE coupons SET code=:code, type=:type, value=:value, status=:status, expire_date=:expire_date, influencer_id=:influencer_id WHERE id=:id");
 		$stmt->execute([
 			'code' => $code,
@@ -29,8 +31,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 			'influencer_id' => $influencer_id,
 			'id' => $id
 		]);
+		sync_enqueue_or_fail($conn, 'coupon', $id);
+		$conn->commit();
 		$_SESSION['success'] = 'Coupon updated successfully';
-	} catch (PDOException $e) {
+	} catch (Throwable $e) {
+		if ($conn->inTransaction()) {
+			$conn->rollBack();
+		}
 		$_SESSION['error'] = $e->getMessage();
 	}
 

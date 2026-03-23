@@ -1,5 +1,6 @@
 <?php
 include 'session.php'; // Ensure your database connection is properly configured
+require_once __DIR__ . '/../lib/sync.php';
 
 function normalize_rich_text(string $value): string
 {
@@ -39,7 +40,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         if ($row['numrows'] > 0) {
             $_SESSION['error'] = 'Site details already exist';
         } else {
-            // Insert web details into the database
+            $conn->beginTransaction();
             $stmt = $conn->prepare("INSERT INTO web_details (site_name, site_number, site_email, site_address, short_description, description) 
                                     VALUES (:site_name, :site_number, :site_email, :site_address, :short_desc, :desc)");
             $stmt->execute([
@@ -50,9 +51,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 'short_desc' => $short_desc,
                 'desc' => $desc,
             ]);
+            $webDetailId = (int) $conn->lastInsertId();
+            sync_enqueue_or_fail($conn, 'web_details', $webDetailId);
+            $conn->commit();
             $_SESSION['success'] = 'Web details added successfully';
         }
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = $e->getMessage();
     }
 

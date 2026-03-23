@@ -1,5 +1,6 @@
 <?php
 	include 'session.php';
+	require_once __DIR__ . '/../lib/sync.php';
 
 	if(isset($_POST['add'])){
 		$firstname = trim((string)($_POST['firstname'] ?? ''));
@@ -35,12 +36,22 @@
 				move_uploaded_file($_FILES['photo']['tmp_name'], '../images/'.$filename);	
 			}
 			try{
+				$conn->beginTransaction();
 				$stmt = $conn->prepare("INSERT INTO users (email, password, firstname, lastname, address, phone, photo, status, created_on) VALUES (:email, :password, :firstname, :lastname, :address, :contact, :photo, :status, :created_on)");
 				$stmt->execute(['email'=>$email, 'password'=>$password, 'firstname'=>$firstname, 'lastname'=>$lastname, 'address'=>$address, 'contact'=>$contact, 'photo'=>$filename, 'status'=>1, 'created_on'=>$now]);
+				$userId = (int) $conn->lastInsertId();
+				sync_enqueue_or_fail($conn, 'users', $userId);
+				$conn->commit();
 				$_SESSION['success'] = 'User added successfully';
 
 			}
-			catch(PDOException $e){
+			catch(Throwable $e){
+				if ($conn->inTransaction()) {
+					$conn->rollBack();
+				}
+				if ($filename !== '') {
+					@unlink(__DIR__ . '/../images/' . $filename);
+				}
 				$_SESSION['error'] = $e->getMessage();
 			}
 		}

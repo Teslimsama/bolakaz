@@ -2,6 +2,7 @@
 	include 'session.php';
 	require_once __DIR__ . '/../lib/catalog_v2.php';
 	require_once __DIR__ . '/../lib/image_tools.php';
+	require_once __DIR__ . '/../lib/sync.php';
 
 	if(isset($_POST['upload'])){
 		$id = (int)($_POST['id'] ?? 0);
@@ -62,6 +63,7 @@
 		}
 		
 		try{
+			$conn->beginTransaction();
 			$stmt = $conn->prepare("UPDATE products SET photo=:photo WHERE id=:id");
 			$stmt->execute(['photo'=>$new_filename, 'id'=>$id]);
 
@@ -73,9 +75,17 @@
 					catalog_v2_sync_product_from_legacy($conn, $row);
 				}
 			}
+			sync_enqueue_or_fail($conn, 'products', $id);
+			$conn->commit();
 			$_SESSION['success'] = 'Product photo updated successfully.' . $photoOptimizationWarning;
 		}
-		catch(PDOException $e){
+		catch(Throwable $e){
+			if ($conn->inTransaction()) {
+				$conn->rollBack();
+			}
+			if ($new_filename !== '' && $new_filename !== (string)($row['photo'] ?? '')) {
+				@unlink(__DIR__ . '/../images/' . $new_filename);
+			}
 			$_SESSION['error'] = $e->getMessage();
 		}
 

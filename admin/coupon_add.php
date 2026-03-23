@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 	$code = trim((string)($_POST['code'] ?? ''));
@@ -25,6 +26,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 		$_SESSION['error'] = 'Coupon code already exists';
 	} else {
 		try {
+			$conn->beginTransaction();
 			$stmt = $conn->prepare("INSERT INTO coupons (code, type, value, status, expire_date, influencer_id, created_at, updated_at) 
 									VALUES (:code, :type, :value, :status, :expire_date, :influencer_id, NOW(), NOW())");
 			$stmt->execute([
@@ -35,8 +37,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 				'expire_date' => ($expire_date !== '' ? $expire_date : null),
 				'influencer_id' => $influencer_id
 			]);
+			$couponId = (int) $conn->lastInsertId();
+			sync_enqueue_or_fail($conn, 'coupon', $couponId);
+			$conn->commit();
 			$_SESSION['success'] = 'Coupon added successfully';
-		} catch (PDOException $e) {
+		} catch (Throwable $e) {
+			if ($conn->inTransaction()) {
+				$conn->rollBack();
+			}
 			$_SESSION['error'] = $e->getMessage();
 		}
 	}

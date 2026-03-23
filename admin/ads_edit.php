@@ -1,6 +1,7 @@
 <?php
 include 'session.php';
 require_once __DIR__ . '/../lib/image_tools.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 $redirectUrl = 'ads';
 
@@ -18,6 +19,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
     $conn = $pdo->open();
     $imagePath = '';
+    $oldImagePathToDelete = '';
 
     try {
         $stmt = $conn->prepare("SELECT cat_slug, name FROM category WHERE id=:id LIMIT 1");
@@ -53,6 +55,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             exit;
         }
 
+        $conn->beginTransaction();
         $sql = "UPDATE ads SET text_align=:text_align, discount=:discount, collection=:collection, link=:link";
         $params = [
             'text_align' => $textAlign,
@@ -70,22 +73,28 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $sql .= " WHERE id=:id";
         $update = $conn->prepare($sql);
         $update->execute($params);
+        sync_enqueue_or_fail($conn, 'ads', $id);
+        $conn->commit();
 
         if ($imagePath !== '' && $oldImage !== '' && $oldImage !== $imagePath) {
-            $oldPath = __DIR__ . '/../images/' . ltrim($oldImage, '/');
-            if (is_file($oldPath)) {
-                @unlink($oldPath);
-            }
+            $oldImagePathToDelete = __DIR__ . '/../images/' . ltrim($oldImage, '/');
         }
 
         $_SESSION['success'] = 'Ad updated successfully';
     } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = 'Unable to update ad.';
         if ($imagePath !== '') {
             @unlink(__DIR__ . '/../images/' . $imagePath);
         }
     } finally {
         $pdo->close();
+    }
+
+    if ($oldImagePathToDelete !== '' && is_file($oldImagePathToDelete)) {
+        @unlink($oldImagePathToDelete);
     }
 } else {
     $_SESSION['error'] = 'Invalid request method';

@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 if(isset($_POST['add_payment'])){
     $sales_id = (int)$_POST['sales_id'];
@@ -20,6 +21,7 @@ if(isset($_POST['add_payment'])){
 
         $stmt = $conn->prepare("INSERT INTO offline_payments (sales_id, amount, payment_method, payment_date) VALUES (:sales_id, :amount, :method, :date)");
         $stmt->execute(['sales_id'=>$sales_id, 'amount'=>$amount, 'method'=>$method, 'date'=>$date]);
+        $paymentId = (int) $conn->lastInsertId();
 
         // Recalculate status
         $stmt = $conn->prepare("SELECT SUM(details.quantity * products.price) AS total FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
@@ -34,11 +36,16 @@ if(isset($_POST['add_payment'])){
         $stmt = $conn->prepare("UPDATE sales SET payment_status=:pstatus WHERE id=:id");
         $stmt->execute(['pstatus'=>$pstatus, 'id'=>$sales_id]);
 
+        sync_enqueue_or_fail($conn, 'sales', $sales_id);
+        sync_enqueue_or_fail($conn, 'offline_payments', $paymentId);
+
         $conn->commit();
         $_SESSION['success'] = 'Payment added successfully.';
     }
-    catch(PDOException $e){
-        $conn->rollBack();
+    catch(Throwable $e){
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = $e->getMessage();
     }
 

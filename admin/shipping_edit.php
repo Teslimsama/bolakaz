@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 	$id = (int)($_POST['id'] ?? 0);
@@ -16,10 +17,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 	$conn = $pdo->open();
 
 	try {
+		$conn->beginTransaction();
 		$stmt = $conn->prepare("UPDATE shippings SET type = :type, price = :price, status = :status WHERE id = :id");
 		$stmt->execute(['type' => $type, 'price' => $price, 'status' => $status, 'id' => $id]);
+		sync_enqueue_or_fail($conn, 'shipping', $id);
+		$conn->commit();
 		$_SESSION['success'] = 'Shipping method updated successfully';
-	} catch (PDOException $e) {
+	} catch (Throwable $e) {
+		if ($conn->inTransaction()) {
+			$conn->rollBack();
+		}
 		$_SESSION['error'] = 'Unable to update shipping method';
 	}
 

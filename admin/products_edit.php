@@ -3,6 +3,7 @@ include 'session.php';
 include 'slugify.php';
 require_once __DIR__ . '/../lib/product_payload.php';
 require_once __DIR__ . '/../lib/catalog_v2.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST' || (int)($_POST['id'] ?? 0) <= 0) {
     $_SESSION['error'] = 'Fill up edit product form first';
@@ -98,6 +99,7 @@ try {
         $counter++;
     }
 
+    $conn->beginTransaction();
     $stmt = $conn->prepare(
         "UPDATE products
          SET name = :name,
@@ -159,8 +161,14 @@ try {
         catalog_v2_sync_product_from_legacy($conn, $syncSource);
     }
 
+    sync_enqueue_or_fail($conn, 'products', $id);
+    $conn->commit();
+
     $_SESSION['success'] = 'Product updated successfully';
 } catch (Throwable $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
     error_log('Product edit failed: ' . $e->getMessage());
     $_SESSION['error'] = 'Unable to update product right now.';
 }

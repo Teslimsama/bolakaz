@@ -2,6 +2,7 @@
 include 'session.php';
 include 'slugify.php';
 require_once __DIR__ . '/../lib/image_tools.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 $redirectUrl = 'category';
 
@@ -39,6 +40,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 
     $conn = $pdo->open();
+    $oldImagePathToDelete = '';
     try {
         $currentStmt = $conn->prepare("SELECT cat_image FROM category WHERE id=:id LIMIT 1");
         $currentStmt->execute(['id' => $id]);
@@ -53,6 +55,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         }
         $oldImage = (string)($current['cat_image'] ?? '');
 
+        $conn->beginTransaction();
         $sql = "UPDATE category
             SET name=:name, cat_slug=:cat_slug, is_parent=:is_parent, parent_id=:parent_id, status=:status";
         $params = [
@@ -72,22 +75,28 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $sql .= " WHERE id=:id";
         $update = $conn->prepare($sql);
         $update->execute($params);
+        sync_enqueue_or_fail($conn, 'category', $id);
+        $conn->commit();
 
         if ($newImage !== '' && $oldImage !== '' && $oldImage !== $newImage) {
-            $oldPath = '../images/' . ltrim($oldImage, '/');
-            if (is_file($oldPath)) {
-                @unlink($oldPath);
-            }
+            $oldImagePathToDelete = __DIR__ . '/../images/' . ltrim($oldImage, '/');
         }
 
         $_SESSION['success'] = 'Category updated successfully';
     } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = 'Unable to update category';
         if ($newImage !== '') {
             @unlink(__DIR__ . '/../images/' . $newImage);
         }
     } finally {
         $pdo->close();
+    }
+
+    if ($oldImagePathToDelete !== '' && is_file($oldImagePathToDelete)) {
+        @unlink($oldImagePathToDelete);
     }
 } else {
     $_SESSION['error'] = 'Invalid request method';

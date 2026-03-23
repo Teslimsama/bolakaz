@@ -1201,6 +1201,51 @@ body.sidebar-open .admin-sidebar-backdrop {
 }
 
 @media (max-width: 767px) {
+  .main-header {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .main-header .logo {
+    width: auto;
+    max-width: calc(100vw - 168px);
+    min-width: 0;
+    border-right: 0;
+    padding: 0 8px 0 10px;
+    gap: 8px;
+  }
+
+  .main-header .logo .logo-text {
+    font-size: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .main-header .navbar {
+    margin-left: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .main-header .navbar .sidebar-toggle {
+    padding: 0 12px;
+  }
+
+  .main-header .navbar-custom-menu {
+    margin-right: 4px;
+  }
+
+  .main-header .navbar-nav {
+    display: flex;
+    align-items: center;
+  }
+
+  .main-header .navbar-nav > li > a {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
   .content,
   .content .row,
   .content [class*='col-'],

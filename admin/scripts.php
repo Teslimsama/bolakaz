@@ -615,4 +615,128 @@
       });
     }
   })();
+
+  (function() {
+    if (!window.jQuery) {
+      return;
+    }
+
+    var pollTimer = null;
+    var triggerInFlight = false;
+    var autoTriggerKey = 'bolakaz_admin_sync_triggered_at';
+
+    function formatSyncDate(value) {
+      if (!value) {
+        return 'Never';
+      }
+
+      var date = new Date(String(value).replace(' ', 'T'));
+      if (isNaN(date.getTime())) {
+        return value;
+      }
+
+      return date.toLocaleString();
+    }
+
+    function applySyncStatus(payload) {
+      var status = payload && payload.status ? payload.status : {};
+      var counts = status.counts || {};
+      var online = !!status.online;
+      var pending = Number(counts.pending || 0);
+      var failed = Number(counts.failed || 0);
+      var conflict = Number(counts.conflict || 0);
+      var processing = Number(counts.processing || 0);
+
+      $('#adminSyncPending').text(pending);
+      $('#adminSyncFailed').text(failed);
+      $('#adminSyncConflict').text(conflict);
+      $('#adminSyncProcessing').text(processing);
+      $('#adminSyncLastAttempt').text(formatSyncDate(status.last_sync_attempt));
+      $('#adminSyncLastSuccess').text(formatSyncDate(status.last_successful_sync));
+
+      var $pill = $('#adminSyncPill');
+      $pill.removeClass('is-offline is-error is-processing');
+
+      var label = 'Up to date';
+      var summary = online ? 'Connected to sync server.' : 'Offline or sync server unreachable.';
+
+      if (processing > 0) {
+        label = 'Syncing ' + processing;
+        summary = 'A sync run is currently processing queued items.';
+        $pill.addClass('is-processing');
+      } else if (!online) {
+        label = 'Offline';
+        $pill.addClass('is-offline');
+      } else if (failed > 0 || conflict > 0) {
+        label = 'Needs attention';
+        summary = 'Some queued items need retry or conflict review.';
+        $pill.addClass('is-error');
+      } else if (pending > 0) {
+        label = pending + ' pending';
+        summary = 'Local changes are queued and ready to push.';
+        $pill.addClass('is-processing');
+      }
+
+      $('#adminSyncLabel').text(label);
+      $('#adminSyncSummary').text(summary);
+    }
+
+    function refreshSyncStatus() {
+      return $.ajax({
+        url: '../sync/status',
+        type: 'GET',
+        dataType: 'json'
+      }).done(function(response) {
+        if (response && response.success) {
+          applySyncStatus(response);
+        }
+      });
+    }
+
+    function triggerSync(retryFailed) {
+        if (triggerInFlight) {
+            return;
+        }
+
+      triggerInFlight = true;
+      $.ajax({
+        url: '../sync/trigger',
+        type: 'POST',
+        dataType: 'json',
+        data: retryFailed ? { retry_failed: 1 } : {}
+      }).always(function() {
+        triggerInFlight = false;
+        window.setTimeout(refreshSyncStatus, 1200);
+        window.setTimeout(refreshSyncStatus, 5000);
+      });
+    }
+
+    $(function() {
+      if (!$('#adminSyncPill').length) {
+        return;
+      }
+
+      refreshSyncStatus();
+      try {
+        var lastTriggeredAt = Number(window.localStorage.getItem(autoTriggerKey) || 0);
+        var now = Date.now();
+        if (!lastTriggeredAt || (now - lastTriggeredAt) > 60000) {
+          window.localStorage.setItem(autoTriggerKey, String(now));
+          triggerSync(false);
+        }
+      } catch (error) {
+        triggerSync(false);
+      }
+
+      $('#adminSyncNow').on('click', function() {
+        triggerSync(false);
+      });
+
+      $('#adminSyncRetry').on('click', function() {
+        triggerSync(true);
+      });
+
+      pollTimer = window.setInterval(refreshSyncStatus, 60000);
+    });
+  })();
 </script>

@@ -2,6 +2,7 @@
 include 'session.php';
 require_once __DIR__ . '/../lib/banner_links.php';
 require_once __DIR__ . '/../lib/image_tools.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 $redirectUrl = 'banner';
 
@@ -31,6 +32,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 
     $conn = $pdo->open();
+    $oldImagePathToDelete = '';
     try {
         $destinationError = '';
         $link = banner_build_link_from_request($conn, $_POST, $destinationError);
@@ -56,6 +58,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         }
         $oldImage = (string)($current['image_path'] ?? '');
 
+        $conn->beginTransaction();
         $sql = "UPDATE banner SET name=:name, caption_text=:caption_text, caption_heading=:caption_heading, link=:link";
         $params = [
             'name' => $name,
@@ -73,22 +76,28 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $sql .= " WHERE id=:id";
         $stmt = $conn->prepare($sql);
         $stmt->execute($params);
+        sync_enqueue_or_fail($conn, 'banner', $id);
+        $conn->commit();
 
         if ($newImage !== '' && $oldImage !== '' && $oldImage !== $newImage) {
-            $oldPath = '../images/' . ltrim($oldImage, '/');
-            if (is_file($oldPath)) {
-                @unlink($oldPath);
-            }
+            $oldImagePathToDelete = __DIR__ . '/../images/' . ltrim($oldImage, '/');
         }
 
         $_SESSION['success'] = 'Banner item updated successfully';
     } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = 'Unable to update banner item.';
         if ($newImage !== '') {
             @unlink(__DIR__ . '/../images/' . $newImage);
         }
     } finally {
         $pdo->close();
+    }
+
+    if ($oldImagePathToDelete !== '' && is_file($oldImagePathToDelete)) {
+        @unlink($oldImagePathToDelete);
     }
 } else {
     $_SESSION['error'] = 'Invalid request method';

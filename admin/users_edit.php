@@ -1,5 +1,6 @@
 <?php
 	include 'session.php';
+	require_once __DIR__ . '/../lib/sync.php';
 
 	if(isset($_POST['edit'])){
 		$id = (int)($_POST['id'] ?? 0);
@@ -33,12 +34,18 @@
 		}
 
 		try{
+			$conn->beginTransaction();
 			$stmt = $conn->prepare("UPDATE users SET email=:email, password=:password, firstname=:firstname, lastname=:lastname, address=:address, phone=:contact WHERE id=:id");
 			$stmt->execute(['email'=>$email, 'password'=>$hashedPassword, 'firstname'=>$firstname, 'lastname'=>$lastname, 'address'=>$address, 'contact'=>$contact, 'id'=>$id]);
+			sync_enqueue_or_fail($conn, 'users', $id);
+			$conn->commit();
 			$_SESSION['success'] = 'User updated successfully';
 
 		}
-		catch(PDOException $e){
+		catch(Throwable $e){
+			if ($conn->inTransaction()) {
+				$conn->rollBack();
+			}
 			$_SESSION['error'] = $e->getMessage();
 		}
 		

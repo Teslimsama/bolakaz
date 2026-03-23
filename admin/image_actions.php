@@ -2,6 +2,7 @@
 require 'image_functions.php';
 define('BASE_PATH', dirname(__DIR__));
 require BASE_PATH . '/lib/image_tools.php';
+require BASE_PATH . '/lib/sync.php';
 include 'slugify.php';
 
 $uploadDir = "../images/";
@@ -112,7 +113,18 @@ if ($isUploadRequest) {
                 'file_name' => $newFileName,
             ];
 
-            if (!insertImage($imgData)) {
+            try {
+                $conn->beginTransaction();
+                $imageId = insertImage($imgData);
+                if (!$imageId) {
+                    throw new RuntimeException('Database insertion failed.');
+                }
+                sync_enqueue_or_fail($conn, 'gallery_images', (int) $imageId);
+                $conn->commit();
+            } catch (Throwable $e) {
+                if ($conn->inTransaction()) {
+                    $conn->rollBack();
+                }
                 $errors[] = $val . ' | Database insertion failed.';
                 @unlink($targetFilePath);
                 continue;
@@ -166,13 +178,22 @@ if ($isUploadRequest) {
         exit();
     }
 
-    if (deleteImage(['id' => $imgId])) {
+    try {
+        $conn->beginTransaction();
+        sync_enqueue_delete_or_fail($conn, 'gallery_images', $prevData);
+        if (!deleteImage(['id' => $imgId])) {
+            throw new RuntimeException('Unable to remove image.');
+        }
+        $conn->commit();
         @unlink($uploadDir . (string)$prevData['file_name']);
         if (image_actions_is_ajax()) {
             image_actions_json(['success' => true, 'message' => 'Image removed successfully.']);
         }
         $_SESSION['success'] = 'Image removed successfully.';
-    } else {
+    } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         if (image_actions_is_ajax()) {
             image_actions_json(['success' => false, 'message' => 'Unable to remove image.'], 500);
         }
@@ -182,14 +203,29 @@ if ($isUploadRequest) {
     $prevData = getRows(['where' => ['id' => (int)$_POST['id']], 'return_type' => 'single']);
     $gallery = (is_array($prevData) && !empty($prevData)) ? $prevData[0] : null;
 
-    if (deleteImage(['gallery_id' => (int)$_POST['id']])) {
+    try {
+        $conn->beginTransaction();
+        if (!empty($gallery['images'])) {
+            foreach ($gallery['images'] as $img) {
+                if (is_array($img)) {
+                    sync_enqueue_delete_or_fail($conn, 'gallery_images', $img);
+                }
+            }
+        }
+        if (!deleteImage(['gallery_id' => (int)$_POST['id']])) {
+            throw new RuntimeException('Unable to delete gallery.');
+        }
+        $conn->commit();
         if (!empty($gallery['images'])) {
             foreach ($gallery['images'] as $img) {
                 @unlink($uploadDir . (string)($img['file_name'] ?? ''));
             }
         }
         $_SESSION['success'] = 'Gallery has been deleted successfully.';
-    } else {
+    } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         $_SESSION['error'] = 'Some problem occurred, please try again.';
     }
 } elseif (image_actions_is_ajax()) {
