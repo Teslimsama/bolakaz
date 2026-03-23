@@ -1,10 +1,8 @@
 <?php
 require 'image_functions.php';
 define('BASE_PATH', dirname(__DIR__));
-require BASE_PATH . '/vendor/autoload.php';
+require BASE_PATH . '/lib/image_tools.php';
 include 'slugify.php';
-
-use Intervention\Image\ImageManagerStatic as Image;
 
 $uploadDir = "../images/";
 $allowTypes = ['jpg', 'png', 'jpeg', 'gif', 'webp'];
@@ -93,23 +91,14 @@ if ($isUploadRequest) {
                 continue;
             }
 
-            $optimized = true;
-            try {
-                $image = Image::make($targetFilePath);
-                $image->orientate();
-                $image->resize(800, null, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })->save($targetFilePath, 75);
-            } catch (\Throwable $e) {
-                $optimized = false;
-                if (function_exists('app_log')) {
-                    app_log('warning', 'Gallery image optimization failed; falling back to original upload.', [
-                        'file' => $val,
-                        'product_id' => $id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+            $optimizationError = '';
+            $optimized = app_optimize_image($targetFilePath, 800, 75, $optimizationError);
+            if (!$optimized && function_exists('app_log')) {
+                app_log('warning', 'Gallery image optimization skipped; keeping original upload.', [
+                    'file' => $val,
+                    'product_id' => $id,
+                    'error' => $optimizationError !== '' ? $optimizationError : 'Native image optimizer could not process the upload.',
+                ]);
             }
 
             if (!is_file($targetFilePath)) {

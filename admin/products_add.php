@@ -1,35 +1,9 @@
 <?php
 include 'session.php';
 include 'slugify.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../lib/image_tools.php';
 require_once __DIR__ . '/../lib/product_payload.php';
 require_once __DIR__ . '/../lib/catalog_v2.php';
-
-use Intervention\Image\ImageManagerStatic as Image;
-
-if (!function_exists('admin_uploaded_image_is_valid')) {
-    function admin_uploaded_image_is_valid(string $path, array $allowMime): bool
-    {
-        if ($path === '' || !is_file($path)) {
-            return false;
-        }
-
-        $mime = '';
-        if (function_exists('finfo_open')) {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            if ($finfo) {
-                $mime = (string)finfo_file($finfo, $path);
-                finfo_close($finfo);
-            }
-        }
-
-        if ($mime !== '' && !in_array($mime, $allowMime, true)) {
-            return false;
-        }
-
-        return @getimagesize($path) !== false;
-    }
-}
 
 if (!isset($_POST['add'])) {
     $_SESSION['error'] = 'Fill up the product form first.';
@@ -183,27 +157,20 @@ try {
                 continue;
             }
 
-            $optimized = true;
-            try {
-                $image = Image::make($targetFilePath);
-                $image->orientate();
-                $image->resize(1200, null, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })->save($targetFilePath, 80);
-            } catch (Throwable $e) {
-                if (!admin_uploaded_image_is_valid($targetFilePath, $allowMime)) {
+            $optimizationError = '';
+            $optimized = app_optimize_image($targetFilePath, 1200, 80, $optimizationError);
+            if (!$optimized) {
+                if (!app_uploaded_image_is_valid($targetFilePath, $allowMime)) {
                     $errorUpload .= $val . ' | Image processing failed. ';
                     @unlink($targetFilePath);
                     continue;
                 }
 
-                $optimized = false;
                 if (function_exists('app_log')) {
-                    app_log('warning', 'Gallery image optimization failed; falling back to original upload during product add.', [
+                    app_log('warning', 'Gallery image optimization skipped; keeping original upload during product add.', [
                         'file' => $val,
                         'product_id' => $productID,
-                        'error' => $e->getMessage(),
+                        'error' => $optimizationError !== '' ? $optimizationError : 'Native image optimizer could not process the upload.',
                     ]);
                 }
             }

@@ -1,43 +1,9 @@
 <?php
 include 'session.php';
 require_once __DIR__ . '/../lib/banner_links.php';
+require_once __DIR__ . '/../lib/image_tools.php';
 
-function banner_upload_image(array $file, string &$error = ''): ?string
-{
-    if (empty($file['name']) || !is_uploaded_file((string)($file['tmp_name'] ?? ''))) {
-        $error = 'Please upload an image for the banner.';
-        return null;
-    }
-
-    $tmp = (string)$file['tmp_name'];
-    $check = @getimagesize($tmp);
-    if ($check === false) {
-        $error = 'File is not an image.';
-        return null;
-    }
-
-    $size = (int)($file['size'] ?? 0);
-    if ($size > 5 * 1024 * 1024) {
-        $error = 'Sorry, your file is too large.';
-        return null;
-    }
-
-    $ext = strtolower((string)pathinfo((string)$file['name'], PATHINFO_EXTENSION));
-    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    if (!in_array($ext, $allowed, true)) {
-        $error = 'Sorry, only JPG, JPEG, PNG, GIF & WEBP files are allowed.';
-        return null;
-    }
-
-    $filename = uniqid('banner_', true) . '.' . $ext;
-    $target = '../images/' . $filename;
-    if (!move_uploaded_file($tmp, $target)) {
-        $error = 'Failed to upload image.';
-        return null;
-    }
-
-    return $filename;
-}
+$redirectUrl = 'banner';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $name = trim((string)($_POST['name'] ?? ''));
@@ -46,15 +12,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
     if ($name === '' || $captionHeading === '' || $captionText === '') {
         $_SESSION['error'] = 'Please fill all banner fields.';
-        header('location: banner.php');
+        header('location: ' . $redirectUrl);
         exit;
     }
 
     $uploadError = '';
-    $imagePath = banner_upload_image($_FILES['banner_image'] ?? [], $uploadError);
+    $imagePath = app_store_uploaded_image($_FILES['banner_image'] ?? [], [
+        'required' => true,
+        'field_label' => 'Banner image',
+        'upload_dir' => __DIR__ . '/../images',
+        'filename_prefix' => 'banner_',
+    ], $uploadError);
     if ($imagePath === null) {
         $_SESSION['error'] = $uploadError;
-        header('location: banner.php');
+        header('location: ' . $redirectUrl);
         exit;
     }
 
@@ -64,7 +35,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $link = banner_build_link_from_request($conn, $_POST, $destinationError);
         if ($link === null) {
             $_SESSION['error'] = $destinationError;
-            header('location: banner.php');
+            @unlink(__DIR__ . '/../images/' . $imagePath);
+            header('location: ' . $redirectUrl);
             exit;
         }
 
@@ -80,6 +52,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $_SESSION['success'] = 'Banner item added successfully';
     } catch (Throwable $e) {
         $_SESSION['error'] = 'Unable to add banner item.';
+        if ($imagePath !== '') {
+            @unlink(__DIR__ . '/../images/' . $imagePath);
+        }
     } finally {
         $pdo->close();
     }
@@ -87,4 +62,4 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $_SESSION['error'] = 'Invalid request method';
 }
 
-header('location: banner.php');
+header('location: ' . $redirectUrl);

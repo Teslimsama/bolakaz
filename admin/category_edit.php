@@ -1,41 +1,9 @@
 <?php
 include 'session.php';
 include 'slugify.php';
+require_once __DIR__ . '/../lib/image_tools.php';
 
-function category_upload_image_optional(array $file, string &$error = ''): ?string
-{
-    if (empty($file['name']) || !is_uploaded_file((string)($file['tmp_name'] ?? ''))) {
-        return '';
-    }
-
-    $tmp = (string)$file['tmp_name'];
-    $check = @getimagesize($tmp);
-    if ($check === false) {
-        $error = 'File is not an image.';
-        return null;
-    }
-
-    $size = (int)($file['size'] ?? 0);
-    if ($size > 5 * 1024 * 1024) {
-        $error = 'Sorry, your file is too large.';
-        return null;
-    }
-
-    $ext = strtolower((string)pathinfo((string)$file['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
-        $error = 'Sorry, only JPG, JPEG, PNG, GIF & WEBP files are allowed.';
-        return null;
-    }
-
-    $filename = uniqid('cat_', true) . '.' . $ext;
-    $target = '../images/' . $filename;
-    if (!move_uploaded_file($tmp, $target)) {
-        $error = 'Error uploading image.';
-        return null;
-    }
-
-    return $filename;
-}
+$redirectUrl = 'category';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $id = (int)($_POST['id'] ?? 0);
@@ -47,21 +15,26 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
     if ($id <= 0 || $name === '' || $slug === '' || !in_array($status, ['active', 'inactive'], true)) {
         $_SESSION['error'] = 'Please provide valid category details';
-        header('location: category.php');
+        header('location: ' . $redirectUrl);
         exit;
     }
 
     if (!$isParent && $parentId <= 0) {
         $_SESSION['error'] = 'Please select a parent category';
-        header('location: category.php');
+        header('location: ' . $redirectUrl);
         exit;
     }
 
     $uploadError = '';
-    $newImage = category_upload_image_optional($_FILES['cat-image'] ?? [], $uploadError);
+    $newImage = app_store_uploaded_image($_FILES['cat-image'] ?? [], [
+        'required' => false,
+        'field_label' => 'Category image',
+        'upload_dir' => __DIR__ . '/../images',
+        'filename_prefix' => 'cat_',
+    ], $uploadError);
     if ($newImage === null) {
         $_SESSION['error'] = $uploadError;
-        header('location: category.php');
+        header('location: ' . $redirectUrl);
         exit;
     }
 
@@ -72,7 +45,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $current = $currentStmt->fetch(PDO::FETCH_ASSOC);
         if (!$current) {
             $_SESSION['error'] = 'Category not found';
-            header('location: category.php');
+            if ($newImage !== '') {
+                @unlink(__DIR__ . '/../images/' . $newImage);
+            }
+            header('location: ' . $redirectUrl);
             exit;
         }
         $oldImage = (string)($current['cat_image'] ?? '');
@@ -107,6 +83,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $_SESSION['success'] = 'Category updated successfully';
     } catch (Throwable $e) {
         $_SESSION['error'] = 'Unable to update category';
+        if ($newImage !== '') {
+            @unlink(__DIR__ . '/../images/' . $newImage);
+        }
     } finally {
         $pdo->close();
     }
@@ -114,4 +93,4 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $_SESSION['error'] = 'Invalid request method';
 }
 
-header('location: category.php');
+header('location: ' . $redirectUrl);

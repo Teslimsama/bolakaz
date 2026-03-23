@@ -1,32 +1,7 @@
 <?php
 	include 'session.php';
 	require_once __DIR__ . '/../lib/catalog_v2.php';
-	require_once __DIR__ . '/../vendor/autoload.php';
-	use Intervention\Image\ImageManagerStatic as Image;
-
-	if (!function_exists('admin_uploaded_image_is_valid')) {
-		function admin_uploaded_image_is_valid(string $path, array $allowMime): bool
-		{
-			if ($path === '' || !is_file($path)) {
-				return false;
-			}
-
-			$mime = '';
-			if (function_exists('finfo_open')) {
-				$finfo = finfo_open(FILEINFO_MIME_TYPE);
-				if ($finfo) {
-					$mime = (string)finfo_file($finfo, $path);
-					finfo_close($finfo);
-				}
-			}
-
-			if ($mime !== '' && !in_array($mime, $allowMime, true)) {
-				return false;
-			}
-
-			return @getimagesize($path) !== false;
-		}
-	}
+	require_once __DIR__ . '/../lib/image_tools.php';
 
 	if(isset($_POST['upload'])){
 		$id = (int)($_POST['id'] ?? 0);
@@ -40,7 +15,7 @@
 		if (!$row) {
 			$_SESSION['error'] = 'Product not found.';
 			$pdo->close();
-			header('location: products.php');
+			header('location: products');
 			exit();
 		}
 
@@ -54,7 +29,7 @@
 			if (!in_array($ext, $allowTypes, true)) {
 				$_SESSION['error'] = 'Invalid photo format.';
 				$pdo->close();
-				header('location: products.php');
+				header('location: products');
 				exit();
 			}
 			$new_filename = $row['slug'].'_'.time().'.'.$ext;
@@ -62,31 +37,25 @@
 			if (!move_uploaded_file($_FILES['photo']['tmp_name'], $targetFile)) {
 				$_SESSION['error'] = 'Unable to upload photo.';
 				$pdo->close();
-				header('location: products.php');
+				header('location: products');
 				exit();
 			}
-			try {
-				$image = Image::make($targetFile);
-				$image->orientate();
-				$image->resize(1200, null, function ($constraint) {
-					$constraint->aspectRatio();
-					$constraint->upsize();
-				})->save($targetFile, 80);
-			} catch (Throwable $e) {
-				if (!admin_uploaded_image_is_valid($targetFile, $allowMime)) {
+			$optimizationError = '';
+			if (!app_optimize_image($targetFile, 1200, 80, $optimizationError)) {
+				if (!app_uploaded_image_is_valid($targetFile, $allowMime)) {
 					@unlink($targetFile);
 					$_SESSION['error'] = 'Photo processing failed.';
 					$pdo->close();
-					header('location: products.php');
+					header('location: products');
 					exit();
 				}
 
 				$photoOptimizationWarning = ' Photo was uploaded without optimization due to server image-processing limits.';
 				if (function_exists('app_log')) {
-					app_log('warning', 'Product photo optimization failed; falling back to original upload.', [
+					app_log('warning', 'Product photo optimization skipped; keeping original upload.', [
 						'product_id' => $id,
 						'file' => $filename,
-						'error' => $e->getMessage(),
+						'error' => $optimizationError !== '' ? $optimizationError : 'Native image optimizer could not process the upload.',
 					]);
 				}
 			}
@@ -117,4 +86,4 @@
 		$_SESSION['error'] = 'Select product to update photo first';
 	}
 
-	header('location: products.php');
+	header('location: products');
