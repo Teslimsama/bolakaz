@@ -1,3 +1,18 @@
+<?php
+require_once __DIR__ . '/../lib/sync.php';
+
+$syncUiConfig = sync_config();
+$syncRole = strtolower((string) ($syncUiConfig['role'] ?? 'client'));
+$isSyncServer = $syncRole === 'server';
+$syncTitle = $isSyncServer ? 'Live Sync Hub' : 'Local Sync';
+$syncSummary = $isSyncServer
+  ? 'This site receives local pushes and provides limited pull updates.'
+  : 'Pushes local changes first, then pulls selected live updates.';
+$syncNote = $isSyncServer
+  ? 'Live-to-local pull in v1.5 covers shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on Mom PC.'
+  : 'Pull scope in v1.5: shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on this device.';
+$syncPillLabel = $isSyncServer ? 'Live hub' : 'Sync status';
+?>
 <header class="main-header">
   <a href="home" class="logo">
     <span class="logo-mark">BK</span>
@@ -11,43 +26,51 @@
 
     <div class="navbar-custom-menu">
       <ul class="nav navbar-nav">
-        <li class="dropdown admin-sync-menu">
+        <li class="dropdown admin-sync-menu" id="adminSyncPanel" data-sync-role="<?php echo e($syncRole); ?>">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-            <span class="admin-sync-pill is-processing" id="adminSyncPill">
+            <span class="admin-sync-pill<?php echo $isSyncServer ? '' : ' is-processing'; ?>" id="adminSyncPill">
               <i class="fa fa-refresh"></i>
-              <span id="adminSyncLabel">Sync status</span>
+              <span id="adminSyncLabel"><?php echo e($syncPillLabel); ?></span>
             </span>
           </a>
           <ul class="dropdown-menu">
             <li class="admin-sync-dropdown">
-              <h4>Local Sync</h4>
-              <p id="adminSyncSummary">Checking local queue and server reachability.</p>
+              <h4 id="adminSyncTitle"><?php echo e($syncTitle); ?></h4>
+              <p id="adminSyncSummary"><?php echo e($syncSummary); ?></p>
+              <div class="admin-sync-note" id="adminSyncNote"><?php echo e($syncNote); ?></div>
+              <div class="admin-sync-alert d-none" id="adminSyncAlert"></div>
               <div class="admin-sync-stats">
                 <div class="admin-sync-stat">
-                  <span class="admin-sync-stat-label">Pending</span>
+                  <span class="admin-sync-stat-label" id="adminSyncPendingLabel"><?php echo $isSyncServer ? 'Devices' : 'Pending Push'; ?></span>
                   <span class="admin-sync-stat-value" id="adminSyncPending">0</span>
                 </div>
                 <div class="admin-sync-stat">
-                  <span class="admin-sync-stat-label">Failed</span>
+                  <span class="admin-sync-stat-label" id="adminSyncFailedLabel"><?php echo $isSyncServer ? 'Synced' : 'Pending Pull'; ?></span>
                   <span class="admin-sync-stat-value" id="adminSyncFailed">0</span>
                 </div>
                 <div class="admin-sync-stat">
-                  <span class="admin-sync-stat-label">Conflict</span>
+                  <span class="admin-sync-stat-label" id="adminSyncConflictLabel"><?php echo $isSyncServer ? 'Failed' : 'Conflict'; ?></span>
                   <span class="admin-sync-stat-value" id="adminSyncConflict">0</span>
                 </div>
                 <div class="admin-sync-stat">
-                  <span class="admin-sync-stat-label">Processing</span>
+                  <span class="admin-sync-stat-label" id="adminSyncProcessingLabel"><?php echo $isSyncServer ? 'Conflict' : 'Superseded'; ?></span>
                   <span class="admin-sync-stat-value" id="adminSyncProcessing">0</span>
                 </div>
               </div>
               <div class="admin-sync-meta">
-                <div><strong>Last attempt:</strong> <span id="adminSyncLastAttempt">Never</span></div>
-                <div><strong>Last success:</strong> <span id="adminSyncLastSuccess">Never</span></div>
+                <div><strong id="adminSyncLastAttemptLabel"><?php echo $isSyncServer ? 'Last inbound attempt:' : 'Last push:'; ?></strong> <span id="adminSyncLastAttempt">Never</span></div>
+                <div><strong id="adminSyncLastSuccessLabel"><?php echo $isSyncServer ? 'Last inbound success:' : 'Last pull:'; ?></strong> <span id="adminSyncLastSuccess">Never</span></div>
               </div>
+              <?php if (!$isSyncServer): ?>
               <div class="admin-sync-actions">
                 <button type="button" class="btn btn-primary btn-sm" id="adminSyncNow">Sync Now</button>
                 <button type="button" class="btn btn-default btn-sm" id="adminSyncRetry">Retry Failed</button>
               </div>
+              <?php else: ?>
+              <div class="admin-sync-actions admin-sync-actions-disabled">
+                <span>Push controls are available only on the local client app.</span>
+              </div>
+              <?php endif; ?>
             </li>
           </ul>
         </li>

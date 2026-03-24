@@ -157,6 +157,9 @@ try {
         echo " - Created sync_queue table.\n";
     }
 
+    sync_migration_add_column($conn, 'sync_queue', 'conflict_reason', 'TEXT NULL DEFAULT NULL', 'last_error');
+    sync_migration_add_column($conn, 'sync_queue', 'conflict_detected_at', 'DATETIME NULL DEFAULT NULL', 'conflict_reason');
+
     if (!sync_migration_table_exists($conn, 'sync_receipts')) {
         $conn->exec(
             "CREATE TABLE sync_receipts (
@@ -176,6 +179,83 @@ try {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
         );
         echo " - Created sync_receipts table.\n";
+    }
+
+    if (!sync_migration_table_exists($conn, 'sync_outbox')) {
+        $conn->exec(
+            "CREATE TABLE sync_outbox (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                event_uuid CHAR(36) NOT NULL,
+                entity_type VARCHAR(80) NOT NULL,
+                entity_uuid CHAR(36) NOT NULL,
+                action_type VARCHAR(20) NOT NULL,
+                payload_json LONGTEXT NOT NULL,
+                source_side VARCHAR(20) NOT NULL,
+                source_device_id VARCHAR(120) NOT NULL,
+                source_updated_at DATETIME NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY uniq_sync_outbox_event_uuid (event_uuid),
+                KEY idx_sync_outbox_cursor (id),
+                KEY idx_sync_outbox_entity (entity_type, entity_uuid),
+                KEY idx_sync_outbox_source (source_side, source_device_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+        );
+        echo " - Created sync_outbox table.\n";
+    }
+
+    if (!sync_migration_table_exists($conn, 'sync_pull_queue')) {
+        $conn->exec(
+            "CREATE TABLE sync_pull_queue (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                event_id BIGINT UNSIGNED NOT NULL,
+                event_uuid CHAR(36) NOT NULL,
+                entity_type VARCHAR(80) NOT NULL,
+                entity_uuid CHAR(36) NOT NULL,
+                action_type VARCHAR(20) NOT NULL,
+                payload_json LONGTEXT NOT NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'pending',
+                applied TINYINT(1) NOT NULL DEFAULT 0,
+                attempts INT NOT NULL DEFAULT 0,
+                locked_at DATETIME NULL,
+                next_attempt_at DATETIME NULL,
+                last_error TEXT NULL,
+                conflict_reason TEXT NULL,
+                conflict_detected_at DATETIME NULL,
+                source_side VARCHAR(20) NOT NULL,
+                source_device_id VARCHAR(120) NOT NULL,
+                source_updated_at DATETIME NULL,
+                pulled_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                applied_at DATETIME NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY uniq_sync_pull_queue_event_uuid (event_uuid),
+                KEY idx_sync_pull_queue_cursor (event_id),
+                KEY idx_sync_pull_queue_status (status, next_attempt_at),
+                KEY idx_sync_pull_queue_applied (applied, event_id),
+                KEY idx_sync_pull_queue_entity (entity_type, entity_uuid)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+        );
+        echo " - Created sync_pull_queue table.\n";
+    }
+
+    sync_migration_add_column($conn, 'sync_pull_queue', 'locked_at', 'DATETIME NULL DEFAULT NULL', 'attempts');
+
+    if (!sync_migration_table_exists($conn, 'sync_state')) {
+        $conn->exec(
+            "CREATE TABLE sync_state (
+                device_id VARCHAR(120) NOT NULL,
+                last_push_at DATETIME NULL,
+                last_pull_cursor_fetched BIGINT UNSIGNED NULL,
+                last_pull_cursor_applied BIGINT UNSIGNED NULL,
+                last_pull_at DATETIME NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (device_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+        );
+        echo " - Created sync_state table.\n";
     }
 
     echo "Sync v1 migration completed successfully.\n";

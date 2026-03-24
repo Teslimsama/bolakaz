@@ -8,7 +8,7 @@ header('Content-Type: application/json; charset=UTF-8');
 $conn = $pdo->open();
 
 try {
-    $snapshot = sync_client_status_snapshot($conn, true);
+    $snapshot = sync_status_snapshot($conn, true);
     echo json_encode([
         'success' => true,
         'status' => $snapshot,

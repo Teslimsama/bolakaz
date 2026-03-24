@@ -91,6 +91,27 @@
       color: #64748b;
       font-size: 12px;
     }
+    .admin-sync-note {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .admin-sync-alert {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(217, 119, 6, 0.12);
+      border: 1px solid rgba(217, 119, 6, 0.2);
+      color: #92400e;
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 600;
+    }
     .admin-sync-stats {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -130,6 +151,16 @@
     }
     .admin-sync-actions .btn {
       flex: 1;
+    }
+    .admin-sync-actions-disabled {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.45;
     }
     @media (max-width: 767px) {
       .main-header .navbar-nav > .admin-sync-menu > .dropdown-menu {

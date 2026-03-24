@@ -623,7 +623,7 @@
 
     var pollTimer = null;
     var triggerInFlight = false;
-    var autoTriggerKey = 'bolakaz_admin_sync_triggered_at';
+    var syncRole = String($('#adminSyncPanel').data('syncRole') || 'client').toLowerCase();
 
     function formatSyncDate(value) {
       if (!value) {
@@ -641,18 +641,60 @@
     function applySyncStatus(payload) {
       var status = payload && payload.status ? payload.status : {};
       var counts = status.counts || {};
+      var role = String(status.role || syncRole || 'client').toLowerCase();
+      var isServer = role === 'server';
       var online = !!status.online;
-      var pending = Number(counts.pending || 0);
+      var pendingPush = Number(counts.pending_push || counts.pending || 0);
+      var pendingPull = Number(counts.pending_pull || 0);
       var failed = Number(counts.failed || 0);
       var conflict = Number(counts.conflict || 0);
       var processing = Number(counts.processing || 0);
+      var superseded = Number(counts.superseded || 0);
+      var synced = Number(counts.synced || 0);
+      var devices = Number(counts.devices || 0);
+      var sourceDeviceName = status.source_device_name || status.source_device_id || 'local client devices';
+      var overwriteNotice = String(status.overwrite_notice || '');
+      var totalPending = pendingPush + pendingPull;
 
-      $('#adminSyncPending').text(pending);
-      $('#adminSyncFailed').text(failed);
-      $('#adminSyncConflict').text(conflict);
-      $('#adminSyncProcessing').text(processing);
-      $('#adminSyncLastAttempt').text(formatSyncDate(status.last_sync_attempt));
-      $('#adminSyncLastSuccess').text(formatSyncDate(status.last_successful_sync));
+      syncRole = role;
+
+      if (isServer) {
+        $('#adminSyncTitle').text('Live Sync Hub');
+        $('#adminSyncNote').text('Live-to-local pull in v1.5 covers shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on Mom PC.');
+        $('#adminSyncPendingLabel').text('Devices');
+        $('#adminSyncFailedLabel').text('Synced');
+        $('#adminSyncConflictLabel').text('Failed');
+        $('#adminSyncProcessingLabel').text('Conflict');
+        $('#adminSyncPending').text(devices);
+        $('#adminSyncFailed').text(synced);
+        $('#adminSyncConflict').text(failed);
+        $('#adminSyncProcessing').text(conflict);
+        $('#adminSyncLastAttemptLabel').text('Last inbound attempt:');
+        $('#adminSyncLastSuccessLabel').text('Last inbound success:');
+        $('#adminSyncAlert').addClass('d-none').text('');
+        $('#adminSyncLastAttempt').text(formatSyncDate(status.last_sync_attempt));
+        $('#adminSyncLastSuccess').text(formatSyncDate(status.last_successful_sync));
+      } else {
+        $('#adminSyncTitle').text('Local Sync');
+        $('#adminSyncNote').text('Pull scope in v1.5: shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on this device.');
+        $('#adminSyncPendingLabel').text('Pending Push');
+        $('#adminSyncFailedLabel').text('Pending Pull');
+        $('#adminSyncConflictLabel').text('Conflict');
+        $('#adminSyncProcessingLabel').text('Superseded');
+        $('#adminSyncPending').text(pendingPush);
+        $('#adminSyncFailed').text(pendingPull);
+        $('#adminSyncConflict').text(conflict);
+        $('#adminSyncProcessing').text(superseded);
+        $('#adminSyncLastAttemptLabel').text('Last push:');
+        $('#adminSyncLastSuccessLabel').text('Last pull:');
+        $('#adminSyncLastAttempt').text(formatSyncDate(status.last_push_at));
+        $('#adminSyncLastSuccess').text(formatSyncDate(status.last_pull_at));
+        if (overwriteNotice) {
+          $('#adminSyncAlert').removeClass('d-none').text(overwriteNotice);
+        } else {
+          $('#adminSyncAlert').addClass('d-none').text('');
+        }
+      }
 
       var $pill = $('#adminSyncPill');
       $pill.removeClass('is-offline is-error is-processing');
@@ -660,21 +702,41 @@
       var label = 'Up to date';
       var summary = online ? 'Connected to sync server.' : 'Offline or sync server unreachable.';
 
-      if (processing > 0) {
-        label = 'Syncing ' + processing;
-        summary = 'A sync run is currently processing queued items.';
+      if (isServer) {
+        label = 'Live hub';
+        summary = devices > 0
+          ? ('Receiving local pushes and serving pull updates for ' + sourceDeviceName + '.')
+          : 'This live site is ready to receive local pushes and serve limited pull updates.';
+
+        if (failed > 0 || conflict > 0) {
+          label = 'Review inbound';
+          summary = 'Some inbound sync receipts need attention on the live server.';
+          $pill.addClass('is-error');
+        }
+      } else if (processing > 0) {
+        label = 'Syncing...';
+        summary = 'Push and pull queues are currently being processed.';
         $pill.addClass('is-processing');
       } else if (!online) {
         label = 'Offline';
         $pill.addClass('is-offline');
       } else if (failed > 0 || conflict > 0) {
         label = 'Needs attention';
-        summary = 'Some queued items need retry or conflict review.';
+        summary = 'Some push or pull items need retry or conflict review.';
         $pill.addClass('is-error');
-      } else if (pending > 0) {
-        label = pending + ' pending';
-        summary = 'Local changes are queued and ready to push.';
+      } else if (totalPending > 0) {
+        label = totalPending + ' queued';
+        if (pendingPush > 0 && pendingPull > 0) {
+          summary = 'Local changes are queued to push and new live updates are waiting to apply.';
+        } else if (pendingPush > 0) {
+          summary = 'Local changes are queued and ready to push.';
+        } else {
+          summary = 'New live updates are ready to pull into this device.';
+        }
         $pill.addClass('is-processing');
+      } else if (superseded > 0) {
+        label = 'Live wins';
+        summary = 'A newer live update replaced some local pending changes.';
       }
 
       $('#adminSyncLabel').text(label);
@@ -694,18 +756,42 @@
     }
 
     function triggerSync(retryFailed) {
-        if (triggerInFlight) {
-            return;
-        }
+      if (syncRole === 'server') {
+        return;
+      }
+
+      if (triggerInFlight) {
+        return;
+      }
 
       triggerInFlight = true;
+      $('#adminSyncNow, #adminSyncRetry').prop('disabled', true);
+      $('#adminSyncSummary').text('Running push first, then pull...');
+      $('#adminSyncPill').removeClass('is-offline is-error').addClass('is-processing');
+      $('#adminSyncLabel').text('Syncing...');
+
       $.ajax({
         url: '../sync/trigger',
         type: 'POST',
         dataType: 'json',
         data: retryFailed ? { retry_failed: 1 } : {}
+      }).done(function(response) {
+        if (response && response.status) {
+          applySyncStatus({ status: response.status });
+        } else {
+          refreshSyncStatus();
+        }
+      }).fail(function(xhr) {
+        var message = 'Unable to run sync right now.';
+        if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+          message = xhr.responseJSON.message;
+        }
+        $('#adminSyncSummary').text(message);
+        $('#adminSyncPill').removeClass('is-processing').addClass('is-error');
+        $('#adminSyncLabel').text('Needs attention');
       }).always(function() {
         triggerInFlight = false;
+        $('#adminSyncNow, #adminSyncRetry').prop('disabled', false);
         window.setTimeout(refreshSyncStatus, 1200);
         window.setTimeout(refreshSyncStatus, 5000);
       });
@@ -717,15 +803,9 @@
       }
 
       refreshSyncStatus();
-      try {
-        var lastTriggeredAt = Number(window.localStorage.getItem(autoTriggerKey) || 0);
-        var now = Date.now();
-        if (!lastTriggeredAt || (now - lastTriggeredAt) > 60000) {
-          window.localStorage.setItem(autoTriggerKey, String(now));
-          triggerSync(false);
-        }
-      } catch (error) {
-        triggerSync(false);
+      if (syncRole === 'server') {
+        pollTimer = window.setInterval(refreshSyncStatus, 60000);
+        return;
       }
 
       $('#adminSyncNow').on('click', function() {
