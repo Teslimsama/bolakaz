@@ -655,6 +655,7 @@
       var sourceDeviceName = status.source_device_name || status.source_device_id || 'local client devices';
       var overwriteNotice = String(status.overwrite_notice || '');
       var totalPending = pendingPush + pendingPull;
+      var alertParts = [];
 
       syncRole = role;
 
@@ -671,9 +672,15 @@
         $('#adminSyncProcessing').text(conflict);
         $('#adminSyncLastAttemptLabel').text('Last inbound attempt:');
         $('#adminSyncLastSuccessLabel').text('Last inbound success:');
-        $('#adminSyncAlert').addClass('d-none').text('');
         $('#adminSyncLastAttempt').text(formatSyncDate(status.last_sync_attempt));
         $('#adminSyncLastSuccess').text(formatSyncDate(status.last_successful_sync));
+
+        if (failed > 0) {
+          alertParts.push(failed + ' inbound sync receipt(s) failed on the live server.');
+        }
+        if (conflict > 0) {
+          alertParts.push(conflict + ' inbound sync receipt(s) have conflicts to review.');
+        }
       } else {
         $('#adminSyncTitle').text('Local Sync');
         $('#adminSyncNote').text('Pull scope in v1.5: customers, shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on this device.');
@@ -689,11 +696,22 @@
         $('#adminSyncLastSuccessLabel').text('Last pull:');
         $('#adminSyncLastAttempt').text(formatSyncDate(status.last_push_at));
         $('#adminSyncLastSuccess').text(formatSyncDate(status.last_pull_at));
-        if (overwriteNotice) {
-          $('#adminSyncAlert').removeClass('d-none').text(overwriteNotice);
-        } else {
-          $('#adminSyncAlert').addClass('d-none').text('');
+
+        if (failed > 0) {
+          alertParts.push(failed + ' sync item(s) failed. Click Retry Failed to try them again.');
         }
+        if (conflict > 0) {
+          alertParts.push(conflict + ' sync item(s) have conflicts, so the live version was newer.');
+        }
+        if (overwriteNotice) {
+          alertParts.push(overwriteNotice);
+        }
+      }
+
+      if (alertParts.length) {
+        $('#adminSyncAlert').removeClass('d-none').text(alertParts.join(' '));
+      } else {
+        $('#adminSyncAlert').addClass('d-none').text('');
       }
 
       var $pill = $('#adminSyncPill');
