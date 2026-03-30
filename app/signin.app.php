@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		if ($row && password_verify($password, (string)$row['password'])) {
 			if (app_customer_can_login($conn, is_array($row) ? $row : [])) {
 				session_regenerate_id(true);
-				if (!empty($row['type'])) {
+				if (app_user_can_access_admin(is_array($row) ? $row : [])) {
 					$_SESSION['admin'] = $row['id'];
 					unset($_SESSION['user']);
 					$redirect = '../admin/home';

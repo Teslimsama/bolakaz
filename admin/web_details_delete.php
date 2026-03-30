@@ -2,6 +2,8 @@
 include 'session.php';
 require_once __DIR__ . '/../lib/sync.php';
 
+app_admin_require_roles(['admin', 'staff']);
+
 if (isset($_POST['delete'])) {
 	$id = $_POST['id'];
 

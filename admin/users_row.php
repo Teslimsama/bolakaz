@@ -2,6 +2,8 @@
 include 'session.php';
 require_once __DIR__ . '/../lib/customer_accounts.php';
 
+app_admin_require_roles(['admin']);
+
 header('Content-Type: application/json; charset=UTF-8');
 
 if (!isset($_POST['id'])) {

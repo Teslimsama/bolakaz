@@ -1,5 +1,6 @@
 <?php include 'session.php'; ?>
 <?php require_once __DIR__ . '/../lib/customer_accounts.php'; ?>
+<?php app_admin_require_roles(['admin']); ?>
 <?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">

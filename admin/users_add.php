@@ -3,6 +3,8 @@
 	require_once __DIR__ . '/../lib/sync.php';
 	require_once __DIR__ . '/../lib/customer_accounts.php';
 
+	app_admin_require_roles(['admin']);
+
 	if(isset($_POST['add'])){
 		$fullName = trim((string)($_POST['full_name'] ?? ''));
 		$email = trim((string)($_POST['email'] ?? ''));
