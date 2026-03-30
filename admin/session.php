@@ -30,3 +30,45 @@
 		header('location: ../index');
 		exit();
 	}
+
+	if (!app_user_can_access_admin(is_array($admin) ? $admin : [])) {
+		unset($_SESSION['admin']);
+		$_SESSION['error'] = 'Your account does not have admin access.';
+		header('location: ../signin');
+		exit();
+	}
+
+	function app_admin_has_role(array $allowedRoles): bool
+	{
+		global $admin;
+
+		$normalizedAllowedRoles = array_map('strtolower', $allowedRoles);
+		$currentRole = app_normalize_user_role($admin['type'] ?? null);
+		return in_array($currentRole, $normalizedAllowedRoles, true);
+	}
+
+	function app_admin_require_roles(array $allowedRoles): void
+	{
+		if (app_admin_has_role($allowedRoles)) {
+			return;
+		}
+
+		if (!headers_sent()) {
+			http_response_code(403);
+		}
+
+		$_SESSION['error'] = 'You do not have permission to perform that action.';
+
+		$isAjax = strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
+		if ($isAjax) {
+			header('Content-Type: application/json; charset=UTF-8');
+			echo json_encode([
+				'error' => true,
+				'message' => 'Forbidden',
+			]);
+			exit();
+		}
+
+		header('location: home.php');
+		exit();
+	}

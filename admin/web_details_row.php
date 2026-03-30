@@ -1,6 +1,8 @@
 <?php
 include 'session.php';
 
+app_admin_require_roles(['admin', 'staff']);
+
 header('Content-Type: application/json; charset=UTF-8');
 
 if (!isset($_POST['id'])) {

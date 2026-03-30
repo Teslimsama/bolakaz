@@ -3,6 +3,8 @@
 	require_once __DIR__ . '/../lib/image_tools.php';
 	require_once __DIR__ . '/../lib/sync.php';
 
+	app_admin_require_roles(['admin']);
+
 	if(isset($_POST['upload'])){
 		$id = (int)($_POST['id'] ?? 0);
 		$uploadError = '';

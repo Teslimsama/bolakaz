@@ -1,4 +1,5 @@
 <?php include 'session.php'; ?>
+<?php app_admin_require_roles(['admin']); ?>
 <?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">

@@ -2,6 +2,8 @@
 include 'session.php'; // Ensure your database connection is properly configured
 require_once __DIR__ . '/../lib/sync.php';
 
+app_admin_require_roles(['admin', 'staff']);
+
 function normalize_rich_text(string $value): string
 {
     $decoded = $value;

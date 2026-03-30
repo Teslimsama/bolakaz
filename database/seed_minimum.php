@@ -8,6 +8,8 @@ require_once $root . '/CreateDb.php';
 $defaults = [
     'admin-email' => trim((string)($_ENV['SEED_ADMIN_EMAIL'] ?? $_SERVER['SEED_ADMIN_EMAIL'] ?? getenv('SEED_ADMIN_EMAIL') ?: 'seed-admin@bolakaz.local')),
     'admin-password' => trim((string)($_ENV['SEED_ADMIN_PASSWORD'] ?? $_SERVER['SEED_ADMIN_PASSWORD'] ?? getenv('SEED_ADMIN_PASSWORD') ?: 'SeedAdmin123!')),
+    'staff-email' => trim((string)($_ENV['SEED_STAFF_EMAIL'] ?? $_SERVER['SEED_STAFF_EMAIL'] ?? getenv('SEED_STAFF_EMAIL') ?: 'seed-staff@bolakaz.local')),
+    'staff-password' => trim((string)($_ENV['SEED_STAFF_PASSWORD'] ?? $_SERVER['SEED_STAFF_PASSWORD'] ?? getenv('SEED_STAFF_PASSWORD') ?: 'SeedStaff123!')),
     'customer-email' => trim((string)($_ENV['SEED_CUSTOMER_EMAIL'] ?? $_SERVER['SEED_CUSTOMER_EMAIL'] ?? getenv('SEED_CUSTOMER_EMAIL') ?: 'seed-customer@bolakaz.local')),
     'customer-password' => trim((string)($_ENV['SEED_CUSTOMER_PASSWORD'] ?? $_SERVER['SEED_CUSTOMER_PASSWORD'] ?? getenv('SEED_CUSTOMER_PASSWORD') ?: 'SeedUser123!')),
     'site-name' => trim((string)($_ENV['SEED_SITE_NAME'] ?? $_SERVER['SEED_SITE_NAME'] ?? getenv('SEED_SITE_NAME') ?: 'Bolakaz Starter Store')),
@@ -17,7 +19,7 @@ $defaults = [
 $options = $defaults;
 foreach (array_slice($argv, 1) as $arg) {
     if ($arg === '--help' || $arg === '-h') {
-        echo "Usage: php database/seed_minimum.php [--admin-email=...] [--admin-password=...] [--customer-email=...] [--customer-password=...] [--site-name=...] [--site-email=...]" . PHP_EOL;
+        echo "Usage: php database/seed_minimum.php [--admin-email=...] [--admin-password=...] [--staff-email=...] [--staff-password=...] [--customer-email=...] [--customer-password=...] [--site-name=...] [--site-email=...]" . PHP_EOL;
         exit(0);
     }
 
@@ -673,6 +675,17 @@ try {
         'gender' => 'Other',
     ]);
 
+    $staff = ensure_seed_user($conn, [
+        'email' => $options['staff-email'],
+        'password' => $options['staff-password'],
+        'type' => 2,
+        'firstname' => 'Seed',
+        'lastname' => 'Staff',
+        'address' => 'Starter Staff Address',
+        'phone' => '08000000003',
+        'gender' => 'Other',
+    ]);
+
     $customer = ensure_seed_user($conn, [
         'email' => $options['customer-email'],
         'password' => $options['customer-password'],
@@ -701,6 +714,7 @@ try {
     $conn->commit();
 
     seed_output('PASS', 'Admin user ' . $admin['action'] . ': ' . $admin['email']);
+    seed_output('PASS', 'Staff user ' . $staff['action'] . ': ' . $staff['email']);
     seed_output('PASS', 'Customer user ' . $customer['action'] . ': ' . $customer['email']);
     seed_output('PASS', 'Category ' . $category['action'] . ': ' . $category['name'] . ' (' . $category['slug'] . ')');
     seed_output('PASS', 'Shipping ' . $shipping['action'] . ': ' . $shipping['type']);
@@ -715,6 +729,7 @@ try {
     echo PHP_EOL;
     echo 'Seeded credentials:' . PHP_EOL;
     echo '  admin: ' . $options['admin-email'] . ' / ' . $options['admin-password'] . PHP_EOL;
+    echo '  staff: ' . $options['staff-email'] . ' / ' . $options['staff-password'] . PHP_EOL;
     echo '  customer: ' . $options['customer-email'] . ' / ' . $options['customer-password'] . PHP_EOL;
 } catch (Throwable $e) {
     if ($conn->inTransaction()) {

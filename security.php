@@ -85,6 +85,36 @@ function app_is_authenticated_session(): bool
     return !empty($_SESSION['user']) || !empty($_SESSION['admin']);
 }
 
+function app_normalize_user_role($type): string
+{
+    if (is_int($type) || is_float($type) || (is_string($type) && ctype_digit(trim($type)))) {
+        $numericType = (int) $type;
+        if ($numericType === 1) {
+            return 'admin';
+        }
+        if ($numericType === 2) {
+            return 'staff';
+        }
+
+        return 'customer';
+    }
+
+    $normalized = strtolower(trim((string) $type));
+    if (in_array($normalized, ['admin', 'administrator', 'super_admin', 'super-admin'], true)) {
+        return 'admin';
+    }
+    if (in_array($normalized, ['staff', 'manager'], true)) {
+        return 'staff';
+    }
+
+    return 'customer';
+}
+
+function app_user_can_access_admin(array $user): bool
+{
+    return in_array(app_normalize_user_role($user['type'] ?? null), ['admin', 'staff'], true);
+}
+
 function app_csrf_token_from_request(): string
 {
     if (isset($_POST['_csrf']) && is_string($_POST['_csrf'])) {

@@ -2,6 +2,8 @@
 	include 'session.php';
 	require_once __DIR__ . '/../lib/sync.php';
 
+	app_admin_require_roles(['admin']);
+
 	if(isset($_POST['edit'])){
 		$id = (int)($_POST['id'] ?? 0);
 		$firstname = trim((string)($_POST['firstname'] ?? ''));
