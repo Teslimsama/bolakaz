@@ -783,7 +783,7 @@
       }
 
       triggerInFlight = true;
-      $('#adminSyncNow, #adminSyncRetry').prop('disabled', true);
+      $('#adminSyncNow, #adminSyncRetry, #adminSyncRepair').prop('disabled', true);
       $('#adminSyncSummary').text('Running push first, then pull...');
       $('#adminSyncPill').removeClass('is-offline is-error').addClass('is-processing');
       $('#adminSyncLabel').text('Syncing...');
@@ -809,7 +809,58 @@
         $('#adminSyncLabel').text('Needs attention');
       }).always(function() {
         triggerInFlight = false;
-        $('#adminSyncNow, #adminSyncRetry').prop('disabled', false);
+        $('#adminSyncNow, #adminSyncRetry, #adminSyncRepair').prop('disabled', false);
+        window.setTimeout(refreshSyncStatus, 1200);
+        window.setTimeout(refreshSyncStatus, 5000);
+      });
+    }
+
+    function repairSyncData() {
+      if (syncRole === 'server') {
+        return;
+      }
+
+      if (triggerInFlight) {
+        return;
+      }
+
+      triggerInFlight = true;
+      $('#adminSyncNow, #adminSyncRetry, #adminSyncRepair').prop('disabled', true);
+      $('#adminSyncSummary').text('Backfilling missing sync UUIDs and refreshing queued payloads...');
+      $('#adminSyncPill').removeClass('is-offline is-error').addClass('is-processing');
+      $('#adminSyncLabel').text('Repairing...');
+
+      $.ajax({
+        url: '../sync/backfill',
+        type: 'POST',
+        dataType: 'json'
+      }).done(function(response) {
+        if (response && response.status) {
+          applySyncStatus({ status: response.status });
+        } else {
+          refreshSyncStatus();
+        }
+
+        if (response && response.message) {
+          $('#adminSyncSummary').text(response.message);
+        } else {
+          $('#adminSyncSummary').text('Sync repair completed.');
+        }
+
+        if (response && response.repair && response.repair.message) {
+          $('#adminSyncAlert').removeClass('d-none').text(response.repair.message);
+        }
+      }).fail(function(xhr) {
+        var message = 'Unable to run sync repair right now.';
+        if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+          message = xhr.responseJSON.message;
+        }
+        $('#adminSyncSummary').text(message);
+        $('#adminSyncPill').removeClass('is-processing').addClass('is-error');
+        $('#adminSyncLabel').text('Needs attention');
+      }).always(function() {
+        triggerInFlight = false;
+        $('#adminSyncNow, #adminSyncRetry, #adminSyncRepair').prop('disabled', false);
         window.setTimeout(refreshSyncStatus, 1200);
         window.setTimeout(refreshSyncStatus, 5000);
       });
@@ -832,6 +883,10 @@
 
       $('#adminSyncRetry').on('click', function() {
         triggerSync(true);
+      });
+
+      $('#adminSyncRepair').on('click', function() {
+        repairSyncData();
       });
 
       pollTimer = window.setInterval(refreshSyncStatus, 60000);

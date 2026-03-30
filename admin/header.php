@@ -147,10 +147,12 @@
     }
     .admin-sync-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
     }
     .admin-sync-actions .btn {
       flex: 1;
+      min-width: 0;
     }
     .admin-sync-actions-disabled {
       display: block;

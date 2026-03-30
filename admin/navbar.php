@@ -65,6 +65,7 @@ $syncPillLabel = $isSyncServer ? 'Live hub' : 'Sync status';
               <div class="admin-sync-actions">
                 <button type="button" class="btn btn-primary btn-sm" id="adminSyncNow">Sync Now</button>
                 <button type="button" class="btn btn-default btn-sm" id="adminSyncRetry">Retry Failed</button>
+                <button type="button" class="btn btn-default btn-sm" id="adminSyncRepair">Repair IDs</button>
               </div>
               <?php else: ?>
               <div class="admin-sync-actions admin-sync-actions-disabled">

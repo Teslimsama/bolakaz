@@ -522,7 +522,7 @@ if (!function_exists('sync_entity_uuid_by_id')) {
         $uuid = $stmt->fetchColumn();
 
         if (!is_string($uuid) || trim($uuid) === '') {
-            return null;
+            return sync_ensure_entity_uuid($conn, $entityType, (int) $id);
         }
 
         return trim($uuid);
@@ -959,6 +959,11 @@ if (!function_exists('sync_enqueue_entity_change')) {
             return true;
         }
 
+        if ($actionType !== 'delete' && empty($options['skip_dependencies'])) {
+            sync_enqueue_entity_dependencies($conn, $entityType, $row);
+            $row = sync_get_entity_row($conn, $entityType, $entityId) ?? $row;
+        }
+
         $uuid = trim((string) ($row['uuid'] ?? ''));
         if ($uuid === '' && $actionType !== 'delete') {
             $uuid = (string) sync_ensure_entity_uuid($conn, $entityType, $entityId);
@@ -982,6 +987,75 @@ if (!function_exists('sync_enqueue_entity_change')) {
             $payload,
             trim((string) ($payload['meta']['source_updated_at'] ?? sync_now()))
         );
+    }
+}
+
+if (!function_exists('sync_queue_has_open_item')) {
+    function sync_queue_has_open_item(PDO $conn, string $entityType, string $entityUuid, string $actionType = 'upsert'): bool
+    {
+        if (!sync_schema_ready($conn) || trim($entityType) === '' || trim($entityUuid) === '') {
+            return false;
+        }
+
+        $stmt = $conn->prepare(
+            "SELECT 1
+             FROM sync_queue
+             WHERE entity_type = :entity_type
+               AND entity_uuid = :entity_uuid
+               AND action_type = :action_type
+               AND status IN ('pending', 'processing', 'failed', 'conflict')
+             LIMIT 1"
+        );
+        $stmt->execute([
+            'entity_type' => $entityType,
+            'entity_uuid' => $entityUuid,
+            'action_type' => $actionType,
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+}
+
+if (!function_exists('sync_enqueue_entity_dependencies')) {
+    function sync_enqueue_entity_dependencies(PDO $conn, string $entityType, array $row, array &$visited = []): void
+    {
+        $definition = sync_entity_definition($entityType);
+        if (!$definition) {
+            return;
+        }
+
+        $pk = (string) ($definition['pk'] ?? 'id');
+        $entityId = (int) ($row[$pk] ?? 0);
+        $visitKey = $entityType . ':' . $entityId;
+        if ($entityId > 0 && isset($visited[$visitKey])) {
+            return;
+        }
+        if ($entityId > 0) {
+            $visited[$visitKey] = true;
+        }
+
+        foreach (($definition['refs'] ?? []) as $ref) {
+            $column = (string) ($ref['column'] ?? '');
+            $relatedEntity = (string) ($ref['entity'] ?? '');
+            $relatedId = (int) ($row[$column] ?? 0);
+            if ($column === '' || $relatedEntity === '' || $relatedId <= 0) {
+                continue;
+            }
+
+            $relatedRow = sync_get_entity_row($conn, $relatedEntity, $relatedId);
+            if (!is_array($relatedRow) || !sync_should_queue_row($conn, $relatedEntity, $relatedRow)) {
+                continue;
+            }
+
+            sync_ensure_entity_uuid($conn, $relatedEntity, $relatedId);
+            $relatedRow = sync_get_entity_row($conn, $relatedEntity, $relatedId) ?? $relatedRow;
+            $relatedUuid = trim((string) ($relatedRow['uuid'] ?? ''));
+
+            sync_enqueue_entity_dependencies($conn, $relatedEntity, $relatedRow, $visited);
+            if ($relatedUuid !== '' && !sync_queue_has_open_item($conn, $relatedEntity, $relatedUuid, 'upsert')) {
+                sync_enqueue_entity_change($conn, $relatedEntity, $relatedId, 'upsert', ['skip_dependencies' => true]);
+            }
+        }
     }
 }
 
@@ -1154,6 +1228,21 @@ if (!function_exists('sync_reset_failed_items')) {
             return 0;
         }
 
+        $selectPlaceholders = [];
+        $selectParams = [];
+        foreach ($statuses as $index => $status) {
+            $key = 'status_pick_' . $index;
+            $selectPlaceholders[] = ':' . $key;
+            $selectParams[$key] = $status;
+        }
+
+        $selectSql = "SELECT id FROM sync_queue WHERE status IN (" . implode(', ', $selectPlaceholders) . ')';
+        $selectStmt = $conn->prepare($selectSql);
+        $selectStmt->execute($selectParams);
+        foreach ($selectStmt->fetchAll(PDO::FETCH_ASSOC) as $queueRow) {
+            sync_refresh_queue_item_payload($conn, (int) ($queueRow['id'] ?? 0));
+        }
+
         $placeholders = [];
         $params = [
             'updated_at' => sync_now(),
@@ -1170,6 +1259,70 @@ if (!function_exists('sync_reset_failed_items')) {
         $stmt->execute($params);
 
         return $stmt->rowCount();
+    }
+}
+
+if (!function_exists('sync_refresh_queue_item_payload')) {
+    function sync_refresh_queue_item_payload(PDO $conn, int $queueId): bool
+    {
+        if ($queueId <= 0 || !sync_schema_ready($conn)) {
+            return false;
+        }
+
+        $stmt = $conn->prepare('SELECT * FROM sync_queue WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $queueId]);
+        $queueRow = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($queueRow)) {
+            return false;
+        }
+
+        $actionType = trim((string) ($queueRow['action_type'] ?? ''));
+        if ($actionType !== 'upsert') {
+            return false;
+        }
+
+        $entityType = trim((string) ($queueRow['entity_type'] ?? ''));
+        $entityUuid = trim((string) ($queueRow['entity_uuid'] ?? ''));
+        if ($entityType === '' || $entityUuid === '') {
+            return false;
+        }
+
+        $entityRow = sync_get_entity_row_by_uuid($conn, $entityType, $entityUuid);
+        if (!is_array($entityRow)) {
+            return false;
+        }
+
+        if (!sync_should_queue_row($conn, $entityType, $entityRow)) {
+            return false;
+        }
+
+        sync_enqueue_entity_dependencies($conn, $entityType, $entityRow);
+        $entityRow = sync_get_entity_row_by_uuid($conn, $entityType, $entityUuid) ?? $entityRow;
+
+        $payload = sync_build_queue_payload($conn, $entityType, $entityRow, 'upsert', [
+            'queue_uuid' => trim((string) ($queueRow['queue_uuid'] ?? '')),
+        ]);
+        $payloadJson = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if (!is_string($payloadJson) || $payloadJson === '') {
+            return false;
+        }
+
+        $stmt = $conn->prepare(
+            'UPDATE sync_queue
+             SET entity_uuid = :entity_uuid,
+                 payload_json = :payload_json,
+                 source_updated_at = :source_updated_at,
+                 updated_at = :updated_at
+             WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            'entity_uuid' => trim((string) ($payload['meta']['entity_uuid'] ?? $entityUuid)),
+            'payload_json' => $payloadJson,
+            'source_updated_at' => trim((string) ($payload['meta']['source_updated_at'] ?? sync_now())),
+            'updated_at' => sync_now(),
+            'id' => $queueId,
+        ]);
     }
 }
 
@@ -1213,6 +1366,119 @@ if (!function_exists('sync_reset_failed_pull_items')) {
         $stmt->execute($params);
 
         return $stmt->rowCount();
+    }
+}
+
+if (!function_exists('sync_backfill_missing_entity_uuids')) {
+    function sync_backfill_missing_entity_uuids(PDO $conn, string $entityType): int
+    {
+        $definition = sync_entity_definition($entityType);
+        if (!$definition) {
+            return 0;
+        }
+
+        $table = (string) ($definition['table'] ?? '');
+        $pk = (string) ($definition['pk'] ?? '');
+        if ($table === '' || $pk === '' || !sync_table_exists($conn, $table) || !sync_column_exists($conn, $table, 'uuid')) {
+            return 0;
+        }
+
+        $stmt = $conn->query("SELECT {$pk} FROM {$table} WHERE uuid IS NULL OR uuid = ''");
+        $ids = $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN) : [];
+        $count = 0;
+        foreach ($ids as $id) {
+            if (sync_ensure_entity_uuid($conn, $entityType, (int) $id) !== null) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+}
+
+if (!function_exists('sync_refresh_queue_payloads')) {
+    function sync_refresh_queue_payloads(PDO $conn, array $statuses = ['pending', 'processing', 'failed', 'conflict']): int
+    {
+        if (!sync_schema_ready($conn) || empty($statuses)) {
+            return 0;
+        }
+
+        $allowed = ['pending', 'processing', 'failed', 'conflict'];
+        $statuses = array_values(array_intersect($allowed, $statuses));
+        if (empty($statuses)) {
+            return 0;
+        }
+
+        $placeholders = [];
+        $params = [];
+        foreach ($statuses as $index => $status) {
+            $key = 'status_' . $index;
+            $placeholders[] = ':' . $key;
+            $params[$key] = $status;
+        }
+
+        $stmt = $conn->prepare(
+            "SELECT id
+             FROM sync_queue
+             WHERE action_type = 'upsert'
+               AND status IN (" . implode(', ', $placeholders) . ')'
+        );
+        $stmt->execute($params);
+
+        $count = 0;
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            if (sync_refresh_queue_item_payload($conn, (int) ($row['id'] ?? 0))) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+}
+
+if (!function_exists('sync_backfill_repair')) {
+    function sync_backfill_repair(PDO $conn, array $options = []): array
+    {
+        $result = [
+            'backfilled_total' => 0,
+            'backfilled_by_entity' => [],
+            'queue_payloads_refreshed' => 0,
+            'retry_reset_count' => 0,
+            'message' => '',
+        ];
+
+        foreach (array_keys(sync_entity_definitions()) as $entityType) {
+            $count = sync_backfill_missing_entity_uuids($conn, $entityType);
+            if ($count > 0) {
+                $result['backfilled_by_entity'][$entityType] = $count;
+                $result['backfilled_total'] += $count;
+            }
+        }
+
+        if (sync_schema_ready($conn)) {
+            $result['queue_payloads_refreshed'] = sync_refresh_queue_payloads($conn, ['pending', 'processing', 'failed', 'conflict']);
+            if (($options['reset_failed'] ?? true) === true) {
+                $result['retry_reset_count'] += sync_reset_failed_items($conn, ['failed', 'conflict']);
+                $result['retry_reset_count'] += sync_reset_failed_pull_items($conn, ['failed']);
+            }
+        }
+
+        $parts = [];
+        if ($result['backfilled_total'] > 0) {
+            $parts[] = $result['backfilled_total'] . ' missing UUID(s) were backfilled';
+        }
+        if ($result['queue_payloads_refreshed'] > 0) {
+            $parts[] = $result['queue_payloads_refreshed'] . ' queue payload(s) were refreshed';
+        }
+        if ($result['retry_reset_count'] > 0) {
+            $parts[] = $result['retry_reset_count'] . ' failed sync item(s) were reset for retry';
+        }
+
+        $result['message'] = !empty($parts)
+            ? ucfirst(implode(', ', $parts)) . '.'
+            : 'No missing sync UUIDs or stale queue payloads were found.';
+
+        return $result;
     }
 }
 
