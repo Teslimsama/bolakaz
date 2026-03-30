@@ -1,6 +1,5 @@
 <?php
 include 'session.php';
-include_once '../includes/conn.php';
 require_once __DIR__ . '/../lib/product_csv_import.php';
 
 header('Content-Type: text/csv; charset=UTF-8');
