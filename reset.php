@@ -1,6 +1,8 @@
 <?php
 include 'session.php';
 require_once __DIR__ . '/lib/mailer.php';
+require_once __DIR__ . '/lib/customer_accounts.php';
+require_once __DIR__ . '/lib/sync.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     $_SESSION['error'] = 'Enter your email address to continue.';
@@ -18,14 +20,17 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
 $conn = $pdo->open();
 
 try {
-    $stmt = $conn->prepare("SELECT id, email FROM users WHERE email=:email LIMIT 1");
+    $stmt = $conn->prepare("SELECT id, email, status, type, account_state, is_placeholder_email FROM users WHERE email=:email LIMIT 1");
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user) {
+    if ($user && app_customer_can_login($conn, $user)) {
         $resetCode = app_create_reset_code(3600);
+        $conn->beginTransaction();
         $updateStmt = $conn->prepare("UPDATE users SET reset_code=:code WHERE id=:id");
         $updateStmt->execute(['code' => $resetCode, 'id' => (int)$user['id']]);
+        sync_enqueue_or_fail($conn, 'users', (int) $user['id']);
+        $conn->commit();
 
         $token = explode('.', $resetCode, 2)[0];
         $baseUrl = app_base_url();
@@ -52,6 +57,9 @@ try {
     unset($_SESSION['error']);
     $_SESSION['success'] = 'If an account exists with that email, a reset link has been sent.';
 } catch (Throwable $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
     unset($_SESSION['success']);
     $_SESSION['error'] = 'Unable to process request right now. Please try again later.';
 }

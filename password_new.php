@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/lib/sync.php';
 
 $token = trim((string)($_GET['code'] ?? ''));
 $userId = (int)($_GET['user'] ?? 0);
@@ -46,13 +47,19 @@ try {
     }
 
     $hashed = password_hash($password, PASSWORD_DEFAULT);
+    $conn->beginTransaction();
     $update = $conn->prepare("UPDATE users SET password=:password, reset_code='' WHERE id=:id");
     $update->execute(['password' => $hashed, 'id' => (int)$row['id']]);
+    sync_enqueue_or_fail($conn, 'users', (int) $row['id']);
+    $conn->commit();
 
     $_SESSION['success'] = 'Password successfully reset. You can now sign in.';
     header('location: signin');
     exit();
 } catch (PDOException $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
     $_SESSION['error'] = 'Unable to reset password right now.';
     header('location: ' . $path);
     exit();

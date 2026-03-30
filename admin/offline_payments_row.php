@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/sales_snapshot.php';
 
 if(isset($_POST['id'])){
     $id = $_POST['id'];
@@ -8,8 +9,9 @@ if(isset($_POST['id'])){
     $output = array('id'=>$id, 'history'=>'', 'total'=>0, 'paid'=>0, 'balance'=>0);
     
     try{
+        $sumSql = app_sales_detail_total_sum_sql($conn, 'details', 'products');
         $stmt = $conn->prepare("SELECT 
-            (SELECT SUM(details.quantity * products.price) FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=sales.id) AS total_amount
+            (SELECT {$sumSql} FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=sales.id) AS total_amount
             FROM sales WHERE id=:id");
         $stmt->execute(['id'=>$id]);
         $row = $stmt->fetch();

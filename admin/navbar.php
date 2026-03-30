@@ -9,8 +9,8 @@ $syncSummary = $isSyncServer
   ? 'This site receives local pushes and provides limited pull updates.'
   : 'Pushes local changes first, then pulls selected live updates.';
 $syncNote = $isSyncServer
-  ? 'Live-to-local pull in v1.5 covers shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on Mom PC.'
-  : 'Pull scope in v1.5: shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on this device.';
+  ? 'Live-to-local pull in v1.5 covers customers, shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on Mom PC.'
+  : 'Pull scope in v1.5: customers, shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on this device.';
 $syncPillLabel = $isSyncServer ? 'Live hub' : 'Sync status';
 ?>
 <header class="main-header">

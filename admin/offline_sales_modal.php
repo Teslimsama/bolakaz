@@ -13,7 +13,7 @@
                     <label for="customer" class="col-sm-3 control-label">Customer</label>
                     <div class="col-sm-9">
                       <select class="form-control select2" id="offline_customer" name="user_id" style="width: 100%;">
-                        <option value="0">Guest / Manual Entry</option>
+                        <option value="0">Auto-create New Customer</option>
                         <?php
                           $conn = $pdo->open();
                           $stmt = $conn->prepare("SELECT id, firstname, lastname, phone FROM users WHERE type=0 ORDER BY firstname ASC");
@@ -30,13 +30,14 @@
                 <div class="form-group">
                     <label for="customer_name" class="col-sm-3 control-label">Customer Name</label>
                     <div class="col-sm-9">
-                      <input type="text" class="form-control" id="customer_name" name="customer_name" placeholder="Debtor full name" required>
+                      <input type="text" class="form-control" id="customer_name" name="customer_name" placeholder="Customer full name" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="customer_phone" class="col-sm-3 control-label">Customer Phone</label>
                     <div class="col-sm-9">
-                      <input type="text" class="form-control" id="customer_phone" name="customer_phone" placeholder="Phone number for WhatsApp follow-up">
+                      <input type="text" class="form-control" id="customer_phone" name="customer_phone" placeholder="Optional phone number for follow-up">
+                      <p class="help-block">If you do not pick an existing customer, saving this sale will create an incomplete reusable customer profile automatically.</p>
                     </div>
                 </div>
                 <div class="form-group">

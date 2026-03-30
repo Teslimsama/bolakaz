@@ -1,5 +1,6 @@
 <?php
 	include 'session.php';
+	require_once __DIR__ . '/../lib/sales_snapshot.php';
 
 	function generateRow($from, $to, $conn){
 		$contents = '';
@@ -8,13 +9,7 @@
 		$stmt->execute();
 		$total = 0;
 		foreach($stmt as $row){
-			$stmt = $conn->prepare("SELECT * FROM details LEFT JOIN products ON products.id=details.product_id WHERE sales_id=:id");
-			$stmt->execute(['id'=>$row['salesid']]);
-			$amount = 0;
-			foreach($stmt as $details){
-				$subtotal = $details['price']*$details['quantity'];
-				$amount += $subtotal;
-			}
+			$amount = app_sales_total_for_sale($conn, (int) $row['salesid']);
 			$total += $amount;
 			$contents .= '
 			<tr>

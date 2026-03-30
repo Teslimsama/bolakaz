@@ -1,6 +1,7 @@
 <?php
 include 'session.php';
 require_once __DIR__ . '/../lib/sync.php';
+require_once __DIR__ . '/../lib/sales_snapshot.php';
 
 if(isset($_POST['add_payment'])){
     $sales_id = (int)$_POST['sales_id'];
@@ -24,9 +25,7 @@ if(isset($_POST['add_payment'])){
         $paymentId = (int) $conn->lastInsertId();
 
         // Recalculate status
-        $stmt = $conn->prepare("SELECT SUM(details.quantity * products.price) AS total FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
-        $stmt->execute(['id'=>$sales_id]);
-        $total = $stmt->fetch()['total'];
+        $total = app_sales_total_for_sale($conn, $sales_id);
 
         $stmt = $conn->prepare("SELECT SUM(amount) AS paid FROM offline_payments WHERE sales_id=:id");
         $stmt->execute(['id'=>$sales_id]);

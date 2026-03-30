@@ -13,7 +13,7 @@
 			$stmt->execute(['id' => $id]);
 			$user = $stmt->fetch(PDO::FETCH_ASSOC);
 			if (!$user) {
-				$_SESSION['error'] = 'User not found';
+				$_SESSION['error'] = 'Customer not found';
 				$pdo->close();
 				header('location: users.php');
 				exit;
@@ -26,7 +26,7 @@
 			$conn->commit();
 			$photoPath = __DIR__ . '/../images/' . ltrim((string)($user['photo'] ?? ''), '/');
 
-			$_SESSION['success'] = 'User deleted successfully';
+			$_SESSION['success'] = 'Customer deleted successfully';
 		}
 		catch(Throwable $e){
 			if ($conn->inTransaction()) {
@@ -41,7 +41,7 @@
 		}
 	}
 	else{
-		$_SESSION['error'] = 'Select user to delete first';
+		$_SESSION['error'] = 'Select customer to delete first';
 	}
 
 	header('location: users.php');

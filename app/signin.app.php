@@ -1,5 +1,6 @@
 <?php
 include '../session.php';
+require_once __DIR__ . '/../lib/customer_accounts.php';
 $conn = $pdo->open();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,12 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	try {
 
-		$stmt = $conn->prepare("SELECT id, email, password, status, type FROM users WHERE email = :email LIMIT 1");
+		$stmt = $conn->prepare("SELECT id, email, password, status, type, account_state, is_placeholder_email FROM users WHERE email = :email LIMIT 1");
 		$stmt->execute(['email' => $email]);
 		$row = $stmt->fetch();
 
 		if ($row && password_verify($password, (string)$row['password'])) {
-			if ((int)$row['status'] === 1) {
+			if (app_customer_can_login($conn, is_array($row) ? $row : [])) {
 				session_regenerate_id(true);
 				if (!empty($row['type'])) {
 					$_SESSION['admin'] = $row['id'];
@@ -36,8 +37,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				}
 				unset($_SESSION['pending_activation_email']);
 			} else {
-				$_SESSION['pending_activation_email'] = (string)$row['email'];
-				$_SESSION['error'] = 'Your account is not activated yet. Check your email or resend activation below.';
+				$state = app_customer_row_state($conn, is_array($row) ? $row : []);
+				if ($state === 'pending_activation') {
+					$_SESSION['pending_activation_email'] = (string)$row['email'];
+					$_SESSION['error'] = 'Your account is not activated yet. Check your email or resend activation below.';
+				} elseif ($state === 'incomplete') {
+					unset($_SESSION['pending_activation_email']);
+					$_SESSION['error'] = 'This customer profile is not login-enabled yet. Ask an admin to add a real email and enable login.';
+				} else {
+					unset($_SESSION['pending_activation_email']);
+					$_SESSION['error'] = 'Your account cannot sign in right now.';
+				}
 			}
 		} else {
 			$_SESSION['error'] = 'Invalid email or password.';

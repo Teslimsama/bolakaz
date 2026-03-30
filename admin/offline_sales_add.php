@@ -2,6 +2,8 @@
 include 'session.php';
 require_once __DIR__ . '/../lib/offline_statement.php';
 require_once __DIR__ . '/../lib/sync.php';
+require_once __DIR__ . '/../lib/customer_accounts.php';
+require_once __DIR__ . '/../lib/sales_snapshot.php';
 
 if(isset($_POST['add'])){
     $user_id = (int)$_POST['user_id'];
@@ -50,6 +52,15 @@ if(isset($_POST['add'])){
             throw new RuntimeException('Customer name is required for offline sales.');
         }
 
+        if ($user_id <= 0) {
+            $customer = app_customer_create_incomplete_profile($conn, [
+                'full_name' => $customer_name,
+                'phone' => $customer_phone,
+            ]);
+            $user_id = (int) $customer['id'];
+            sync_enqueue_or_fail($conn, 'users', $user_id);
+        }
+
         $statementShareToken = app_statement_generate_unique_token($conn);
 
         $stmt = $conn->prepare("INSERT INTO sales (user_id, is_offline, sales_date, due_date, tx_ref, Status, payment_status, customer_name, statement_share_token, phone) VALUES (:user_id, 1, :sales_date, :due_date, :tx_ref, :status, :pstatus, :customer_name, :statement_share_token, :phone)");
@@ -73,15 +84,24 @@ if(isset($_POST['add'])){
 
             if($p_id <= 0 || $qty <= 0) continue;
 
-            $stmt = $conn->prepare("SELECT price FROM products WHERE id=:id");
+            $stmt = $conn->prepare("SELECT name, slug, price FROM products WHERE id=:id");
             $stmt->execute(['id'=>$p_id]);
             $prow = $stmt->fetch();
+            if (!$prow) {
+                continue;
+            }
             $price = $prow['price'];
             $total_amount += ($price * $qty);
 
-            $stmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
-            $stmt->execute(['sales_id'=>$sales_id, 'product_id'=>$p_id, 'quantity'=>$qty]);
-            $detailIds[] = (int) $conn->lastInsertId();
+            $detailIds[] = app_sales_insert_detail_row(
+                $conn,
+                (int) $sales_id,
+                $p_id,
+                $qty,
+                (float) $price,
+                (string) ($prow['name'] ?? ''),
+                (string) ($prow['slug'] ?? '')
+            );
         }
 
         if($initial_payment > 0){

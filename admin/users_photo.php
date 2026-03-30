@@ -26,7 +26,7 @@
 			$stmt->execute(['id' => $id]);
 			$row = $stmt->fetch(PDO::FETCH_ASSOC);
 			if (!$row) {
-				$_SESSION['error'] = 'User not found';
+				$_SESSION['error'] = 'Customer not found';
 				@unlink(__DIR__ . '/../images/' . $newPhoto);
 				$pdo->close();
 				header('location: users.php');
@@ -39,7 +39,7 @@
 			sync_enqueue_or_fail($conn, 'users', $id);
 			$conn->commit();
 			$oldPhotoPathToDelete = __DIR__ . '/../images/' . ltrim((string)($row['photo'] ?? ''), '/');
-			$_SESSION['success'] = 'User photo updated successfully';
+			$_SESSION['success'] = 'Customer photo updated successfully';
 		}
 		catch(Throwable $e){
 			if ($conn->inTransaction()) {
@@ -61,7 +61,7 @@
 
 	}
 	else{
-		$_SESSION['error'] = 'Select user to update photo first';
+		$_SESSION['error'] = 'Select customer to update photo first';
 	}
 
 	header('location: users.php');

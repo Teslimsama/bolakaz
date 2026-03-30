@@ -660,7 +660,7 @@
 
       if (isServer) {
         $('#adminSyncTitle').text('Live Sync Hub');
-        $('#adminSyncNote').text('Live-to-local pull in v1.5 covers shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on Mom PC.');
+        $('#adminSyncNote').text('Live-to-local pull in v1.5 covers customers, shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on Mom PC.');
         $('#adminSyncPendingLabel').text('Devices');
         $('#adminSyncFailedLabel').text('Synced');
         $('#adminSyncConflictLabel').text('Failed');
@@ -676,7 +676,7 @@
         $('#adminSyncLastSuccess').text(formatSyncDate(status.last_successful_sync));
       } else {
         $('#adminSyncTitle').text('Local Sync');
-        $('#adminSyncNote').text('Pull scope in v1.5: shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on this device.');
+        $('#adminSyncNote').text('Pull scope in v1.5: customers, shipping, coupon, web details, banners, and ads. Offline sales stay local-owned on this device.');
         $('#adminSyncPendingLabel').text('Pending Push');
         $('#adminSyncFailedLabel').text('Pending Pull');
         $('#adminSyncConflictLabel').text('Conflict');

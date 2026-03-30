@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/customer_accounts.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -16,7 +17,7 @@ if ($id <= 0) {
 
 $conn = $pdo->open();
 try {
-	$stmt = $conn->prepare("SELECT id, email, firstname, lastname, address, phone FROM users WHERE id=:id LIMIT 1");
+	$stmt = $conn->prepare("SELECT id, email, firstname, lastname, address, phone, type, status, account_state, is_placeholder_email FROM users WHERE id=:id LIMIT 1");
 	$stmt->execute(['id' => $id]);
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -25,6 +26,11 @@ try {
 		exit;
 	}
 
+	$row['full_name'] = app_customer_full_name($row);
+	if (!app_customer_has_real_email($row)) {
+		$row['email'] = '';
+	}
+	$row['account_state'] = app_customer_row_state($conn, $row);
 	$row['error'] = false;
 	echo json_encode($row);
 } catch (Throwable $e) {

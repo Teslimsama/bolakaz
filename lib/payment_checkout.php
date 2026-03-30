@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/catalog_v2.php';
+require_once __DIR__ . '/sales_snapshot.php';
 
 if (!function_exists('app_db_has_column')) {
     function app_db_has_column(PDO $conn, string $table, string $column): bool
@@ -169,9 +170,17 @@ if (!function_exists('app_finalize_paid_order')) {
 
         $date = date('Y-m-d');
         $txid = ($gatewayTxId !== null && $gatewayTxId > 0) ? $gatewayTxId : null;
+        $customerName = '';
 
-        $insertSale = $conn->prepare("INSERT INTO sales (user_id, tx_ref, txid, Status, shipping_id, coupon_id, phone, email, address_1, address_2, sales_date)
-            VALUES (:user_id, :tx_ref, :txid, :status, :shipping_id, :coupon_id, :phone, :email, :address_1, :address_2, :sales_date)");
+        $userStmt = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = :id LIMIT 1");
+        $userStmt->execute(['id' => $userId]);
+        $userRow = $userStmt->fetch(PDO::FETCH_ASSOC);
+        if ($userRow) {
+            $customerName = trim((string) ($userRow['firstname'] ?? '') . ' ' . (string) ($userRow['lastname'] ?? ''));
+        }
+
+        $insertSale = $conn->prepare("INSERT INTO sales (user_id, tx_ref, txid, Status, shipping_id, coupon_id, customer_name, phone, email, address_1, address_2, sales_date)
+            VALUES (:user_id, :tx_ref, :txid, :status, :shipping_id, :coupon_id, :customer_name, :phone, :email, :address_1, :address_2, :sales_date)");
         $insertSale->execute([
             'user_id' => $userId,
             'tx_ref' => $txRef,
@@ -179,6 +188,7 @@ if (!function_exists('app_finalize_paid_order')) {
             'status' => $status,
             'shipping_id' => $shippingId,
             'coupon_id' => $couponId,
+            'customer_name' => ($customerName !== '' ? $customerName : null),
             'phone' => $phone,
             'email' => $email,
             'address_1' => $address1,
@@ -187,7 +197,7 @@ if (!function_exists('app_finalize_paid_order')) {
         ]);
         $salesId = (int)$conn->lastInsertId();
 
-        $cartStmt = $conn->prepare("SELECT cart.product_id, cart.variant_id, cart.quantity, products.qty
+        $cartStmt = $conn->prepare("SELECT cart.product_id, cart.variant_id, cart.quantity, products.qty, products.name, products.slug, products.price
             FROM cart
             LEFT JOIN products ON products.id = cart.product_id
             WHERE cart.user_id = :user_id");
@@ -222,22 +232,26 @@ if (!function_exists('app_finalize_paid_order')) {
                 }
             }
 
-            if (app_db_has_column($conn, 'details', 'variant_id')) {
-                $detailStmt = $conn->prepare("INSERT INTO details (sales_id, product_id, variant_id, quantity) VALUES (:sales_id, :product_id, :variant_id, :quantity)");
-                $detailStmt->execute([
-                    'sales_id' => $salesId,
-                    'product_id' => $productId,
-                    'variant_id' => ($variantId > 0 ? $variantId : null),
-                    'quantity' => $quantity,
-                ]);
-            } else {
-                $detailStmt = $conn->prepare("INSERT INTO details (sales_id, product_id, quantity) VALUES (:sales_id, :product_id, :quantity)");
-                $detailStmt->execute([
-                    'sales_id' => $salesId,
-                    'product_id' => $productId,
-                    'quantity' => $quantity,
-                ]);
+            $unitPrice = (float) ($row['price'] ?? 0);
+            if (catalog_v2_ready($conn) && $variantId > 0) {
+                $variantPriceStmt = $conn->prepare("SELECT price FROM product_variants WHERE id = :id LIMIT 1");
+                $variantPriceStmt->execute(['id' => $variantId]);
+                $variantPrice = $variantPriceStmt->fetchColumn();
+                if ($variantPrice !== false && $variantPrice !== null) {
+                    $unitPrice = (float) $variantPrice;
+                }
             }
+
+            app_sales_insert_detail_row(
+                $conn,
+                $salesId,
+                $productId,
+                $quantity,
+                $unitPrice,
+                (string) ($row['name'] ?? ''),
+                (string) ($row['slug'] ?? ''),
+                ($variantId > 0 ? $variantId : null)
+            );
 
             if (catalog_v2_ready($conn) && $variantId > 0) {
                 $updateVariantStock = $conn->prepare("UPDATE product_variants SET stock_qty = stock_qty - :quantity WHERE id = :id");

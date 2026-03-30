@@ -17,7 +17,7 @@
       <li><a href="offline_sales"><i class="fa fa-handshake-o"></i><span>Offline Sales</span></a></li>
 
       <li class="header">Commerce</li>
-      <li><a href="users"><i class="fa fa-users"></i><span>Users</span></a></li>
+      <li><a href="users"><i class="fa fa-users"></i><span>Customers</span></a></li>
       <li class="treeview">
         <a href="#">
           <i class="fa fa-barcode"></i>

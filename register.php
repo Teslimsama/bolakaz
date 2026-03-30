@@ -2,6 +2,8 @@
 
 include 'session.php';
 require_once __DIR__ . '/lib/mailer.php';
+require_once __DIR__ . '/lib/customer_accounts.php';
+require_once __DIR__ . '/lib/sync.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$firstname = trim((string)($_POST['firstname'] ?? ''));
@@ -66,13 +68,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		} else {
 			$now = date('Y-m-d');
 			$password = password_hash($password, PASSWORD_DEFAULT);
+			$userUuid = app_customer_generate_uuid();
 
 			// Generate activation token.
 			$code = bin2hex(random_bytes(16));
 
 			try {
-				$stmt = $conn->prepare("INSERT INTO users (email, password, type, firstname, lastname, address, phone, gender, dob, photo, status, activate_code, created_on, referral) VALUES (:email, :password, :type, :firstname, :lastname, :address, :phone, :gender, :dob, :photo, :status, :code, :now, :referral)");
-				$stmt->execute([
+				$conn->beginTransaction();
+				$columns = ['uuid', 'email', 'password', 'type', 'firstname', 'lastname', 'address', 'phone', 'gender', 'dob', 'photo', 'status', 'activate_code', 'created_on', 'referral'];
+				$params = [
+					'uuid' => $userUuid,
 					'email' => $email,
 					'password' => $password,
 					'type' => 0,
@@ -84,11 +89,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					'dob' => $dob,
 					'photo' => '',
 					'status' => 0,
-					'code' => $code,
-					'now' => $now,
-					'referral' => $referral
-				]);
-				$userid = $conn->lastInsertId();
+					'activate_code' => $code,
+					'created_on' => $now,
+					'referral' => $referral,
+				];
+				if (app_customer_db_has_column($conn, 'users', 'account_state')) {
+					$columns[] = 'account_state';
+					$params['account_state'] = 'pending_activation';
+				}
+				if (app_customer_db_has_column($conn, 'users', 'is_placeholder_email')) {
+					$columns[] = 'is_placeholder_email';
+					$params['is_placeholder_email'] = 0;
+				}
+				$placeholders = [];
+				foreach ($columns as $column) {
+					$placeholders[] = ':' . $column;
+				}
+				$stmt = $conn->prepare("INSERT INTO users (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")");
+				$stmt->execute($params);
+				$userid = (int) $conn->lastInsertId();
+				sync_enqueue_or_fail($conn, 'users', $userid);
+				$conn->commit();
 
 				
 
@@ -132,7 +153,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					header('location: signup');
 					exit();
 				}
-			} catch (PDOException $e) {
+			} catch (Throwable $e) {
+				if ($conn->inTransaction()) {
+					$conn->rollBack();
+				}
 				error_log('Signup insert failed: ' . $e->getMessage());
 				$_SESSION['error'] = 'Unable to create account right now. Please try again.';
 				header('location: signup');

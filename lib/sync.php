@@ -149,11 +149,13 @@ if (!function_exists('sync_entity_definitions')) {
                 'table' => 'users',
                 'pk' => 'id',
                 'order' => 10,
-                'columns' => ['email', 'password', 'type', 'firstname', 'lastname', 'address', 'phone', 'gender', 'dob', 'photo', 'status', 'activate_code', 'reset_code', 'created_on', 'referral', 'created_at', 'updated_at'],
+                'pull_enabled' => true,
+                'pull_priority' => 10,
+                'columns' => ['email', 'password', 'type', 'firstname', 'lastname', 'address', 'phone', 'gender', 'dob', 'photo', 'status', 'account_state', 'is_placeholder_email', 'activate_code', 'reset_code', 'created_on', 'referral', 'created_at', 'updated_at'],
                 'media' => [
                     ['field' => 'photo', 'disk' => 'images'],
                 ],
-                'delete_snapshot' => ['email', 'firstname', 'lastname', 'photo', 'status'],
+                'delete_snapshot' => ['email', 'firstname', 'lastname', 'photo', 'status', 'account_state'],
             ],
             'shipping' => [
                 'table' => 'shippings',
@@ -265,12 +267,12 @@ if (!function_exists('sync_entity_definitions')) {
                 'table' => 'details',
                 'pk' => 'id',
                 'order' => 70,
-                'columns' => ['quantity', 'created_at', 'updated_at'],
+                'columns' => ['quantity', 'unit_price', 'product_name_snapshot', 'product_slug_snapshot', 'created_at', 'updated_at'],
                 'refs' => [
                     ['column' => 'sales_id', 'entity' => 'sales', 'payload_key' => 'sales_uuid', 'nullable' => false],
                     ['column' => 'product_id', 'entity' => 'products', 'payload_key' => 'product_uuid', 'nullable' => false],
                 ],
-                'delete_snapshot' => ['quantity'],
+                'delete_snapshot' => ['quantity', 'unit_price', 'product_name_snapshot', 'product_slug_snapshot'],
             ],
             'offline_payments' => [
                 'table' => 'offline_payments',
@@ -626,6 +628,10 @@ if (!function_exists('sync_ensure_entity_uuid')) {
 if (!function_exists('sync_should_queue_row')) {
     function sync_should_queue_row(PDO $conn, string $entityType, array $row): bool
     {
+        if ($entityType === 'users') {
+            return (int) ($row['type'] ?? 0) === 0;
+        }
+
         if ($entityType === 'sales') {
             return (int) ($row['is_offline'] ?? 0) === 1;
         }
@@ -907,6 +913,10 @@ if (!function_exists('sync_record_native_server_change')) {
             return false;
         }
 
+        if (!sync_should_queue_row($conn, $entityType, $row)) {
+            return true;
+        }
+
         $uuid = trim((string) ($row['uuid'] ?? ''));
         if ($uuid === '' && $actionType !== 'delete') {
             $uuid = (string) sync_ensure_entity_uuid($conn, $entityType, $entityId);
@@ -946,7 +956,7 @@ if (!function_exists('sync_enqueue_entity_change')) {
         }
 
         if (!sync_should_queue_row($conn, $entityType, $row)) {
-            return false;
+            return true;
         }
 
         $uuid = trim((string) ($row['uuid'] ?? ''));
@@ -983,7 +993,7 @@ if (!function_exists('sync_enqueue_entity_delete')) {
         }
 
         if (!sync_should_queue_row($conn, $entityType, $row)) {
-            return false;
+            return true;
         }
 
         return sync_enqueue_entity_change(

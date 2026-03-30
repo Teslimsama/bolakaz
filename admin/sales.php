@@ -1,4 +1,5 @@
 <?php include 'session.php'; ?>
+<?php require_once __DIR__ . '/../lib/sales_snapshot.php'; ?>
 <?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -78,6 +79,7 @@
                     $conn = $pdo->open();
 
                     try {
+                      $orderTotalSql = app_sales_detail_total_sum_sql($conn, 'details', 'products');
                       $stmt = $conn->prepare("SELECT
                           sales.id AS salesid,
                           sales.sales_date,
@@ -85,7 +87,7 @@
                           sales.Status,
                           users.firstname,
                           users.lastname,
-                          COALESCE(SUM(details.quantity * products.price), 0) AS order_total
+                          {$orderTotalSql} AS order_total
                         FROM sales
                         LEFT JOIN users ON users.id = sales.user_id
                         LEFT JOIN details ON details.sales_id = sales.id

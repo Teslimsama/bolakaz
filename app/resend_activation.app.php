@@ -1,6 +1,8 @@
 <?php
 include '../session.php';
 require_once __DIR__ . '/../lib/mailer.php';
+require_once __DIR__ . '/../lib/customer_accounts.php';
+require_once __DIR__ . '/../lib/sync.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['resend_activation'])) {
     $_SESSION['error'] = 'Invalid activation resend request.';
@@ -17,14 +19,17 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 $conn = $pdo->open();
 try {
-    $stmt = $conn->prepare("SELECT id, email, firstname, status FROM users WHERE email = :email LIMIT 1");
+    $stmt = $conn->prepare("SELECT id, email, firstname, status, type, account_state, is_placeholder_email FROM users WHERE email = :email LIMIT 1");
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user && (int)$user['status'] !== 1) {
+    if ($user && app_customer_can_resend_activation($conn, $user)) {
         $code = bin2hex(random_bytes(16));
+        $conn->beginTransaction();
         $update = $conn->prepare("UPDATE users SET activate_code = :code WHERE id = :id");
         $update->execute(['code' => $code, 'id' => (int)$user['id']]);
+        sync_enqueue_or_fail($conn, 'users', (int) $user['id']);
+        $conn->commit();
 
         $activateUrl = app_base_url() . '/activate?code=' . urlencode($code) . '&user=' . urlencode((string)$user['id']);
         $subject = 'Activate your Bolakaz account';
@@ -49,6 +54,9 @@ try {
     $_SESSION['success'] = 'If your account exists and is pending activation, a new activation email has been sent.';
     unset($_SESSION['pending_activation_email']);
 } catch (Throwable $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
     $_SESSION['error'] = 'Unable to resend activation right now. Please try again later.';
 }
 

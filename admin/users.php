@@ -1,4 +1,5 @@
 <?php include 'session.php'; ?>
+<?php require_once __DIR__ . '/../lib/customer_accounts.php'; ?>
 <?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -12,11 +13,11 @@
       <!-- Content Header (Page header) -->
       <section class="content-header">
         <h1>
-          Users
+          Customers
         </h1>
         <ol class="breadcrumb">
           <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-          <li class="active">Users</li>
+          <li class="active">Customers</li>
         </ol>
       </section>
 
@@ -49,16 +50,17 @@
             <div class="box">
               <div class="box-header with-border admin-list-toolbar">
                 <div class="admin-list-toolbar-main">
-                  <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> Add User</a>
+                  <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> Add Customer</a>
                 </div>
                 <div class="admin-list-toolbar-filters">
                   <div class="form-inline">
                     <div class="form-group">
-                      <label for="filter_user_status" class="sr-only">Status</label>
+                      <label for="filter_user_status" class="sr-only">Account State</label>
                       <select id="filter_user_status" class="form-control input-sm">
-                        <option value="">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="not_verified">Not Verified</option>
+                        <option value="">All States</option>
+                        <option value="active">Login Enabled</option>
+                        <option value="pending_activation">Pending Activation</option>
+                        <option value="incomplete">Incomplete Profile</option>
                       </select>
                     </div>
                     <div class="form-group" style="margin-left:8px;">
@@ -75,7 +77,8 @@
                     <th>Photo</th>
                     <th>Email</th>
                     <th>Name</th>
-                    <th>Status</th>
+                    <th>Phone</th>
+                    <th>Account</th>
                     <th>Date Added</th>
                     <th>Tools</th>
                   </thead>
@@ -88,27 +91,34 @@
                       $stmt->execute(['type' => 0]);
                       foreach ($stmt as $row) {
                         $image = (!empty($row['photo'])) ? '../images/' . $row['photo'] : '../images/profile.jpg';
-                        $status = ($row['status']) ? '<span class="label label-success">active</span>' : '<span class="label label-danger">not verified</span>';
-                        $statusKey = ((int)$row['status'] === 1) ? 'active' : 'not_verified';
-                        $active = (!$row['status']) ? '<span class="pull-right"><a href="#activate" class="status" data-toggle="modal" data-id="' . $row['id'] . '"><i class="fa fa-check-square-o"></i></a></span>' : '';
+                        $statusKey = app_customer_row_state($conn, $row);
+                        if ($statusKey === 'active') {
+                          $accountLabel = '<span class="label label-success">Login enabled</span>';
+                        } elseif ($statusKey === 'pending_activation') {
+                          $accountLabel = '<span class="label label-warning">Pending activation</span>';
+                        } else {
+                          $accountLabel = '<span class="label label-default">Incomplete profile</span>';
+                        }
                         $fullName = trim((string)$row['firstname'] . ' ' . (string)$row['lastname']);
                         $createdRaw = !empty($row['created_on']) ? date('Y-m-d', strtotime((string)$row['created_on'])) : '';
+                        $emailDisplay = app_customer_has_real_email($row) ? e($row['email']) : "<span class='text-muted'>No email yet</span>";
+                        $phoneDisplay = trim((string)($row['phone'] ?? '')) !== '' ? e((string)$row['phone']) : "<span class='text-muted'>Not set</span>";
+                        $loginActionLabel = ($statusKey === 'active') ? 'Reset Password' : 'Enable Login';
                         echo "
                           <tr data-status='" . e($statusKey) . "' data-created='" . e($createdRaw) . "'>
                             <td>
                               <img src='" . e($image) . "' height='30px' width='30px' onerror=\"this.onerror=null;this.src='../images/profile.jpg';\">
                               <span class='pull-right'><a href='#edit_photo' class='photo' data-toggle='modal' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i></a></span>
                             </td>
-                            <td>" . e($row['email']) . "</td>
+                            <td>" . $emailDisplay . "</td>
                             <td>" . e($fullName) . "</td>
-                            <td>
-                              " . $status . "
-                              " . $active . "
-                            </td>
+                            <td>" . $phoneDisplay . "</td>
+                            <td>" . $accountLabel . "</td>
                             <td>" . date('M d, Y', strtotime($row['created_on'])) . "</td>
                             <td>
                               <a href='cart?user=" . $row['id'] . "' class='btn btn-info btn-sm btn-flat'><i class='fa fa-search'></i> Cart</a>
                               <button class='btn btn-info btn-sm edit btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                              <button class='btn btn-success btn-sm status btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-key'></i> " . e($loginActionLabel) . "</button>
                               <button class='btn btn-danger btn-sm delete btn-flat' data-id='" . $row['id'] . "'><i class='fa fa-trash'></i> Delete</button>
                             </td>
                           </tr>
@@ -251,17 +261,15 @@
         dataType: 'json',
         success: function(response) {
           if (response.error) {
-            alert(response.message || 'Unable to load user details.');
+            alert(response.message || 'Unable to load customer details.');
             return;
           }
           $('.userid').val(response.id);
           $('#edit_email').val(response.email);
-          $('#edit_password').val('');
-          $('#edit_firstname').val(response.firstname);
-          $('#edit_lastname').val(response.lastname);
+          $('#edit_full_name').val(response.full_name || ((response.firstname || '') + ' ' + (response.lastname || '')));
           $('#edit_address').val(response.address);
           $('#edit_contact').val(response.phone);
-          $('.fullname').html(response.firstname + ' ' + response.lastname);
+          $('.fullname').html(response.full_name || ((response.firstname || '') + ' ' + (response.lastname || '')));
         }
       });
     }

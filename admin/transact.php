@@ -1,5 +1,6 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/sales_snapshot.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -13,7 +14,9 @@ $conn = $pdo->open();
 $output = ['list' => '', 'date' => '', 'transaction' => '', 'total' => app_money(0)];
 
 try {
-    $stmt = $conn->prepare("SELECT details.quantity, products.name, products.price, sales.tx_ref, sales.sales_date
+    $priceSql = app_sales_detail_price_sql($conn, 'details', 'products');
+    $nameSql = app_sales_detail_name_sql($conn, 'details', 'products');
+    $stmt = $conn->prepare("SELECT details.quantity, {$nameSql} AS item_name, {$priceSql} AS item_price, sales.tx_ref, sales.sales_date
         FROM details
         LEFT JOIN products ON products.id = details.product_id
         LEFT JOIN sales ON sales.id = details.sales_id
@@ -25,14 +28,14 @@ try {
         $output['transaction'] = e((string)($row['tx_ref'] ?? ''));
         $output['date'] = !empty($row['sales_date']) ? date('M d, Y', strtotime((string)$row['sales_date'])) : '';
 
-        $price = (float)($row['price'] ?? 0);
+        $price = (float)($row['item_price'] ?? 0);
         $qty = (int)($row['quantity'] ?? 0);
         $subtotal = $price * $qty;
         $total += $subtotal;
 
         $output['list'] .= "
             <tr class='prepend_items'>
-                <td>" . e((string)($row['name'] ?? '')) . "</td>
+                <td>" . e((string)($row['item_name'] ?? 'Item')) . "</td>
                 <td>" . app_money($price) . "</td>
                 <td>" . $qty . "</td>
                 <td>" . app_money($subtotal) . "</td>

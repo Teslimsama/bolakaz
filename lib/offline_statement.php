@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/sales_snapshot.php';
+
 if (!function_exists('app_statement_escape')) {
     function app_statement_escape($value): string
     {
@@ -246,7 +248,9 @@ if (!function_exists('app_statement_fetch_seller')) {
 if (!function_exists('app_statement_fetch_items')) {
     function app_statement_fetch_items(PDO $conn, int $saleId): array
     {
-        $stmt = $conn->prepare("SELECT details.quantity, products.name, products.price
+        $priceSql = app_sales_detail_price_sql($conn, 'details', 'products');
+        $nameSql = app_sales_detail_name_sql($conn, 'details', 'products');
+        $stmt = $conn->prepare("SELECT details.quantity, {$nameSql} AS item_name, {$priceSql} AS item_price
             FROM details
             LEFT JOIN products ON products.id = details.product_id
             WHERE details.sales_id = :id
@@ -256,13 +260,13 @@ if (!function_exists('app_statement_fetch_items')) {
         $items = [];
         $total = 0.0;
         foreach ($stmt as $row) {
-            $price = (float) ($row['price'] ?? 0);
+            $price = (float) ($row['item_price'] ?? 0);
             $qty = max(1, (int) ($row['quantity'] ?? 0));
             $subtotal = $price * $qty;
             $total += $subtotal;
 
             $items[] = [
-                'name' => (string) ($row['name'] ?? 'Item'),
+                'name' => (string) ($row['item_name'] ?? 'Item'),
                 'price' => $price,
                 'price_formatted' => app_money($price),
                 'quantity' => $qty,

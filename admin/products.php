@@ -55,6 +55,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
               <div class="box-header with-border admin-list-toolbar">
                 <div class="admin-list-toolbar-main">
                   <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm" id="addproduct"><i class="fa fa-plus"></i> Add Product</a>
+                  <a href="products_import.php" class="btn btn-default btn-sm"><i class="fa fa-upload"></i> Import CSV</a>
                 </div>
                 <div class="admin-list-toolbar-filters">
                   <form class="form-inline" onsubmit="return false;">

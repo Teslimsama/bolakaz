@@ -1,5 +1,7 @@
 <?php
 include 'session.php';
+require_once __DIR__ . '/../lib/offline_statement.php';
+require_once __DIR__ . '/../lib/sales_snapshot.php';
 
 if(isset($_POST['id'])){
     $id = $_POST['id'];
@@ -12,25 +14,26 @@ if(isset($_POST['id'])){
         $stmt->execute(['id'=>$id]);
         $row = $stmt->fetch();
         
-        $output['customer'] = e($row['firstname'].' '.$row['lastname']);
-        if(empty(trim($output['customer']))) $output['customer'] = 'Guest';
+        $output['customer'] = e(app_statement_customer_name_from_row((array) $row));
         $output['date'] = date('M d, Y', strtotime($row['sales_date']));
         
         if($row['payment_status'] == 'paid') $output['status'] = '<span class="label label-success">Paid</span>';
         elseif($row['payment_status'] == 'partial') $output['status'] = '<span class="label label-warning">Partial</span>';
         else $output['status'] = '<span class="label label-danger">Unpaid</span>';
         
-        $stmt = $conn->prepare("SELECT details.*, products.name, products.price FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
+        $priceSql = app_sales_detail_price_sql($conn, 'details', 'products');
+        $nameSql = app_sales_detail_name_sql($conn, 'details', 'products');
+        $stmt = $conn->prepare("SELECT details.*, {$nameSql} AS item_name, {$priceSql} AS item_price FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
         $stmt->execute(['id'=>$id]);
         
         $total = 0;
         $items = '';
         foreach($stmt as $it){
-            $sub = $it['price'] * $it['quantity'];
+            $sub = ((float) $it['item_price']) * ((int) $it['quantity']);
             $total += $sub;
             $items .= "<tr>
-                <td>".e($it['name'])."</td>
-                <td>".app_money($it['price'])."</td>
+                <td>".e((string) ($it['item_name'] ?? 'Item'))."</td>
+                <td>".app_money((float) ($it['item_price'] ?? 0))."</td>
                 <td>".$it['quantity']."</td>
                 <td>".app_money($sub)."</td>
             </tr>";

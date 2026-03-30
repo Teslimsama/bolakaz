@@ -1,5 +1,6 @@
 <?php include 'session.php'; ?>
 <?php require_once __DIR__ . '/../lib/offline_statement.php'; ?>
+<?php require_once __DIR__ . '/../lib/sales_snapshot.php'; ?>
 <?php include 'header.php'; ?>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -68,6 +69,7 @@
                     $conn = $pdo->open();
 
                     try{
+                      $totalAmountSql = app_sales_detail_total_sum_sql($conn, 'details', 'products');
                       $stmt = $conn->prepare("SELECT 
                           sales.id AS salesid, 
                           sales.sales_date, 
@@ -80,7 +82,7 @@
                           users.firstname, 
                           users.lastname, 
                           users.phone AS user_phone,
-                          (SELECT SUM(details.quantity * products.price) FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=sales.id) AS total_amount,
+                          (SELECT {$totalAmountSql} FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=sales.id) AS total_amount,
                           (SELECT COALESCE(SUM(offline_payments.amount), 0) FROM offline_payments WHERE offline_payments.sales_id=sales.id) AS amount_paid
                         FROM sales 
                         LEFT JOIN users ON users.id=sales.user_id 
