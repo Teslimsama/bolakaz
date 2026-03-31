@@ -60,8 +60,8 @@
                 <div class="form-group">
                     <label for="offline_product_lookup" class="col-sm-3 control-label">Scan or Type</label>
                     <div class="col-sm-9">
-                      <input type="text" class="form-control input-lg" id="offline_product_lookup" placeholder="Scan barcode or type SKU, then press Enter">
-                      <p class="help-block">Barcode scanners type like a keyboard. You can also type a SKU manually or start typing to see suggestions.</p>
+                      <input type="text" class="form-control input-lg" id="offline_product_lookup" placeholder="Scan barcode or type SKU / product number, then press Enter">
+                      <p class="help-block">Barcode scanners type like a keyboard. You can type the full SKU like BLKZ-000123, or just the number part like 123.</p>
                       <div id="offline_product_lookup_feedback" class="help-block" aria-live="polite"></div>
                       <div id="offline_product_lookup_suggestions" class="list-group" style="margin-top:8px; display:none;"></div>
                     </div>
@@ -103,6 +103,26 @@
                     </div>
                 </div>
                 <button type="button" class="btn btn-info btn-flat btn-sm" id="btn-add-product"><i class="fa fa-plus"></i> Add Another Product</button>
+                <div class="row" style="margin-top: 15px;">
+                    <div class="col-sm-4">
+                        <div class="well well-sm text-center">
+                            <div class="text-muted">Current Total</div>
+                            <div id="offline_sale_total_preview" style="font-size: 1.25em; font-weight: bold;"><?php echo app_money(0); ?></div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="well well-sm text-center">
+                            <div class="text-muted">Initial Payment</div>
+                            <div id="offline_sale_paid_preview" style="font-size: 1.25em; font-weight: bold; color: green;"><?php echo app_money(0); ?></div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="well well-sm text-center">
+                            <div class="text-muted">Balance</div>
+                            <div id="offline_sale_balance_preview" style="font-size: 1.25em; font-weight: bold; color: #c9302c;"><?php echo app_money(0); ?></div>
+                        </div>
+                    </div>
+                </div>
                 
                 <hr>
                 <div class="form-group">
@@ -236,9 +256,13 @@
 
 <script>
 $(document).ready(function() {
+    var $addOfflineModal = $('#add_offline');
     var $lookupInput = $('#offline_product_lookup');
     var $lookupFeedback = $('#offline_product_lookup_feedback');
     var $lookupSuggestions = $('#offline_product_lookup_suggestions');
+    var $saleTotalPreview = $('#offline_sale_total_preview');
+    var $salePaidPreview = $('#offline_sale_paid_preview');
+    var $saleBalancePreview = $('#offline_sale_balance_preview');
     var lookupDebounceTimer = null;
     var latestSuggestionToken = 0;
     var lookupQueue = [];
@@ -249,7 +273,7 @@ $(document).ready(function() {
         return $('<div>').text(value || '').html();
     }
 
-    function hydrateProductSelect($select) {
+    function hydrateModalSelect($select, placeholder) {
         if (!$select.length || !$.fn.select2) {
             return;
         }
@@ -259,8 +283,65 @@ $(document).ready(function() {
         }
 
         $select.select2({
-            width: '100%'
+            width: '100%',
+            dropdownParent: $addOfflineModal,
+            minimumResultsForSearch: 0,
+            placeholder: placeholder || '',
+            allowClear: false
         });
+    }
+
+    function hydrateProductSelect($select) {
+        hydrateModalSelect($select, 'Select Product');
+    }
+
+    function parseAmount(value) {
+        var amount = parseFloat(value);
+        return isNaN(amount) ? 0 : amount;
+    }
+
+    function formatMoney(amount) {
+        var normalized = parseAmount(amount);
+
+        if (window.Intl && typeof window.Intl.NumberFormat === 'function') {
+            return new window.Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(normalized);
+        }
+
+        return 'NGN ' + normalized.toFixed(2);
+    }
+
+    function updateSalePreview() {
+        var total = 0;
+
+        $('#product-list .product-row').each(function() {
+            var $row = $(this);
+            var productId = String($row.find('select[name="products[]"]').val() || '');
+            if (!productId) {
+                return;
+            }
+
+            var $selectedOption = $row.find('select[name="products[]"] option:selected');
+            var price = parseAmount($selectedOption.data('price'));
+            var qty = parseInt($row.find('input[name="qty[]"]').val(), 10);
+
+            if (isNaN(qty) || qty < 1) {
+                qty = 1;
+            }
+
+            total += price * qty;
+        });
+
+        var paid = parseAmount($('input[name="initial_payment"]').val());
+        var balance = total - paid;
+
+        $saleTotalPreview.text(formatMoney(total));
+        $salePaidPreview.text(formatMoney(paid));
+        $saleBalancePreview.text(formatMoney(balance > 0 ? balance : 0));
     }
 
     function focusLookupInput() {
@@ -332,7 +413,12 @@ $(document).ready(function() {
         var $row = $('#product-list .product-row:first').clone(false, false);
         $row.find('.select2-container').remove();
         var $select = $row.find('select[name="products[]"]');
-        $select.removeClass('select2-hidden-accessible').removeAttr('data-select2-id').val('');
+        $select
+            .removeClass('select2-hidden-accessible')
+            .removeAttr('data-select2-id')
+            .removeAttr('aria-hidden')
+            .removeAttr('tabindex')
+            .val('');
         $select.find('option').prop('selected', false);
         $row.find('input[name="qty[]"]').val('1');
         $row.removeAttr('data-product-id');
@@ -386,6 +472,7 @@ $(document).ready(function() {
         }
 
         highlightRow($row);
+        updateSalePreview();
         clearLookupSuggestions();
         $lookupInput.val('');
         setLookupFeedback('success', product.name + ' added to the sale.');
@@ -441,11 +528,11 @@ $(document).ready(function() {
             if (!response || !response.success) {
                 clearLookupSuggestions();
                 $lookupInput.val('');
-                setLookupFeedback('error', (response && response.message) ? response.message : 'Unable to search products right now.');
-                playLookupTone('error');
-                focusLookupInput();
-                processLookupQueue();
-                return;
+            setLookupFeedback('error', (response && response.message) ? response.message : 'Unable to search products right now.');
+            playLookupTone('error');
+            focusLookupInput();
+            processLookupQueue();
+            return;
             }
 
             if (response.exact) {
@@ -462,7 +549,7 @@ $(document).ready(function() {
 
             clearLookupSuggestions();
             $lookupInput.val('');
-            setLookupFeedback('error', response.message || 'Product not found. Scan again or type SKU.');
+            setLookupFeedback('error', response.message || 'Product not found. Scan again or type SKU/number.');
             playLookupTone('error');
             focusLookupInput();
             processLookupQueue();
@@ -472,7 +559,7 @@ $(document).ready(function() {
     function queueExactLookup(query, preferFirstSuggestion) {
         var normalized = $.trim(query || '');
         if (!normalized) {
-            setLookupFeedback('error', 'Type or scan a product SKU first.');
+            setLookupFeedback('error', 'Type or scan a product SKU or number first.');
             playLookupTone('error');
             focusLookupInput();
             return;
@@ -514,7 +601,7 @@ $(document).ready(function() {
                 setLookupFeedback('muted', 'Press Enter to add the first match, or click a suggestion.');
             } else {
                 clearLookupSuggestions();
-                setLookupFeedback('error', response.message || 'Product not found. Scan again or type SKU.');
+                setLookupFeedback('error', response.message || 'Product not found. Scan again or type SKU/number.');
             }
         });
     }
@@ -538,9 +625,11 @@ $(document).ready(function() {
 
     $('#offline_customer').on('change', populateOfflineCustomerFields);
     populateOfflineCustomerFields();
+    hydrateModalSelect($('#offline_customer'), 'Select Customer');
 
     $('#btn-add-product').click(function() {
         $('#product-list').append(createEmptyProductRow());
+        updateSalePreview();
     });
 
     $(document).on('click', '.btn-remove-product', function() {
@@ -552,11 +641,26 @@ $(document).ready(function() {
             $row.find('input[name="qty[]"]').val('1');
             $row.removeAttr('data-product-id');
         }
+        updateSalePreview();
         focusLookupInput();
     });
 
     $(document).on('change', '#product-list select[name="products[]"]', function() {
         normalizeProductRow($(this).closest('.product-row'));
+        updateSalePreview();
+    });
+
+    $(document).on('input change', '#product-list input[name="qty[]"]', function() {
+        var $input = $(this);
+        var qty = parseInt($input.val(), 10);
+        if (isNaN(qty) || qty < 1) {
+            $input.val('1');
+        }
+        updateSalePreview();
+    });
+
+    $(document).on('input change', 'input[name="initial_payment"]', function() {
+        updateSalePreview();
     });
 
     $(document).on('click', '#offline_product_lookup_suggestions .list-group-item', function() {
@@ -603,6 +707,7 @@ $(document).ready(function() {
     $('#add_offline').on('shown.bs.modal', function() {
         clearLookupSuggestions();
         setLookupFeedback('muted', '');
+        updateSalePreview();
         focusLookupInput();
     });
 
@@ -618,5 +723,6 @@ $(document).ready(function() {
         hydrateProductSelect($(this).find('select[name="products[]"]'));
         normalizeProductRow($(this));
     });
+    updateSalePreview();
 });
 </script>
