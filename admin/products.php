@@ -1,5 +1,6 @@
 <?php include 'session.php'; ?>
 <?php
+require_once __DIR__ . '/../lib/product_labels.php';
 $catid = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
 $catid = ($catid !== false && $catid !== null) ? $catid : null;
 ?>
@@ -56,6 +57,10 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                 <div class="admin-list-toolbar-main">
                   <a href="#addnew" data-toggle="modal" class="btn btn-primary btn-sm" id="addproduct"><i class="fa fa-plus"></i> Add Product</a>
                   <a href="products_import.php" class="btn btn-default btn-sm"><i class="fa fa-upload"></i> Import CSV</a>
+                  <button type="button" class="btn btn-default btn-sm" id="bulk_print_labels"><i class="fa fa-tags"></i> Print Labels</button>
+                  <button type="button" class="btn btn-default btn-sm" id="select_all_products_page"><i class="fa fa-check-square-o"></i> Select Page</button>
+                  <button type="button" class="btn btn-default btn-sm" id="clear_product_selection"><i class="fa fa-square-o"></i> Clear Selection</button>
+                  <span class="label label-info" id="selected_product_count">0 selected</span>
                 </div>
                 <div class="admin-list-toolbar-filters">
                   <form class="form-inline" onsubmit="return false;">
@@ -85,10 +90,16 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                 </div>
               </div>
               <div class="box-body">
+                <form method="POST" action="products_labels.php" id="product-labels-form">
+                  <div id="product-label-hidden-fields"></div>
                 <div class="table-responsive admin-table-wrap">
                   <table id="example1" class="table table-bordered">
                     <thead>
+                      <th class="product-select-col">
+                        <input type="checkbox" id="toggle_current_page_products" aria-label="Select all products on this page">
+                      </th>
                       <th>Name</th>
+                      <th>SKU</th>
                       <th>Photo</th>
                       <th>Price</th>
                       <th>Views Today</th>
@@ -119,12 +130,15 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                           $statusBadge = $isArchived
                             ? "<span class='label label-default'>Archived</span>"
                             : "<span class='label label-success'>Active</span>";
+                          $sku = product_sku_resolve_for_row($row);
                           $archiveBtn = $isArchived
                             ? "<button class='btn btn-default btn-sm btn-flat' type='button' disabled><i class='fa fa-archive'></i> Archived</button>"
                             : "<button class='btn btn-danger btn-sm delete btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-archive'></i> Archive</button>";
                           echo "
-                            <tr class='" . ($isArchived ? "product-row-archived" : "") . "'>
+                            <tr class='" . ($isArchived ? "product-row-archived" : "") . "' data-product-id='" . (int)$row['id'] . "'>
+                              <td class='product-select-col'><input type='checkbox' class='product-select-checkbox' data-product-id='" . (int)$row['id'] . "' aria-label='Select " . e($row['name']) . "'></td>
                               <td>" . e($row['name']) . "</td>
+                              <td>" . e($sku) . "</td>
                               <td>
                                   <!-- Image Thumbnail -->
                                   <img src='" . e($image) . " ' height='30px' width='30px' alt='Product Image' class='img-thumbnail' onerror=\"this.onerror=null;this.src='../images/storefront-placeholder.svg';\">
@@ -147,6 +161,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                               <td>" . $statusBadge . "</td>
                               <td>
                                 <button class='btn btn-success btn-sm edit btn-flat' data-id='" . (int)$row['id'] . "'><i class='fa fa-edit'></i> Edit</button>
+                                <a class='btn btn-primary btn-sm btn-flat' href='products_labels.php?product_id=" . (int)$row['id'] . "'><i class='fa fa-tag'></i> Label</a>
                                 " . $archiveBtn . "
                               </td>
                               <td>" . e($row['color']) . "</td>
@@ -166,6 +181,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
                     </tbody>
                   </table>
                 </div>
+                </form>
               </div>
             </div>
           </div>
@@ -184,6 +200,72 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
   <script>
     $(function() {
+      var selectedProductIds = {};
+
+      function currentProductRows() {
+        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#example1')) {
+          return $('#example1').DataTable().rows({
+            search: 'applied',
+            page: 'current'
+          }).nodes().to$();
+        }
+        return $('#example1 tbody tr:visible');
+      }
+
+      function selectedProductCount() {
+        return Object.keys(selectedProductIds).length;
+      }
+
+      function updateSelectedProductCount() {
+        var count = selectedProductCount();
+        $('#selected_product_count').text(count + ' selected');
+        $('#bulk_print_labels').prop('disabled', count === 0);
+      }
+
+      function syncCurrentPageToggle() {
+        var $checkboxes = currentProductRows().find('.product-select-checkbox');
+        if (!$checkboxes.length) {
+          $('#toggle_current_page_products').prop('checked', false).prop('indeterminate', false);
+          return;
+        }
+
+        var checkedCount = 0;
+        $checkboxes.each(function() {
+          if ($(this).is(':checked')) {
+            checkedCount++;
+          }
+        });
+
+        $('#toggle_current_page_products')
+          .prop('checked', checkedCount > 0 && checkedCount === $checkboxes.length)
+          .prop('indeterminate', checkedCount > 0 && checkedCount < $checkboxes.length);
+      }
+
+      function restoreProductSelections() {
+        $('#example1 .product-select-checkbox').each(function() {
+          var productId = String($(this).data('productId') || $(this).data('product-id') || '');
+          $(this).prop('checked', !!selectedProductIds[productId]);
+        });
+        syncCurrentPageToggle();
+        updateSelectedProductCount();
+      }
+
+      function setCurrentPageSelection(checked) {
+        currentProductRows().find('.product-select-checkbox').each(function() {
+          var productId = String($(this).data('productId') || $(this).data('product-id') || '');
+          if (!productId) {
+            return;
+          }
+          $(this).prop('checked', checked);
+          if (checked) {
+            selectedProductIds[productId] = true;
+          } else {
+            delete selectedProductIds[productId];
+          }
+        });
+        syncCurrentPageToggle();
+        updateSelectedProductCount();
+      }
 
 
       $(document).on('click', '.delete', function(e) {
@@ -246,6 +328,66 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       // Mobile card rendering is now handled globally in admin/scripts.php.
       setupAddWizard();
       setupEditWizard();
+
+      $(document).on('change', '.product-select-checkbox', function() {
+        var productId = String($(this).data('productId') || $(this).data('product-id') || '');
+        if (!productId) {
+          return;
+        }
+        if ($(this).is(':checked')) {
+          selectedProductIds[productId] = true;
+        } else {
+          delete selectedProductIds[productId];
+        }
+        syncCurrentPageToggle();
+        updateSelectedProductCount();
+      });
+
+      $('#toggle_current_page_products').on('change', function() {
+        setCurrentPageSelection($(this).is(':checked'));
+      });
+
+      $('#select_all_products_page').on('click', function(e) {
+        e.preventDefault();
+        setCurrentPageSelection(true);
+      });
+
+      $('#clear_product_selection').on('click', function(e) {
+        e.preventDefault();
+        selectedProductIds = {};
+        restoreProductSelections();
+      });
+
+      $('#bulk_print_labels').on('click', function(e) {
+        e.preventDefault();
+        var ids = Object.keys(selectedProductIds);
+        if (!ids.length) {
+          alert('Select at least one product before printing labels.');
+          return;
+        }
+
+        var $hiddenFields = $('#product-label-hidden-fields');
+        $hiddenFields.empty();
+        ids.sort(function(a, b) {
+          return parseInt(a, 10) - parseInt(b, 10);
+        }).forEach(function(id) {
+          $('<input>', {
+            type: 'hidden',
+            name: 'selected_products[]',
+            value: id
+          }).appendTo($hiddenFields);
+        });
+
+        $('#product-labels-form').trigger('submit');
+      });
+
+      if ($.fn.DataTable && $.fn.DataTable.isDataTable('#example1')) {
+        $('#example1').on('draw.dt search.dt order.dt page.dt', function() {
+          restoreProductSelections();
+        });
+      }
+
+      restoreProductSelections();
 
     });
     // Event listener for the 'edit' button
@@ -586,6 +728,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
           $('.name').html(response.prodname);
           $('.prodid').val(response.prodid);
           $('#edit_name').val(response.prodname);
+          $('#edit_sku').val(response.sku || '');
           $('#catselected').val(response.category_id).html(response.catname);
           $('#edit_price').val(response.price);
           $('#edit_quantity').val(response.qty);
@@ -675,9 +818,9 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
         []
       ];
       $groups.each(function(index) {
-        if ([0, 1, 4, 6].indexOf(index) !== -1) {
+        if ([0, 1, 2, 3, 4].indexOf(index) !== -1) {
           steps[0].push(this);
-        } else if ([2, 5, 7, 8, 9, 10].indexOf(index) !== -1) {
+        } else if ([5, 6, 7, 8, 9].indexOf(index) !== -1) {
           steps[1].push(this);
         } else {
           steps[2].push(this);
@@ -742,7 +885,7 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
       var stepA = [];
       var stepB = [];
       $groups.each(function(index) {
-        if (index <= 4) {
+        if (index <= 5) {
           stepA.push(this);
         } else {
           stepB.push(this);
@@ -804,6 +947,23 @@ $catid = ($catid !== false && $catid !== null) ? $catid : null;
     .product-row-archived {
       opacity: 0.72;
       background: #fafafa;
+    }
+
+    .product-select-col {
+      width: 46px;
+      text-align: center;
+      vertical-align: middle !important;
+    }
+
+    .product-select-checkbox,
+    #toggle_current_page_products {
+      transform: scale(1.1);
+    }
+
+    #selected_product_count {
+      display: inline-block;
+      margin-left: 4px;
+      vertical-align: middle;
     }
 
     .wizard-nav {

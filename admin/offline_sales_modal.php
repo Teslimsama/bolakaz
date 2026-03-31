@@ -1,3 +1,5 @@
+<?php require_once __DIR__ . '/../lib/product_sku.php'; ?>
+
 <!-- Add Offline Sale Modal -->
 <div class="modal fade" id="add_offline">
     <div class="modal-dialog modal-lg">
@@ -55,6 +57,21 @@
                 
                 <hr>
                 <h4>Products</h4>
+                <div class="form-group">
+                    <label for="offline_product_lookup" class="col-sm-3 control-label">Scan or Type</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control input-lg" id="offline_product_lookup" placeholder="Scan barcode or type SKU, then press Enter">
+                      <p class="help-block">Barcode scanners type like a keyboard. You can also type a SKU manually or start typing to see suggestions.</p>
+                      <div id="offline_product_lookup_feedback" class="help-block" aria-live="polite"></div>
+                      <div id="offline_product_lookup_suggestions" class="list-group" style="margin-top:8px; display:none;"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Fallback Picker</label>
+                    <div class="col-sm-9">
+                      <p class="help-block">If needed, you can still add products manually from the list below.</p>
+                    </div>
+                </div>
                 <div id="product-list">
                     <div class="row product-row" style="margin-bottom: 10px;">
                         <div class="col-sm-7">
@@ -62,10 +79,16 @@
                                 <option value="">Select Product</option>
                                 <?php
                                   $conn = $pdo->open();
-                                  $stmt = $conn->prepare("SELECT id, name, price FROM products ORDER BY name ASC");
+                                  $stmt = $conn->prepare("SELECT id, name, sku, price, product_status FROM products WHERE product_status = 1 ORDER BY name ASC");
                                   $stmt->execute();
                                   foreach($stmt as $prow){
-                                    echo "<option value='".$prow['id']."' data-price='".$prow['price']."'>".e($prow['name'])." (".app_money($prow['price']).")</option>";
+                                    $resolvedSku = product_sku_resolve_for_row((array) $prow);
+                                    $label = trim((string) ($prow['name'] ?? 'Product'));
+                                    if ($resolvedSku !== '') {
+                                      $label .= ' | ' . $resolvedSku;
+                                    }
+                                    $label .= ' (' . app_money((float) ($prow['price'] ?? 0)) . ')';
+                                    echo "<option value='".(int) $prow['id']."' data-price='".e((string) ($prow['price'] ?? 0))."' data-sku='".e($resolvedSku)."' data-name='".e((string) ($prow['name'] ?? ''))."'>".e($label)."</option>";
                                   }
                                   $pdo->close();
                                 ?>
@@ -213,6 +236,289 @@
 
 <script>
 $(document).ready(function() {
+    var $lookupInput = $('#offline_product_lookup');
+    var $lookupFeedback = $('#offline_product_lookup_feedback');
+    var $lookupSuggestions = $('#offline_product_lookup_suggestions');
+    var lookupDebounceTimer = null;
+    var latestSuggestionToken = 0;
+    var lookupQueue = [];
+    var processingLookup = false;
+    var audioContext = null;
+
+    function escapeHtml(value) {
+        return $('<div>').text(value || '').html();
+    }
+
+    function hydrateProductSelect($select) {
+        if (!$select.length || !$.fn.select2) {
+            return;
+        }
+
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+
+        $select.select2({
+            width: '100%'
+        });
+    }
+
+    function focusLookupInput() {
+        window.setTimeout(function() {
+            $lookupInput.trigger('focus');
+            $lookupInput[0].select();
+        }, 0);
+    }
+
+    function getAudioContext() {
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) {
+            return null;
+        }
+        if (!audioContext) {
+            audioContext = new Ctx();
+        }
+        return audioContext;
+    }
+
+    function playLookupTone(type) {
+        try {
+            var ctx = getAudioContext();
+            if (!ctx) {
+                return;
+            }
+
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
+
+            var oscillator = ctx.createOscillator();
+            var gainNode = ctx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = (type === 'success') ? 1046.5 : 220;
+            gainNode.gain.setValueAtTime(0.0001, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + ((type === 'success') ? 0.15 : 0.28));
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            oscillator.start();
+            oscillator.stop(ctx.currentTime + ((type === 'success') ? 0.16 : 0.3));
+        } catch (e) {
+            // Audio feedback is best-effort only.
+        }
+    }
+
+    function setLookupFeedback(type, message) {
+        $lookupFeedback
+            .removeClass('text-success text-danger text-muted')
+            .addClass(type === 'success' ? 'text-success' : (type === 'error' ? 'text-danger' : 'text-muted'))
+            .text(message || '');
+    }
+
+    function clearLookupSuggestions() {
+        $lookupSuggestions.empty().hide();
+    }
+
+    function normalizeProductRow($row) {
+        var productId = String($row.find('select[name="products[]"]').val() || '');
+        if (productId) {
+            $row.attr('data-product-id', productId);
+        } else {
+            $row.removeAttr('data-product-id');
+        }
+    }
+
+    function createEmptyProductRow() {
+        var $row = $('#product-list .product-row:first').clone(false, false);
+        $row.find('.select2-container').remove();
+        var $select = $row.find('select[name="products[]"]');
+        $select.removeClass('select2-hidden-accessible').removeAttr('data-select2-id').val('');
+        $select.find('option').prop('selected', false);
+        $row.find('input[name="qty[]"]').val('1');
+        $row.removeAttr('data-product-id');
+        hydrateProductSelect($select);
+        return $row;
+    }
+
+    function findRowByProductId(productId) {
+        return $('#product-list .product-row[data-product-id="' + productId + '"]').first();
+    }
+
+    function findEmptyRow() {
+        return $('#product-list .product-row').filter(function() {
+            return !String($(this).find('select[name="products[]"]').val() || '');
+        }).first();
+    }
+
+    function highlightRow($row) {
+        $row.stop(true, true).css('backgroundColor', '#fff8d5');
+        window.setTimeout(function() {
+            $row.css('transition', 'background-color 0.35s ease');
+            $row.css('backgroundColor', '');
+            window.setTimeout(function() {
+                $row.css('transition', '');
+            }, 400);
+        }, 20);
+    }
+
+    function addOrIncrementProduct(product) {
+        var productId = String(product.id || '');
+        if (!productId) {
+            return;
+        }
+
+        var $row = findRowByProductId(productId);
+        if ($row.length) {
+            var $qty = $row.find('input[name="qty[]"]');
+            var currentQty = parseInt($qty.val(), 10);
+            $qty.val((isNaN(currentQty) || currentQty < 1 ? 1 : currentQty) + 1);
+        } else {
+            $row = findEmptyRow();
+            if (!$row.length) {
+                $row = createEmptyProductRow();
+                $('#product-list').append($row);
+            }
+
+            var $select = $row.find('select[name="products[]"]');
+            $select.val(productId).trigger('change');
+            $row.find('input[name="qty[]"]').val('1');
+            $row.attr('data-product-id', productId);
+        }
+
+        highlightRow($row);
+        clearLookupSuggestions();
+        $lookupInput.val('');
+        setLookupFeedback('success', product.name + ' added to the sale.');
+        playLookupTone('success');
+        focusLookupInput();
+    }
+
+    function renderLookupSuggestions(items) {
+        if (!items || !items.length) {
+            clearLookupSuggestions();
+            return;
+        }
+
+        $lookupSuggestions.empty();
+        $.each(items, function(_, item) {
+            var $button = $('<button type="button" class="list-group-item"></button>');
+            $button.html(
+                '<strong>' + escapeHtml(item.name) + '</strong><br>' +
+                '<small>' + escapeHtml(item.sku || '') + ' | ' + escapeHtml(item.price_formatted || '') + '</small>'
+            );
+            $button.data('product', item);
+            $lookupSuggestions.append($button);
+        });
+        $lookupSuggestions.show();
+    }
+
+    function requestLookup(query, onDone) {
+        $.ajax({
+            url: 'products_lookup.php',
+            type: 'GET',
+            dataType: 'json',
+            data: { q: query }
+        }).done(function(response) {
+            onDone(response || null);
+        }).fail(function() {
+            onDone({
+                success: false,
+                message: 'Unable to search products right now.'
+            });
+        });
+    }
+
+    function processLookupQueue() {
+        if (processingLookup || !lookupQueue.length) {
+            return;
+        }
+
+        processingLookup = true;
+        var job = lookupQueue.shift();
+        requestLookup(job.query, function(response) {
+            processingLookup = false;
+
+            if (!response || !response.success) {
+                clearLookupSuggestions();
+                $lookupInput.val('');
+                setLookupFeedback('error', (response && response.message) ? response.message : 'Unable to search products right now.');
+                playLookupTone('error');
+                focusLookupInput();
+                processLookupQueue();
+                return;
+            }
+
+            if (response.exact) {
+                addOrIncrementProduct(response.exact);
+                processLookupQueue();
+                return;
+            }
+
+            if (job.preferFirstSuggestion && response.suggestions && response.suggestions.length) {
+                addOrIncrementProduct(response.suggestions[0]);
+                processLookupQueue();
+                return;
+            }
+
+            clearLookupSuggestions();
+            $lookupInput.val('');
+            setLookupFeedback('error', response.message || 'Product not found. Scan again or type SKU.');
+            playLookupTone('error');
+            focusLookupInput();
+            processLookupQueue();
+        });
+    }
+
+    function queueExactLookup(query, preferFirstSuggestion) {
+        var normalized = $.trim(query || '');
+        if (!normalized) {
+            setLookupFeedback('error', 'Type or scan a product SKU first.');
+            playLookupTone('error');
+            focusLookupInput();
+            return;
+        }
+
+        lookupQueue.push({
+            query: normalized,
+            preferFirstSuggestion: !!preferFirstSuggestion
+        });
+        processLookupQueue();
+    }
+
+    function fetchSuggestions(query) {
+        var normalized = $.trim(query || '');
+        if (!normalized) {
+            clearLookupSuggestions();
+            setLookupFeedback('muted', '');
+            return;
+        }
+
+        latestSuggestionToken += 1;
+        var token = latestSuggestionToken;
+
+        requestLookup(normalized, function(response) {
+            if (token !== latestSuggestionToken || $.trim($lookupInput.val()) !== normalized) {
+                return;
+            }
+
+            if (!response || !response.success) {
+                clearLookupSuggestions();
+                setLookupFeedback('error', (response && response.message) ? response.message : 'Unable to search products right now.');
+                return;
+            }
+
+            renderLookupSuggestions(response.suggestions || []);
+            if (response.exact) {
+                setLookupFeedback('muted', 'Press Enter to add ' + response.exact.name + '.');
+            } else if (response.suggestions && response.suggestions.length) {
+                setLookupFeedback('muted', 'Press Enter to add the first match, or click a suggestion.');
+            } else {
+                clearLookupSuggestions();
+                setLookupFeedback('error', response.message || 'Product not found. Scan again or type SKU.');
+            }
+        });
+    }
+
     function populateOfflineCustomerFields() {
         var $selected = $('#offline_customer').find(':selected');
         var fullName = $.trim($selected.data('fullname') || '');
@@ -234,17 +540,83 @@ $(document).ready(function() {
     populateOfflineCustomerFields();
 
     $('#btn-add-product').click(function() {
-        var row = $('.product-row:first').clone();
-        row.find('input').val('1');
-        row.find('.select2-container').remove();
-        row.find('select').removeClass('select2-hidden-accessible').removeAttr('data-select2-id').val('').select2();
-        $('#product-list').append(row);
+        $('#product-list').append(createEmptyProductRow());
     });
 
     $(document).on('click', '.btn-remove-product', function() {
         if ($('.product-row').length > 1) {
             $(this).closest('.product-row').remove();
+        } else {
+            var $row = $(this).closest('.product-row');
+            $row.find('select[name="products[]"]').val('').trigger('change');
+            $row.find('input[name="qty[]"]').val('1');
+            $row.removeAttr('data-product-id');
         }
+        focusLookupInput();
+    });
+
+    $(document).on('change', '#product-list select[name="products[]"]', function() {
+        normalizeProductRow($(this).closest('.product-row'));
+    });
+
+    $(document).on('click', '#offline_product_lookup_suggestions .list-group-item', function() {
+        addOrIncrementProduct($(this).data('product') || {});
+    });
+
+    $lookupInput.on('input', function() {
+        var query = $(this).val();
+        clearTimeout(lookupDebounceTimer);
+        lookupDebounceTimer = window.setTimeout(function() {
+            fetchSuggestions(query);
+        }, 300);
+    });
+
+    $lookupInput.on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(lookupDebounceTimer);
+            queueExactLookup($(this).val(), true);
+        }
+    });
+
+    $('#add_offline form').on('submit', function(e) {
+        $('#product-list .product-row').each(function() {
+            var $row = $(this);
+            var selectedProduct = String($row.find('select[name="products[]"]').val() || '');
+            if (!selectedProduct && $('#product-list .product-row').length > 1) {
+                $row.remove();
+            }
+        });
+
+        var hasSelectedProducts = $('#product-list select[name="products[]"]').filter(function() {
+            return String($(this).val() || '') !== '';
+        }).length > 0;
+
+        if (!hasSelectedProducts) {
+            e.preventDefault();
+            setLookupFeedback('error', 'Add at least one product before saving the sale.');
+            playLookupTone('error');
+            focusLookupInput();
+        }
+    });
+
+    $('#add_offline').on('shown.bs.modal', function() {
+        clearLookupSuggestions();
+        setLookupFeedback('muted', '');
+        focusLookupInput();
+    });
+
+    $('#add_offline').on('hidden.bs.modal', function() {
+        clearLookupSuggestions();
+        setLookupFeedback('muted', '');
+        $lookupInput.val('');
+        lookupQueue = [];
+        processingLookup = false;
+    });
+
+    $('#product-list .product-row').each(function() {
+        hydrateProductSelect($(this).find('select[name="products[]"]'));
+        normalizeProductRow($(this));
     });
 });
 </script>

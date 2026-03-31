@@ -56,6 +56,15 @@
               </select>
             </div>
           </div>
+          <div class="form-group">
+            <label for="sku" class="col-sm-1 control-label">SKU</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="sku" value="Generated after save" readonly>
+              <p class="help-block">SKU is created automatically from the product ID and cannot be edited later.</p>
+            </div>
+            <label class="col-sm-1 control-label"></label>
+            <div class="col-sm-5"></div>
+          </div>
           <!-- Price and Material -->
           <div class="form-group">
             <label for="price" class="col-sm-1 control-label">Price</label>

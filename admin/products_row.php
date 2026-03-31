@@ -1,6 +1,7 @@
 <?php
 include 'session.php';
 require_once __DIR__ . '/../lib/product_payload.php';
+require_once __DIR__ . '/../lib/product_sku.php';
 
 if (isset($_POST['id'])) {
 	$id = $_POST['id'];
@@ -20,11 +21,17 @@ if (isset($_POST['id'])) {
 
 	$pdo->close();
 
+	if (!$row) {
+		echo json_encode([]);
+		exit();
+	}
+
 	// Preparing the selected sizes, colors, and materials as arrays (assuming they are stored as comma-separated values)
 	$selectedSizes = product_csv_to_array($row['size'] ?? '');
 	$selectedColors = product_csv_to_array($row['color'] ?? '');
 	$selectedMaterials = product_csv_to_array($row['material'] ?? '', 80);
 	$specs = product_decode_specs($row['additional_info'] ?? '');
+	$row['sku'] = product_sku_repair_if_missing($conn, (int) ($row['prodid'] ?? 0), $row);
 
 	// Prepare data for JSON response with additional product details
 	$row['size'] = $selectedSizes;
@@ -32,6 +39,7 @@ if (isset($_POST['id'])) {
 	$row['material'] = $selectedMaterials;
 	$row['additional_info'] = $specs;
 	$row['product_status'] = (int)($row['product_status'] ?? 1);
+	$row['sku'] = product_sku_resolve_for_row($row);
 
 	$categoryId = (int)($row['category_id'] ?? 0);
 	$subcategoryId = (int)($row['subcategory_id'] ?? 0);

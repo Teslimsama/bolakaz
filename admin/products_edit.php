@@ -2,6 +2,7 @@
 include 'session.php';
 include 'slugify.php';
 require_once __DIR__ . '/../lib/product_payload.php';
+require_once __DIR__ . '/../lib/product_sku.php';
 require_once __DIR__ . '/../lib/catalog_v2.php';
 require_once __DIR__ . '/../lib/sync.php';
 
@@ -34,6 +35,7 @@ $specs = product_collect_specs($_POST, 'edit_');
 $additionalInfo = product_encode_specs($specs);
 
 $errors = [];
+
 if ($id <= 0) {
     $errors[] = 'Invalid product id.';
 }
@@ -76,6 +78,15 @@ if ($slugBase === '') {
 $conn = $pdo->open();
 
 try {
+    $productStmt = $conn->prepare("SELECT * FROM products WHERE id = :id LIMIT 1");
+    $productStmt->execute(['id' => $id]);
+    $existingProduct = $productStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$existingProduct) {
+        $_SESSION['error'] = 'Product could not be found.';
+        header('location: products.php');
+        exit();
+    }
+
     $catStmt = $conn->prepare("SELECT cat_slug FROM category WHERE id = :id LIMIT 1");
     $catStmt->execute(['id' => $category]);
     $catRow = $catStmt->fetch(PDO::FETCH_ASSOC);
@@ -136,6 +147,10 @@ try {
         'id' => $id,
     ]);
 
+    if (product_sku_column_exists($conn)) {
+        product_sku_repair_if_missing($conn, $id, $existingProduct);
+    }
+
     if (catalog_v2_table_exists($conn, 'products_v2')) {
         $syncSource = [
             'id' => $id,
@@ -155,9 +170,7 @@ try {
             'product_status' => $productStatus,
         ];
 
-        $photoStmt = $conn->prepare("SELECT photo FROM products WHERE id = :id LIMIT 1");
-        $photoStmt->execute(['id' => $id]);
-        $syncSource['photo'] = (string)($photoStmt->fetchColumn() ?? '');
+        $syncSource['photo'] = (string)($existingProduct['photo'] ?? '');
         catalog_v2_sync_product_from_legacy($conn, $syncSource);
     }
 

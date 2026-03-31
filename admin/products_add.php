@@ -3,6 +3,7 @@ include 'session.php';
 include 'slugify.php';
 require_once __DIR__ . '/../lib/image_tools.php';
 require_once __DIR__ . '/../lib/product_payload.php';
+require_once __DIR__ . '/../lib/product_sku.php';
 require_once __DIR__ . '/../lib/catalog_v2.php';
 require_once __DIR__ . '/../lib/sync.php';
 
@@ -144,6 +145,9 @@ try {
     ]);
 
     $productID = (int)$conn->lastInsertId();
+    if (product_sku_column_exists($conn)) {
+        product_sku_repair_if_missing($conn, $productID);
+    }
     sync_enqueue_or_fail($conn, 'products', $productID);
 
     $fileImages = isset($_FILES['images']['name']) && is_array($_FILES['images']['name']) ? array_filter($_FILES['images']['name']) : [];

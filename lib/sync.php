@@ -201,7 +201,7 @@ if (!function_exists('sync_entity_definitions')) {
                 'table' => 'products',
                 'pk' => 'id',
                 'order' => 30,
-                'columns' => ['category_name', 'name', 'description', 'additional_info', 'slug', 'price', 'color', 'size', 'brand', 'material', 'qty', 'photo', 'date_view', 'counter', 'product_status', 'created_at', 'updated_at'],
+                'columns' => ['category_name', 'name', 'description', 'additional_info', 'slug', 'sku', 'price', 'color', 'size', 'brand', 'material', 'qty', 'photo', 'date_view', 'counter', 'product_status', 'created_at', 'updated_at'],
                 'refs' => [
                     ['column' => 'category_id', 'entity' => 'category', 'payload_key' => 'category_uuid', 'nullable' => false],
                     ['column' => 'subcategory_id', 'entity' => 'category', 'payload_key' => 'subcategory_uuid', 'nullable' => true],
@@ -209,7 +209,7 @@ if (!function_exists('sync_entity_definitions')) {
                 'media' => [
                     ['field' => 'photo', 'disk' => 'images'],
                 ],
-                'delete_snapshot' => ['name', 'slug', 'brand', 'photo', 'product_status'],
+                'delete_snapshot' => ['name', 'slug', 'sku', 'brand', 'photo', 'product_status'],
             ],
             'gallery_images' => [
                 'table' => 'gallery_images',
@@ -267,12 +267,12 @@ if (!function_exists('sync_entity_definitions')) {
                 'table' => 'details',
                 'pk' => 'id',
                 'order' => 70,
-                'columns' => ['quantity', 'unit_price', 'product_name_snapshot', 'product_slug_snapshot', 'created_at', 'updated_at'],
+                'columns' => ['quantity', 'unit_price', 'product_name_snapshot', 'product_sku_snapshot', 'product_slug_snapshot', 'created_at', 'updated_at'],
                 'refs' => [
                     ['column' => 'sales_id', 'entity' => 'sales', 'payload_key' => 'sales_uuid', 'nullable' => false],
                     ['column' => 'product_id', 'entity' => 'products', 'payload_key' => 'product_uuid', 'nullable' => false],
                 ],
-                'delete_snapshot' => ['quantity', 'unit_price', 'product_name_snapshot', 'product_slug_snapshot'],
+                'delete_snapshot' => ['quantity', 'unit_price', 'product_name_snapshot', 'product_sku_snapshot', 'product_slug_snapshot'],
             ],
             'offline_payments' => [
                 'table' => 'offline_payments',
