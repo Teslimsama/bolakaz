@@ -2,6 +2,7 @@
 include '../session.php';
 require_once __DIR__ . '/../lib/mailer.php';
 require_once __DIR__ . '/../lib/customer_accounts.php';
+require_once __DIR__ . '/../lib/recaptcha_enterprise.php';
 require_once __DIR__ . '/../lib/sync.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -21,6 +22,10 @@ $refer = trim((string)($_POST['referral'] ?? ''));
 $gender = trim((string)($_POST['gender'] ?? ''));
 $password = (string)($_POST['password'] ?? '');
 $repassword = (string)($_POST['repassword'] ?? '');
+$captchaBypassedForLocal = app_is_local_env();
+$recaptchaToken = trim((string)($_POST['recaptcha_token'] ?? ''));
+$recaptchaAction = strtoupper(trim((string)($_POST['recaptcha_action'] ?? 'SIGNUP')));
+$recaptchaEnterpriseSiteKey = app_recaptcha_enterprise_site_key();
 
 if ($firstname === '' || $lastname === '' || $email === '' || $phone === '' || $gender === '' || $password === '' || $repassword === '') {
 	$_SESSION['error'] = 'Please complete all signup fields.';
@@ -38,7 +43,30 @@ $_SESSION['firstname'] = $firstname;
 $_SESSION['lastname'] = $lastname;
 $_SESSION['email'] = $email;
 
-if (!isset($_SESSION['captcha'])) {
+if (!$captchaBypassedForLocal && $recaptchaEnterpriseSiteKey !== '') {
+	if (!app_recaptcha_enterprise_has_server_config()) {
+		$_SESSION['error'] = 'Signup security is not configured correctly. Please contact support.';
+		header('location: ../signup');
+		exit();
+	}
+
+	if ($recaptchaToken === '') {
+		$_SESSION['error'] = 'Complete the security check and try again.';
+		header('location: ../signup');
+		exit();
+	}
+
+	$assessment = app_recaptcha_enterprise_assess($recaptchaToken, $recaptchaAction);
+	if (empty($assessment['success'])) {
+		if (($assessment['error'] ?? '') === 'monthly_limit_reached') {
+			$_SESSION['error'] = 'Signup security limit reached for this month. Please try again next month.';
+		} else {
+			$_SESSION['error'] = 'Security verification failed. Please try again.';
+		}
+		header('location: ../signup');
+		exit();
+	}
+} elseif (!$captchaBypassedForLocal && !isset($_SESSION['captcha'])) {
 	$secret = $_ENV['RECAPTCHA_SECRET_KEY'] ?? getenv('RECAPTCHA_SECRET_KEY') ?? '';
 	$response = $_POST['g-recaptcha-response'] ?? '';
 	if ($secret !== '' && $response !== '') {
