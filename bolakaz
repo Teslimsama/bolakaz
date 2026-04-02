@@ -1,0 +1,65 @@
+<?php
+
+declare(strict_types=1);
+
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    echo 'This command must be run from the command line.' . PHP_EOL;
+    exit(1);
+}
+
+$root = __DIR__;
+require_once $root . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'cli_support.php';
+
+$env = app_cli_parse_env_file(app_cli_env_file_path($root));
+$args = array_slice($argv, 1);
+$command = $args[0] ?? 'help';
+
+if (in_array($command, ['-h', '--help', 'help'], true)) {
+    echo app_cli_help_text($env);
+    exit(0);
+}
+
+$commandArgs = array_slice($args, 1);
+$exitCode = 0;
+
+switch ($command) {
+    case 'doctor':
+        $exitCode = app_cli_command_doctor($env, $root);
+        break;
+
+    case 'setup':
+        $role = app_cli_setup_role($env, app_cli_option_value($commandArgs, '--role'));
+        $exitCode = app_cli_command_setup($env, $root, $role, app_cli_has_flag($commandArgs, '--seed-minimum'));
+        break;
+
+    case 'migrate':
+        $exitCode = app_cli_command_migrate($env, $root);
+        break;
+
+    case 'migrate:status':
+        $exitCode = app_cli_command_migrate_status($env, $root);
+        break;
+
+    case 'migrate:fresh':
+        $exitCode = app_cli_command_migrate_fresh(
+            $env,
+            $root,
+            app_cli_has_flag($commandArgs, '--force'),
+            app_cli_has_flag($commandArgs, '--seed-minimum')
+        );
+        break;
+
+    case 'seed:minimum':
+        $exitCode = app_cli_command_seed_minimum($env, $root);
+        break;
+
+    default:
+        app_cli_report('FAIL', 'Unknown command "' . $command . '".', 'Run php bolakaz --help to see the supported commands.');
+        echo PHP_EOL;
+        echo app_cli_help_text($env);
+        $exitCode = 1;
+        break;
+}
+
+exit($exitCode);

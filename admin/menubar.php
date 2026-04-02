@@ -38,6 +38,9 @@
 
       <li class="header">Settings</li>
       <li><a href="web_details"><i class="fa fa-sliders"></i><span>Web Details</span></a></li>
+
+      <li class="header">Help</li>
+      <li><a href="guide"><i class="fa fa-book"></i><span>How To Use App</span></a></li>
     </ul>
   </section>
 </aside>
