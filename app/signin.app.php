@@ -49,10 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	}
 
 	try {
-
-		$stmt = $conn->prepare("SELECT id, email, password, status, type, account_state, is_placeholder_email FROM users WHERE email = :email LIMIT 1");
+		$selectColumns = app_customer_select_columns($conn, ['id', 'email', 'password', 'status', 'type']);
+		$stmt = $conn->prepare("SELECT {$selectColumns} FROM users WHERE email = :email LIMIT 1");
 		$stmt->execute(['email' => $email]);
-		$row = $stmt->fetch();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 		if ($row && password_verify($password, (string)$row['password'])) {
 			if (app_customer_can_login($conn, is_array($row) ? $row : [])) {
@@ -84,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			$_SESSION['error'] = 'Invalid email or password.';
 		}
 	} catch (PDOException $e) {
+		error_log('Sign-in query failed: ' . $e->getMessage());
 		$_SESSION['error'] = 'Unable to sign in right now. Please try again later.';
 	}
 

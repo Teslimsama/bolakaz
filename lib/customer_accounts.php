@@ -17,6 +17,21 @@ if (!function_exists('app_customer_db_has_column')) {
     }
 }
 
+if (!function_exists('app_customer_select_columns')) {
+    function app_customer_select_columns(PDO $conn, array $baseColumns, string $table = 'users', array $optionalColumns = ['account_state', 'is_placeholder_email']): string
+    {
+        $columns = $baseColumns;
+
+        foreach ($optionalColumns as $column) {
+            if (app_customer_db_has_column($conn, $table, $column)) {
+                $columns[] = $column;
+            }
+        }
+
+        return implode(', ', $columns);
+    }
+}
+
 if (!function_exists('app_customer_generate_uuid')) {
     function app_customer_generate_uuid(): string
     {

@@ -20,7 +20,8 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
 $conn = $pdo->open();
 
 try {
-    $stmt = $conn->prepare("SELECT id, email, status, type, account_state, is_placeholder_email FROM users WHERE email=:email LIMIT 1");
+    $selectColumns = app_customer_select_columns($conn, ['id', 'email', 'status', 'type']);
+    $stmt = $conn->prepare("SELECT {$selectColumns} FROM users WHERE email=:email LIMIT 1");
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -60,6 +61,7 @@ try {
     if ($conn->inTransaction()) {
         $conn->rollBack();
     }
+    error_log('Password reset request failed: ' . $e->getMessage());
     unset($_SESSION['success']);
     $_SESSION['error'] = 'Unable to process request right now. Please try again later.';
 }
