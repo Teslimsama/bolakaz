@@ -7,6 +7,7 @@ namespace Bolakaz\Migrations;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
+use Throwable;
 
 final class Version20260331100000 extends AbstractMigration
 {
@@ -81,10 +82,11 @@ SQL);
 
     private function recreateProductSkuTriggers(): void
     {
-        $this->connection->executeStatement('DROP TRIGGER IF EXISTS trg_products_sku_before_insert');
-        $this->connection->executeStatement('DROP TRIGGER IF EXISTS trg_products_sku_before_update');
+        try {
+            $this->connection->executeStatement('DROP TRIGGER IF EXISTS trg_products_sku_before_insert');
+            $this->connection->executeStatement('DROP TRIGGER IF EXISTS trg_products_sku_before_update');
 
-        $this->connection->executeStatement(<<<'SQL'
+            $this->connection->executeStatement(<<<'SQL'
 CREATE TRIGGER trg_products_sku_before_insert
 BEFORE INSERT ON products
 FOR EACH ROW
@@ -100,7 +102,7 @@ BEGIN
 END
 SQL);
 
-        $this->connection->executeStatement(<<<'SQL'
+            $this->connection->executeStatement(<<<'SQL'
 CREATE TRIGGER trg_products_sku_before_update
 BEFORE UPDATE ON products
 FOR EACH ROW
@@ -120,6 +122,22 @@ BEGIN
     END IF;
 END
 SQL);
+        } catch (Throwable $e) {
+            if ($this->isTriggerPrivilegeException($e)) {
+                $this->write('Skipping product SKU trigger creation because the current database user lacks TRIGGER privilege.');
+                return;
+            }
+
+            throw $e;
+        }
+    }
+
+    private function isTriggerPrivilegeException(Throwable $e): bool
+    {
+        $message = strtolower($e->getMessage());
+
+        return str_contains($message, 'trigger command denied')
+            || (str_contains($message, 'sqlstate[42000]') && str_contains($message, 'trigger'));
     }
 
     private function tableExists(string $table): bool
