@@ -60,6 +60,35 @@ function fetch_value(PDO $conn, string $sql, array $params = []): mixed
     return $stmt->fetchColumn();
 }
 
+function column_allows_null(PDO $conn, string $table, string $column): bool
+{
+    $value = fetch_value(
+        $conn,
+        "SELECT is_nullable
+         FROM information_schema.columns
+         WHERE table_schema = DATABASE()
+           AND table_name = :table_name
+           AND column_name = :column_name
+         LIMIT 1",
+        [
+            'table_name' => $table,
+            'column_name' => $column,
+        ]
+    );
+
+    return strtoupper((string)$value) === 'YES';
+}
+
+function sales_seed_txid_value(PDO $conn, string $txRef): ?int
+{
+    if (column_allows_null($conn, 'sales', 'txid')) {
+        return null;
+    }
+
+    $hash = abs(crc32($txRef));
+    return ($hash > 0) ? $hash : random_int(100000, 999999999);
+}
+
 function required_tables_exist(PDO $conn, array $tables): bool
 {
     foreach ($tables as $table) {
@@ -529,6 +558,7 @@ function ensure_sale_detail(PDO $conn, int $saleId, int $productId, int $quantit
 function ensure_online_sale(PDO $conn, array $customer, array $product, array $shipping, array $coupon): array
 {
     $seedTxRef = 'SEED-ONLINE-ORDER';
+    $seedTxId = sales_seed_txid_value($conn, $seedTxRef);
     $existingSeed = fetch_one($conn, "SELECT id FROM sales WHERE tx_ref = :tx_ref LIMIT 1", ['tx_ref' => $seedTxRef]);
     if ($existingSeed) {
         ensure_sale_detail($conn, (int)$existingSeed['id'], (int)$product['id'], 1);
@@ -547,10 +577,11 @@ function ensure_online_sale(PDO $conn, array $customer, array $product, array $s
     }
 
     $stmt = $conn->prepare("INSERT INTO sales (user_id, is_offline, tx_ref, txid, Status, payment_status, customer_name, statement_share_token, phone, email, coupon_id, shipping_id, address_1, address_2, sales_date, due_date)
-        VALUES (:user_id, 0, :tx_ref, NULL, :status, :payment_status, :customer_name, NULL, :phone, :email, :coupon_id, :shipping_id, :address_1, :address_2, :sales_date, NULL)");
+        VALUES (:user_id, 0, :tx_ref, :txid, :status, :payment_status, :customer_name, NULL, :phone, :email, :coupon_id, :shipping_id, :address_1, :address_2, :sales_date, NULL)");
     $stmt->execute([
         'user_id' => (int)$customer['id'],
         'tx_ref' => $seedTxRef,
+        'txid' => $seedTxId,
         'status' => 'success',
         'payment_status' => 'paid',
         'customer_name' => trim((string)$customer['firstname'] . ' ' . (string)$customer['lastname']),
@@ -575,6 +606,7 @@ function ensure_online_sale(PDO $conn, array $customer, array $product, array $s
 function ensure_offline_sale(PDO $conn, array $customer, array $product): array
 {
     $seedTxRef = 'SEED-OFFLINE-ORDER';
+    $seedTxId = sales_seed_txid_value($conn, $seedTxRef);
     $existingSeed = fetch_one($conn, "SELECT id FROM sales WHERE tx_ref = :tx_ref LIMIT 1", ['tx_ref' => $seedTxRef]);
     if ($existingSeed) {
         $saleId = (int)$existingSeed['id'];
@@ -607,10 +639,11 @@ function ensure_offline_sale(PDO $conn, array $customer, array $product): array
     }
 
     $stmt = $conn->prepare("INSERT INTO sales (user_id, is_offline, tx_ref, txid, Status, payment_status, customer_name, statement_share_token, phone, email, coupon_id, shipping_id, address_1, address_2, sales_date, due_date)
-        VALUES (:user_id, 1, :tx_ref, NULL, :status, :payment_status, :customer_name, NULL, :phone, :email, NULL, NULL, :address_1, :address_2, :sales_date, :due_date)");
+        VALUES (:user_id, 1, :tx_ref, :txid, :status, :payment_status, :customer_name, NULL, :phone, :email, NULL, NULL, :address_1, :address_2, :sales_date, :due_date)");
     $stmt->execute([
         'user_id' => (int)$customer['id'],
         'tx_ref' => $seedTxRef,
+        'txid' => $seedTxId,
         'status' => 'success',
         'payment_status' => 'partial',
         'customer_name' => 'Starter Walk-in Customer',
