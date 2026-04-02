@@ -3,7 +3,7 @@
 include 'session.php';
 require_once __DIR__ . '/lib/mailer.php';
 require_once __DIR__ . '/lib/customer_accounts.php';
-require_once __DIR__ . '/lib/recaptcha_enterprise.php';
+require_once __DIR__ . '/lib/hcaptcha.php';
 require_once __DIR__ . '/lib/sync.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -17,9 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$referral = trim((string)($_POST['referral'] ?? ''));
 	$dob = trim((string)($_POST['dob'] ?? ''));
 	$captchaBypassedForLocal = app_is_local_env();
-	$recaptchaToken = trim((string)($_POST['recaptcha_token'] ?? ''));
-	$recaptchaAction = strtoupper(trim((string)($_POST['recaptcha_action'] ?? 'SIGNUP')));
-	$recaptchaEnterpriseSiteKey = app_recaptcha_enterprise_site_key();
+	$hcaptchaToken = trim((string)($_POST['h-captcha-response'] ?? ''));
+	$hcaptchaSiteKey = app_hcaptcha_site_key();
 
 	if ($firstname === '' || $lastname === '' || $email === '' || $gender === '' || $phone === '' || $password === '' || $repassword === '' || $referral === '' || $dob === '') {
 		$_SESSION['error'] = 'Please complete all signup fields.';
@@ -37,45 +36,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$_SESSION['lastname'] = $lastname;
 	$_SESSION['email'] = $email;
 
-	if (!$captchaBypassedForLocal && $recaptchaEnterpriseSiteKey !== '') {
-		if (!app_recaptcha_enterprise_has_server_config()) {
+	if (!$captchaBypassedForLocal && $hcaptchaSiteKey !== '') {
+		if (!app_hcaptcha_has_server_config()) {
 			$_SESSION['error'] = 'Signup security is not configured correctly. Please contact support.';
 			header('location: signup');
 			exit();
 		}
 
-		if ($recaptchaToken === '') {
+		if ($hcaptchaToken === '') {
 			$_SESSION['error'] = 'Complete the security check and try again.';
 			header('location: signup');
 			exit();
 		}
 
-		$assessment = app_recaptcha_enterprise_assess($recaptchaToken, $recaptchaAction);
-		if (empty($assessment['success'])) {
-			if (($assessment['error'] ?? '') === 'monthly_limit_reached') {
-				$_SESSION['error'] = 'Signup security limit reached for this month. Please try again next month.';
-			} else {
-				$_SESSION['error'] = 'Security verification failed. Please try again.';
-			}
+		$verification = app_hcaptcha_verify($hcaptchaToken);
+		if (empty($verification['success'])) {
+			$_SESSION['error'] = 'Security verification failed. Please try again.';
 			header('location: signup');
 			exit();
-		}
-	} elseif (!$captchaBypassedForLocal && !isset($_SESSION['captcha'])) {
-		$secret = $_ENV['RECAPTCHA_SECRET_KEY'] ?? getenv('RECAPTCHA_SECRET_KEY') ?? '';
-		$response = $_POST['g-recaptcha-response'] ?? '';
-		if ($secret !== '' && $response !== '') {
-			$remoteip = $_SERVER['REMOTE_ADDR'];
-			$url = "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response&remoteip=$remoteip";
-			$data = file_get_contents($url);
-			$row = json_decode($data, true);
-
-			if (!empty($row['success']) && $row['success'] == true) {
-				$_SESSION['captcha'] = time() + (10 * 60);
-			} else {
-				$_SESSION['error'] = 'Please answer recaptcha correctly';
-				header('location: signup');
-				exit();
-			}
 		}
 	}
 

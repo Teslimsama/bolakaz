@@ -1,5 +1,5 @@
 <?php include 'session.php'; ?>
-<?php require_once __DIR__ . '/lib/recaptcha_enterprise.php'; ?>
+<?php require_once __DIR__ . '/lib/hcaptcha.php'; ?>
 <?php
 if (isset($_SESSION['user'])) {
     header('location: cart');
@@ -7,8 +7,8 @@ if (isset($_SESSION['user'])) {
 }
 
 $captchaBypassedForLocal = app_is_local_env();
-$recaptchaEnterpriseSiteKey = app_recaptcha_enterprise_site_key();
-$enterpriseCaptchaEnabled = app_recaptcha_enterprise_enabled();
+$hcaptchaSiteKey = app_hcaptcha_site_key();
+$captchaEnabled = (!$captchaBypassedForLocal && $hcaptchaSiteKey !== '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,8 +16,8 @@ $enterpriseCaptchaEnabled = app_recaptcha_enterprise_enabled();
 <head>
     <?php $pageTitle = "Bolakaz | Sign In"; include "head.php"; ?>
     <link href="css/auth-modern.css" rel="stylesheet" media="all">
-    <?php if ($enterpriseCaptchaEnabled): ?>
-        <script src="https://www.google.com/recaptcha/enterprise.js?render=<?php echo e($recaptchaEnterpriseSiteKey); ?>"></script>
+    <?php if ($captchaEnabled): ?>
+        <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     <?php endif; ?>
 </head>
 
@@ -51,6 +51,9 @@ $enterpriseCaptchaEnabled = app_recaptcha_enterprise_enabled();
                         echo "<div class='alert alert-success' role='alert'>" . e($_SESSION['success']) . "</div>";
                         unset($_SESSION['success']);
                     }
+                    if (!$captchaBypassedForLocal && !$captchaEnabled) {
+                        echo "<div class='alert alert-warning' role='alert'>Captcha is unavailable in this environment. Sign-in remains enabled.</div>";
+                    }
                     ?>
 
                     <?php if (isset($_SESSION['pending_activation_email'])): ?>
@@ -63,7 +66,7 @@ $enterpriseCaptchaEnabled = app_recaptcha_enterprise_enabled();
                         </div>
                     <?php endif; ?>
 
-                    <form action="app/signin.app.php" method="POST" class="row g-3" id="signin-form" <?php if ($enterpriseCaptchaEnabled): ?>data-recaptcha-enterprise="1"<?php endif; ?>>
+                    <form action="app/signin.app.php" method="POST" class="row g-3" id="signin-form">
                         <div class="col-12">
                             <label class="form-label" for="signin-email">Email</label>
                             <input id="signin-email" type="email" class="form-control" name="email" required>
@@ -72,11 +75,12 @@ $enterpriseCaptchaEnabled = app_recaptcha_enterprise_enabled();
                             <label class="form-label" for="signin-password">Password</label>
                             <input id="signin-password" type="password" class="form-control" name="password" required>
                         </div>
+                        <?php if ($captchaEnabled): ?>
+                            <div class="col-12">
+                                <div class="h-captcha" data-sitekey="<?php echo e($hcaptchaSiteKey); ?>"></div>
+                            </div>
+                        <?php endif; ?>
                         <div class="col-12">
-                            <?php if ($enterpriseCaptchaEnabled): ?>
-                                <input type="hidden" name="recaptcha_token" id="signin-recaptcha-token" value="">
-                                <input type="hidden" name="recaptcha_action" value="LOGIN">
-                            <?php endif; ?>
                             <button type="submit" name="login" class="btn btn-primary w-100">Submit</button>
                         </div>
                     </form>
@@ -88,56 +92,6 @@ $enterpriseCaptchaEnabled = app_recaptcha_enterprise_enabled();
     </main>
 
     <?php include 'scripts.php'; ?>
-    <?php if ($enterpriseCaptchaEnabled): ?>
-    <script>
-    (function() {
-        var siteKey = <?php echo json_encode($recaptchaEnterpriseSiteKey); ?>;
-        var form = document.getElementById('signin-form');
-        var tokenInput = document.getElementById('signin-recaptcha-token');
-        if (!form || !tokenInput || !siteKey) {
-            return;
-        }
-
-        var submittingWithToken = false;
-        var submitButton = form.querySelector('button[type="submit"]');
-
-        form.addEventListener('submit', function(e) {
-            if (submittingWithToken) {
-                return;
-            }
-
-            e.preventDefault();
-
-            if (!window.grecaptcha || !grecaptcha.enterprise || typeof grecaptcha.enterprise.execute !== 'function') {
-                if (submitButton) {
-                    submitButton.disabled = false;
-                }
-                return;
-            }
-
-            grecaptcha.enterprise.ready(async function() {
-                try {
-                    if (submitButton) {
-                        submitButton.disabled = true;
-                    }
-                    tokenInput.value = '';
-                    var token = await grecaptcha.enterprise.execute(siteKey, { action: 'LOGIN' });
-                    tokenInput.value = token || '';
-                    submittingWithToken = true;
-                    form.submit();
-                } catch (error) {
-                    submittingWithToken = false;
-                    tokenInput.value = '';
-                    if (submitButton) {
-                        submitButton.disabled = false;
-                    }
-                    window.alert('Security check failed. Please try again.');
-                }
-            });
-        });
-    })();
-    </script>
-    <?php endif; ?>
 </body>
 
 </html>

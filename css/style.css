@@ -10008,7 +10008,8 @@ a.text-dark:focus {
 	}
 }
 
- .g-recaptcha {
+.g-recaptcha,
+.h-captcha {
                                     transform: scale(0.77);
                                     -webkit-transform: scale(0.77);
                                     transform-origin: 0 0;

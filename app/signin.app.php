@@ -1,7 +1,7 @@
 <?php
 include '../session.php';
 require_once __DIR__ . '/../lib/customer_accounts.php';
-require_once __DIR__ . '/../lib/recaptcha_enterprise.php';
+require_once __DIR__ . '/../lib/hcaptcha.php';
 $conn = $pdo->open();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -10,9 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$email = trim((string)($_POST['email'] ?? ''));
 	$password = (string)($_POST['password'] ?? '');
 	$captchaBypassedForLocal = app_is_local_env();
-	$recaptchaToken = trim((string)($_POST['recaptcha_token'] ?? ''));
-	$recaptchaAction = strtoupper(trim((string)($_POST['recaptcha_action'] ?? 'LOGIN')));
-	$recaptchaSiteKey = app_recaptcha_enterprise_site_key();
+	$hcaptchaToken = trim((string)($_POST['h-captcha-response'] ?? ''));
+	$hcaptchaSiteKey = app_hcaptcha_site_key();
 
 	if ($email === '' || $password === '') {
 		$_SESSION['error'] = 'Enter your email and password.';
@@ -22,8 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		exit();
 	}
 
-	if (!$captchaBypassedForLocal && $recaptchaSiteKey !== '') {
-		if (!app_recaptcha_enterprise_has_server_config()) {
+	if (!$captchaBypassedForLocal && $hcaptchaSiteKey !== '') {
+		if (!app_hcaptcha_has_server_config()) {
 			$_SESSION['error'] = 'Sign-in security is not configured correctly. Please contact support.';
 			$pdo->close();
 			session_write_close();
@@ -31,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			exit();
 		}
 
-		if ($recaptchaToken === '') {
+		if ($hcaptchaToken === '') {
 			$_SESSION['error'] = 'Complete the security check and try again.';
 			$pdo->close();
 			session_write_close();
@@ -39,13 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			exit();
 		}
 
-		$assessment = app_recaptcha_enterprise_assess($recaptchaToken, $recaptchaAction);
-		if (empty($assessment['success'])) {
-			if (($assessment['error'] ?? '') === 'monthly_limit_reached') {
-				$_SESSION['error'] = 'Sign-in security limit reached for this month. Please try again next month.';
-			} else {
-				$_SESSION['error'] = 'Security verification failed. Please try again.';
-			}
+		$verification = app_hcaptcha_verify($hcaptchaToken);
+		if (empty($verification['success'])) {
+			$_SESSION['error'] = 'Security verification failed. Please try again.';
 			$pdo->close();
 			session_write_close();
 			header('location: ' . $redirect);
