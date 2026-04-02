@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/catalog_v2.php';
+require_once __DIR__ . '/product_sku.php';
 require_once __DIR__ . '/sales_snapshot.php';
 
 if (!function_exists('app_db_has_column')) {
@@ -197,7 +198,7 @@ if (!function_exists('app_finalize_paid_order')) {
         ]);
         $salesId = (int)$conn->lastInsertId();
 
-        $cartStmt = $conn->prepare("SELECT cart.product_id, cart.variant_id, cart.quantity, products.qty, products.name, products.slug, products.price
+        $cartStmt = $conn->prepare("SELECT cart.product_id, cart.variant_id, cart.quantity, products.qty, products.name, products.slug, products.sku, products.price
             FROM cart
             LEFT JOIN products ON products.id = cart.product_id
             WHERE cart.user_id = :user_id");
@@ -249,6 +250,7 @@ if (!function_exists('app_finalize_paid_order')) {
                 $quantity,
                 $unitPrice,
                 (string) ($row['name'] ?? ''),
+                product_sku_resolve_for_row((array) $row),
                 (string) ($row['slug'] ?? ''),
                 ($variantId > 0 ? $variantId : null)
             );

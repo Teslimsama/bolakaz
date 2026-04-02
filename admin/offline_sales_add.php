@@ -4,6 +4,7 @@ require_once __DIR__ . '/../lib/offline_statement.php';
 require_once __DIR__ . '/../lib/sync.php';
 require_once __DIR__ . '/../lib/customer_accounts.php';
 require_once __DIR__ . '/../lib/sales_snapshot.php';
+require_once __DIR__ . '/../lib/product_sku.php';
 
 if(isset($_POST['add'])){
     $user_id = (int)$_POST['user_id'];
@@ -84,10 +85,10 @@ if(isset($_POST['add'])){
 
             if($p_id <= 0 || $qty <= 0) continue;
 
-            $stmt = $conn->prepare("SELECT name, slug, price FROM products WHERE id=:id");
+            $stmt = $conn->prepare("SELECT id, name, slug, sku, price, product_status FROM products WHERE id=:id");
             $stmt->execute(['id'=>$p_id]);
             $prow = $stmt->fetch();
-            if (!$prow) {
+            if (!$prow || (int) ($prow['product_status'] ?? 0) !== 1) {
                 continue;
             }
             $price = $prow['price'];
@@ -100,8 +101,13 @@ if(isset($_POST['add'])){
                 $qty,
                 (float) $price,
                 (string) ($prow['name'] ?? ''),
+                product_sku_resolve_for_row((array) $prow),
                 (string) ($prow['slug'] ?? '')
             );
+        }
+
+        if (empty($detailIds)) {
+            throw new RuntimeException('No valid active products were selected for this sale.');
         }
 
         if($initial_payment > 0){

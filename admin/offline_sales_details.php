@@ -23,7 +23,8 @@ if(isset($_POST['id'])){
         
         $priceSql = app_sales_detail_price_sql($conn, 'details', 'products');
         $nameSql = app_sales_detail_name_sql($conn, 'details', 'products');
-        $stmt = $conn->prepare("SELECT details.*, {$nameSql} AS item_name, {$priceSql} AS item_price FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
+        $skuSql = app_sales_detail_sku_sql($conn, 'details', 'products');
+        $stmt = $conn->prepare("SELECT details.*, {$nameSql} AS item_name, {$priceSql} AS item_price, {$skuSql} AS item_sku FROM details LEFT JOIN products ON products.id=details.product_id WHERE details.sales_id=:id");
         $stmt->execute(['id'=>$id]);
         
         $total = 0;
@@ -32,7 +33,7 @@ if(isset($_POST['id'])){
             $sub = ((float) $it['item_price']) * ((int) $it['quantity']);
             $total += $sub;
             $items .= "<tr>
-                <td>".e((string) ($it['item_name'] ?? 'Item'))."</td>
+                <td>".e((string) ($it['item_name'] ?? 'Item')) . (!empty($it['item_sku']) ? "<br><small class='text-muted'>SKU: " . e((string) $it['item_sku']) . "</small>" : '') . "</td>
                 <td>".app_money((float) ($it['item_price'] ?? 0))."</td>
                 <td>".$it['quantity']."</td>
                 <td>".app_money($sub)."</td>

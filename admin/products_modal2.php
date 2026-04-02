@@ -94,6 +94,16 @@
           </div>
 
           <div class="form-group">
+            <label for="edit_sku" class="col-sm-1 control-label">SKU</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="edit_sku" value="" readonly>
+              <p class="help-block">SKU is generated automatically and locked once the product is created.</p>
+            </div>
+            <label class="col-sm-1 control-label"></label>
+            <div class="col-sm-5"></div>
+          </div>
+
+          <div class="form-group">
             <label for="edit_price" class="col-sm-1 control-label">Price</label>
             <div class="col-sm-5">
               <input type="text" class="form-control" id="edit_price" name="price">

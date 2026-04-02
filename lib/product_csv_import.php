@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/product_payload.php';
+require_once __DIR__ . '/product_sku.php';
 require_once __DIR__ . '/catalog_v2.php';
 require_once __DIR__ . '/sync.php';
 require_once __DIR__ . '/../admin/slugify.php';
@@ -409,13 +410,14 @@ if (!function_exists('product_import_error_csv')) {
             return '';
         }
 
-        $lines = ["row_number,slug,name,action,message"];
+        $lines = ["row_number,slug,sku,name,action,message"];
         foreach ($errorRows as $row) {
             $lines[] = '"' . implode('","', array_map(static function ($value): string {
                 return str_replace('"', '""', (string) $value);
             }, [
                 $row['row_number'] ?? '',
                 $row['slug'] ?? '',
+                $row['sku'] ?? '',
                 $row['name'] ?? '',
                 $row['action'] ?? '',
                 $row['message'] ?? '',
@@ -440,9 +442,10 @@ if (!function_exists('product_import_build_preview')) {
             $slugIndex = array_key_exists('slug', $mapping) ? (int) $mapping['slug'] : null;
             $slug = slugify(product_import_extract_cell($row, $slugIndex));
             if ($slug === '') {
-                continue;
+                // Keep scanning for duplicate manual SKUs even if the slug is blank.
+            } else {
+                $slugCounts[$slug] = (int) ($slugCounts[$slug] ?? 0) + 1;
             }
-            $slugCounts[$slug] = (int) ($slugCounts[$slug] ?? 0) + 1;
         }
 
         $previewRows = [];
@@ -560,6 +563,7 @@ if (!function_exists('product_import_build_preview')) {
                 'size' => $sizeMapped ? product_import_normalize_multi_value((string) ($mappedValues['size'] ?? '')) : (string) ($existing['size'] ?? ''),
                 'additional_info' => product_import_build_specs_payload($mappedValues, $existing),
                 'existing_id' => (int) ($existing['id'] ?? 0),
+                'existing_sku' => $existing ? product_sku_resolve_for_row($existing) : '',
                 'photo' => (string) ($existing['photo'] ?? ''),
             ];
 
@@ -588,6 +592,7 @@ if (!function_exists('product_import_build_preview')) {
                 'action' => $action,
                 'status' => empty($errors) ? ucfirst($action) : 'Failed',
                 'slug' => $slug,
+                'sku' => $action === 'update' ? (string) $finalValues['existing_sku'] : 'Generated after import',
                 'name' => $name,
                 'category_slug' => $categorySlug,
                 'price' => $priceRaw,
@@ -604,6 +609,7 @@ if (!function_exists('product_import_build_preview')) {
                 $errorRows[] = [
                     'row_number' => $lineNumber,
                     'slug' => $slug,
+                    'sku' => $action === 'update' ? (string) $finalValues['existing_sku'] : 'Generated after import',
                     'name' => $name,
                     'action' => $action,
                     'message' => $message,
@@ -699,6 +705,10 @@ if (!function_exists('product_import_apply')) {
                     $action = 'create';
                 }
 
+                if (product_sku_column_exists($conn)) {
+                    product_sku_repair_if_missing($conn, $productId);
+                }
+
                 if (catalog_v2_table_exists($conn, 'products_v2')) {
                     catalog_v2_sync_product_from_legacy($conn, [
                         'id' => $productId,
@@ -734,6 +744,7 @@ if (!function_exists('product_import_apply')) {
                 $summary['errors'][] = [
                     'row_number' => (int) ($row['row_number'] ?? ($index + 1)),
                     'slug' => (string) ($row['slug'] ?? ''),
+                    'sku' => (string) ($row['existing_sku'] ?? 'Generated after import'),
                     'name' => (string) ($row['name'] ?? ''),
                     'action' => ((int) ($row['existing_id'] ?? 0) > 0) ? 'update' : 'create',
                     'message' => $e->getMessage(),

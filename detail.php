@@ -2,6 +2,7 @@
 include 'session.php';
 include 'Rating.php';
 require_once __DIR__ . '/lib/product_payload.php';
+require_once __DIR__ . '/lib/product_sku.php';
 require_once __DIR__ . '/lib/catalog_v2.php';
 require_once __DIR__ . '/lib/seo.php';
 $rating = new Rating();
@@ -195,11 +196,11 @@ if ($productCategory !== '') {
     $productSchema['category'] = $productCategory;
 }
 $productSku = '';
-if (!empty($product['variants'][0]['sku'])) {
+if (!empty($product['is_v2']) && !empty($product['variants'][0]['sku'])) {
     $productSku = trim((string)$product['variants'][0]['sku']);
 }
-if ($productSku === '' && !empty($product['prodid'])) {
-    $productSku = 'BOLAKAZ-' . (int)$product['prodid'];
+if ($productSku === '' && empty($product['is_v2'])) {
+    $productSku = product_sku_resolve_for_row((array) $product);
 }
 if ($productSku !== '') {
     $productSchema['sku'] = $productSku;

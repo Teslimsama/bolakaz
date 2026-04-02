@@ -274,6 +274,7 @@ include 'header.php';
                               <th>Row</th>
                               <th>Status</th>
                               <th>Slug</th>
+                              <th>SKU</th>
                               <th>Name</th>
                               <th>Category</th>
                               <th>Price</th>
@@ -287,6 +288,7 @@ include 'header.php';
                                 <td><?php echo (int) ($row['row_number'] ?? 0); ?></td>
                                 <td><?php echo e((string) ($row['status'] ?? '')); ?></td>
                                 <td><?php echo e((string) ($row['slug'] ?? '')); ?></td>
+                                <td><?php echo e((string) ($row['sku'] ?? '')); ?></td>
                                 <td><?php echo e((string) ($row['name'] ?? '')); ?></td>
                                 <td><?php echo e((string) ($row['category_slug'] ?? '')); ?></td>
                                 <td><?php echo e((string) ($row['price'] ?? '')); ?></td>
